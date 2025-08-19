@@ -69,9 +69,9 @@ function SkillGround(id, level, skill, x, y)
   print(id, level, skill, x, y)
 end
 
----@param id number
+---@param actor number
 ---@return string
-function IsMonster(id)
-  print(id)
+function IsMonster(actor)
+  print(actor)
   return ''
 end

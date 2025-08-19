@@ -168,7 +168,7 @@ function UseSkill(id, skill, cooldown, target)
     TraceAI('AUTO_CAST -> USE_SKILL: ' .. skill.id)
     return true
   else
-    TraceAI("SKILL_IN_COOLDOWN" .. skill.id)
+    TraceAI('SKILL_IN_COOLDOWN' .. skill.id)
     return false
   end
 end
@@ -212,33 +212,6 @@ function GetOwnerEnemy(myid)
 end
 
 function GetMyEnemy(myid)
-  -- local result = 0
-
-  -- local homun = GetV(V_HOMUNTYPE, myid)
-  -- if
-  --   homun == LIF
-  --   or homun == LIF_H
-  --   or homun == AMISTR
-  --   or homun == AMISTR_H
-  --   or homun == LIF2
-  --   or homun == LIF_H2
-  --   or homun == AMISTR2
-  --   or homun == AMISTR_H2
-  -- then
-  --   result = GetMyEnemyA(myid)
-  -- elseif
-  --   homun == FILIR
-  --   or homun == FILIR_H
-  --   or homun == VANILMIRTH
-  --   or homun == VANILMIRTH_H
-  --   or homun == FILIR2
-  --   or homun == FILIR_H2
-  --   or homun == VANILMIRTH2
-  --   or homun == VANILMIRTH_H2
-  -- then
-  --   result = GetMyEnemyB(myid)
-  -- end
-
   return GetMyEnemyB(myid)
 end
 
