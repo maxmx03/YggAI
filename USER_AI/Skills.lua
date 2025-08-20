@@ -68,13 +68,13 @@ end
 ---@field lastSkillTime number
 ---@field cooldown number
 ---@field target number
+---@field level number
 
 ---@param opts opts
 ---@return boolean
 function UseSkill(opts)
-  local level = 5
-  if CanUseSkill(GetTick(), opts.lastSkillTime, opts.cooldown) then
-    SkillObject(opts.myid, level, opts.skillId, opts.target)
+  if CanUseSkill(CurrentTime, opts.lastSkillTime, opts.cooldown) then
+    SkillObject(opts.myid, opts.level, opts.skillId, opts.target)
     TraceAI('AUTO_CAST -> USE_SKILL: ' .. opts.skillId)
     return true
   else

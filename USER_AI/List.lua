@@ -61,4 +61,4 @@ function M.size(list)
   return size
 end
 
-return M.new()
+return M

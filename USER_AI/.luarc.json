@@ -1,0 +1,16 @@
+{
+  "diagnostics.globals": [
+    "TraceAI",
+    "GetV",
+    "Move",
+    "GetMsg",
+    "GetResMsg",
+    "GetActors",
+    "IsMonster",
+    "MoveToOwner",
+    "Attack",
+    "SkillGround",
+    "SkillObject"
+  ],
+  "diagnostics.disable": ["redundant-parameter"]
+}

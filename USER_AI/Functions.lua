@@ -69,24 +69,20 @@ function GetEnemy(myid)
   local enemys = {}
   local index = 1
   for i, actor in ipairs(actors) do
-    if not (actor ~= owner_id and actor ~= myid) then
-      return 0
-    end
-    local target = GetV(V_TARGET, actor)
-    if target == myid or target == owner_id then
-      if IsMonster(actor) == 1 then
-        enemys[index] = actor
-        index = index + 1
-      else
-        local motion = GetV(V_MOTION, i)
-        if motion == MOTION_ATTACK or motion == MOTION_ATTACK2 then
+    if actor ~= owner_id and actor ~= myid then
+      local target = GetV(V_TARGET, actor)
+      if target == myid or target == owner_id then
+        if IsMonster(actor) == 1 then
           enemys[index] = actor
           index = index + 1
+        else
+          local motion = GetV(V_MOTION, i)
+          if motion == MOTION_ATTACK or motion == MOTION_ATTACK2 then
+            enemys[index] = actor
+            index = index + 1
+          end
         end
       end
-    elseif IsMonster(actor) == 1 then
-      enemys[index] = actor
-      index = index + 1
     end
   end
   local min_distance = 100

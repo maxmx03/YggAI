@@ -2,7 +2,10 @@ require 'AI.USER_AI.Values'
 require 'AI.USER_AI.State'
 require 'AI.USER_AI.Motion'
 require 'AI.USER_AI.Homuntypes'
-ResCmdList = require 'AI.USER_AI.List'
+require 'AI.USER_AI.Functions'
+require 'AI.USER_AI.Skills'
+List = require 'AI.USER_AI.List'
+ResCmdList = List.new()
 MyState = IDLE_ST
 MyEnemy = 0
 MyDestX = 0
@@ -12,8 +15,10 @@ MyPatrolY = 0
 MyID = 0
 MySkill = 0
 MySkillLevel = 0
+CurrentTime = 0
+LastTime = 0
 require 'AI.USER_AI.Commands'
-require 'AI.USER_AI.Humunculus.Amistr-Sera'
+require 'AI.USER_AI.Behaviour'
 
 ---@param myid number
 function AI(myid)
@@ -37,5 +42,8 @@ function AI(myid)
   elseif MyState == CHASE_ST then
     OnCHASE_ST()
   elseif MyState == FOLLOW_ST then
+    OnFOLLOW_ST()
+  elseif MyState == ATTACK_ST then
+    OnATTACK_ST()
   end
 end

@@ -10,7 +10,7 @@ function OnMOVE_CMD(x, y)
     y = math.floor((y + curY) / 2)
   end
   Move(MyID, x, y)
-  MyState = MOVE_CMD_ST
+  MyState = IDLE_ST
   MyDestX = x
   MyDestY = y
   MyEnemy = 0
@@ -110,7 +110,6 @@ SKILL_OBJECT_CMD = 7
 SKILL_AREA_CMD = 8
 FOLLOW_CMD = 9
 
----@param msg table
 function ProcessCommand(msg)
   if msg[1] == MOVE_CMD then
     OnMOVE_CMD(msg[2], msg[3])
