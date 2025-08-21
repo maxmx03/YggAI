@@ -1,16 +1,35 @@
+-----------------------------
+-- STATE
+-----------------------------
+MOVE_CMD_ST = 4
+STOP_CMD_ST = 5
+ATTACK_OBJECT_CMD_ST = 6
+ATTACK_AREA_CMD_ST = 7
+PATROL_CMD_ST = 8
+HOLD_CMD_ST = 9
+SKILL_OBJECT_CMD_ST = 10
+SKILL_AREA_CMD_ST = 11
+FOLLOW_CMD_ST = 12
+----------------------------
+
+------------- command process  ---------------------
 function OnMOVE_CMD(x, y)
   TraceAI 'OnMOVE_CMD'
+
   if x == MyDestX and y == MyDestY and MOTION_MOVE == GetV(V_MOTION, MyID) then
     return
   end
+
   local curX, curY = GetV(V_POSITION, MyID)
   if math.abs(x - curX) + math.abs(y - curY) > 15 then
     List.pushleft(ResCmdList, { MOVE_CMD, x, y })
     x = math.floor((x + curX) / 2)
     y = math.floor((y + curY) / 2)
   end
+
   Move(MyID, x, y)
-  MyState = IDLE_ST
+
+  MyState = MOVE_CMD_ST
   MyDestX = x
   MyDestY = y
   MyEnemy = 0
@@ -32,6 +51,7 @@ end
 
 function OnATTACK_OBJECT_CMD(id)
   TraceAI 'OnATTACK_OBJECT_CMD'
+
   MySkill = 0
   MyEnemy = id
   MyState = CHASE_ST
@@ -39,6 +59,7 @@ end
 
 function OnATTACK_AREA_CMD(x, y)
   TraceAI 'OnATTACK_AREA_CMD'
+
   if x ~= MyDestX or y ~= MyDestY or MOTION_MOVE ~= GetV(V_MOTION, MyID) then
     Move(MyID, x, y)
   end
@@ -50,6 +71,7 @@ end
 
 function OnPATROL_CMD(x, y)
   TraceAI 'OnPATROL_CMD'
+
   MyPatrolX, MyPatrolY = GetV(V_POSITION, MyID)
   MyDestX = x
   MyDestY = y
@@ -59,6 +81,7 @@ end
 
 function OnHOLD_CMD()
   TraceAI 'OnHOLD_CMD'
+
   MyDestX = 0
   MyDestY = 0
   MyEnemy = 0
@@ -67,6 +90,7 @@ end
 
 function OnSKILL_OBJECT_CMD(level, skill, id)
   TraceAI 'OnSKILL_OBJECT_CMD'
+
   MySkillLevel = level
   MySkill = skill
   MyEnemy = id
@@ -75,6 +99,7 @@ end
 
 function OnSKILL_AREA_CMD(level, skill, x, y)
   TraceAI 'OnSKILL_AREA_CMD'
+
   Move(MyID, x, y)
   MyDestX = x
   MyDestY = y
@@ -98,17 +123,6 @@ function OnFOLLOW_CMD()
     TraceAI 'FOLLOW_CMD_ST --> IDLE_ST'
   end
 end
-
-NONE_CMD = 0
-MOVE_CMD = 1
-STOP_CMD = 2
-ATTACK_OBJECT_CMD = 3
-ATTACK_AREA_CMD = 4
-PATROL_CMD = 5
-HOLD_CMD = 6
-SKILL_OBJECT_CMD = 7
-SKILL_AREA_CMD = 8
-FOLLOW_CMD = 9
 
 function ProcessCommand(msg)
   if msg[1] == MOVE_CMD then

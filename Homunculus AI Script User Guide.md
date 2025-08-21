@@ -364,8 +364,10 @@ Open this new AI.lua file using Notepad and enter the following text at the
 very top of the file.
 
 ```lua
-require "AI.USER_AI.Const.lua"
-require "AI.USER_AI.Util.lua"
+require "AI.USER_AI.Const"
+require "AI.USER_AI.Util" -- stored in cache, will import only once
+dofile "AI.USER_AI.Const.lua" -- will import mutiple times
+dofile "AI.USER_AI.Util.lua"
 ```
 
 This will enable the AI.lua file to refer to the Const.lua and Util.lua files
@@ -744,4 +746,3 @@ end
 
 This sample script enables your Homunculus to perform queued commands when it
 is in the IDLE state.
-

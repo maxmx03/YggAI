@@ -110,14 +110,6 @@ local Command = {
   end,
 }
 
-function ProcessCommand(msg)
-  local cmd = Command[msg[1]]
-
-  if type(cmd) == 'function' then
-    cmd(msg[2], msg[3], msg[4], msg[5])
-  end
-end
-
 ---@param msg string
 local function ProcessCommand(msg)
   local cmd = Command[msg[1]]
@@ -133,13 +125,13 @@ local State = {
     TraceAI 'HUMUNCULU_FIGHTING'
     for index, skill in ipairs(Humun.skills) do
       if
-          skill.id == HLIF_CHANGE
-          or skill.id == HAMI_BLOODLUST
-          or skill.id == HFLI_FLEET
-          or skill.id == HFLI_SPEED
-          or skill.id == MH_GOLDENE_FERSE
-          or skill.id == MH_ANGRIFFS_MODUS
-          or skill.id == MH_MAGMA_FLOW
+        skill.id == HLIF_CHANGE
+        or skill.id == HAMI_BLOODLUST
+        or skill.id == HFLI_FLEET
+        or skill.id == HFLI_SPEED
+        or skill.id == MH_GOLDENE_FERSE
+        or skill.id == MH_ANGRIFFS_MODUS
+        or skill.id == MH_MAGMA_FLOW
       then
         local ok = UseSkill(Humun.id, skill, skill.cooldown, Owner.id)
         if ok then
@@ -177,13 +169,13 @@ local State = {
     TraceAI 'OWNER_DYING'
     for index, skill in ipairs(Humun.skills) do
       if
-          skill.id == HLIF_AVOID
-          or skill.id == HAMI_CASTLE
-          or skill.id == MH_STEINWAND
-          or skill.id == HVAN_CHAOTIC
-          or skill.id == MH_GRANITIC_ARMOR
-          or skill.id == MH_OVERED_BOOST
-          or skill.id == MH_SILENT_BREEZE
+        skill.id == HLIF_AVOID
+        or skill.id == HAMI_CASTLE
+        or skill.id == MH_STEINWAND
+        or skill.id == HVAN_CHAOTIC
+        or skill.id == MH_GRANITIC_ARMOR
+        or skill.id == MH_OVERED_BOOST
+        or skill.id == MH_SILENT_BREEZE
       then
         local ok = UseSkill(Humun.id, skill, skill.cooldown, Owner.id)
         if ok then
@@ -256,17 +248,17 @@ local State = {
       Humun.state = 'humun_fighting'
       return
     end
-    
+
     Humun.state = 'idle'
   end,
   [OWNER_SITTING] = function()
-    TraceAI "OWNER_SITTING"
+    TraceAI 'OWNER_SITTING'
     local OwnerMotion = GetV(V_MOTION, Owner.id)
     local OwnerSitting = OwnerMotion == MOTION_SIT
 
     if not OwnerSitting then
-      Humun.state = "idle"
-      TraceAI "OWNER_SITTING -> IDLE"
+      Humun.state = 'idle'
+      TraceAI 'OWNER_SITTING -> IDLE'
       return
     end
 
@@ -296,7 +288,7 @@ local State = {
 
     if OwnerSitting then
       Humun.state = 'owner_siting'
-      TraceAI "IDLE -> SITTING"
+      TraceAI 'IDLE -> SITTING'
       return
     end
 
