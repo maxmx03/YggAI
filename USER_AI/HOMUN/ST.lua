@@ -163,7 +163,7 @@ function OnATTACK_ST()
   if MySkill == 0 then
     Attack(MyID, MyEnemy)
   else
-    if humun == AMISTR or humun == AMISTR_H or humun == AMISTR2 or humun == AMISTR_H2 then
+    if IsAmistr(MyID) then
       local MyOwner = GetV(V_OWNER, MyID)
       SkillObject(MyID, MySkillLevel, MySkill, MyOwner)
     else
