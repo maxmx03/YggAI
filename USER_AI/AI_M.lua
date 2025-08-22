@@ -1,5 +1,7 @@
-dofile './AI/Const.lua'
-dofile './AI/Util.lua'
+-- SCRIPT FOR MERCENARY
+-- https://irowiki.org/wiki/Mercenary_System
+require 'AI.USER_AI.MERCE.Const'
+require 'AI.USER_AI.MERCE.Util'
 
 -----------------------------
 -- state
@@ -201,12 +203,12 @@ function OnIDLE_ST()
 
   local cmd = List.popleft(ResCmdList)
   if cmd ~= nil then
-    ProcessCommand(cmd) -- ¿¹¾à ¸í·É¾î Ã³¸®
+    ProcessCommand(cmd)
     return
   end
 
   local object = GetOwnerEnemy(MyID)
-  if object ~= 0 then -- MYOWNER_ATTACKED_IN
+  if object ~= 0 then
     MyState = CHASE_ST
     MyEnemy = object
     TraceAI 'IDLE_ST -> CHASE_ST : MYOWNER_ATTACKED_IN'
@@ -214,7 +216,7 @@ function OnIDLE_ST()
   end
 
   object = GetMyEnemy(MyID)
-  if object ~= 0 then -- ATTACKED_IN
+  if object ~= 0 then
     MyState = CHASE_ST
     MyEnemy = object
     TraceAI 'IDLE_ST -> CHASE_ST : ATTACKED_IN'
@@ -480,21 +482,17 @@ function GetMyEnemy(myid)
   local result = 0
 
   local type = GetV(V_MERTYPE, myid)
-  if type >= ARCHER01 and type <= SWORDMAN10 then
-    result = GetMyEnemyB(myid)
+  if type < LANCER10 then
+    result = GetMyEnemyA(myid)
   else
     result = GetMyEnemyB(myid)
   end
-
-  --	if ( result >= 1078 and result <= 1085 ) then
-  --		result = 0
-  --	end
 
   return result
 end
 
 -------------------------------------------
---  ºñ¼±°øÇü GetMyEnemy
+--  GetMyEnemy - Merce, Owner being attacked
 -------------------------------------------
 function GetMyEnemyA(myid)
   local result = 0
@@ -506,7 +504,7 @@ function GetMyEnemyA(myid)
   for i, v in ipairs(actors) do
     if v ~= owner and v ~= myid then
       target = GetV(V_TARGET, v)
-      if target == myid then
+      if target == myid or target == owner then
         enemys[index] = v
         index = index + 1
       end
@@ -527,7 +525,7 @@ function GetMyEnemyA(myid)
 end
 
 -------------------------------------------
---  ¼±°øÇü GetMyEnemy
+--  GetMyEnemy - Is a monster
 -------------------------------------------
 function GetMyEnemyB(myid)
   local result = 0
@@ -569,15 +567,14 @@ function AI(myid)
   if msg[1] == NONE_CMD then
     if rmsg[1] ~= NONE_CMD then
       if List.size(ResCmdList) < 10 then
-        List.pushright(ResCmdList, rmsg) -- ¿¹¾à ¸í·É ÀúÀå
+        List.pushright(ResCmdList, rmsg)
       end
     end
   else
-    List.clear(ResCmdList) -- »õ·Î¿î ¸í·ÉÀÌ ÀÔ·ÂµÇ¸é ¿¹¾à ¸í·ÉµéÀº »èÁ¦ÇÑ´Ù.
-    ProcessCommand(msg) -- ¸í·É¾î Ã³¸®
+    List.clear(ResCmdList)
+    ProcessCommand(msg)
   end
 
-  -- »óÅÂ Ã³¸®
   if MyState == IDLE_ST then
     OnIDLE_ST()
   elseif MyState == CHASE_ST then

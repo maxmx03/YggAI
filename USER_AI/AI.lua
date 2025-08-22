@@ -1,9 +1,10 @@
-require 'AI.USER_AI.Const'
-require 'AI.USER_AI.Util'
-require 'AI.USER_AI.AI_CMD'
-require 'AI.USER_AI.AI_ST'
+require 'AI.USER_AI.HOMUN.Const'
+require 'AI.USER_AI.HOMUN.Util'
+require 'AI.USER_AI.HOMUN.CMD'
+require 'AI.USER_AI.HOMUN.ST'
 
 function AI(myid)
+  CurrentTime = GetTick()
   MyID = myid
   local msg = GetMsg(myid) -- command
   local rmsg = GetResMsg(myid) -- reserved command

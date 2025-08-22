@@ -106,17 +106,32 @@ function OnATTACK_ST()
     return
   end
 
+  local humun = GetV(V_HOMUNTYPE, MyID)
+
+  if humun == AMISTR or humun == AMISTR_H or humun == AMISTR2 or humun == AMISTR_H2 then
+    MySkill = HAMI_BLOODLUST
+    MySkillLevel = 3
+  elseif humun == FILIR or humun == FILIR_H or humun == FILIR2 or humun == FILIR_H2 then
+    MySkill = HFLI_FLEET
+    MySkillLevel = 5
+  elseif humun == VANILMIRTH or humun == VANILMIRTH_H or humun == VANILMIRTH2 or humun == VANILMIRTH_H2 then
+    MySkill = HVAN_CAPRICE
+    MySkillLevel = 5
+  end
+
   if MySkill == 0 then
     Attack(MyID, MyEnemy)
   else
-    if 1 == SkillObject(MyID, MySkillLevel, MySkill, MyEnemy) then
-      MyEnemy = 0
+    if CanUseSkill(CurrentTime, MyCooldown[MySkill].lastTime, MyCooldown[MySkill].cd(MySkillLevel)) then
+      if 1 == SkillObject(MyID, MySkillLevel, MySkill, MyEnemy) then
+        MyEnemy = 0
+        MyCooldown[MySkill].lastTime = CurrentTime
+      end
+      MySkill = 0
+      MySkillLevel = 0
     end
-
-    MySkill = 0
   end
   TraceAI 'ATTACK_ST -> ATTACK_ST  : ENERGY_RECHARGED_IN'
-  return
 end
 
 function OnMOVE_CMD_ST()
@@ -242,137 +257,4 @@ function OnFOLLOW_CMD_ST()
     MyDestY = ownerY
     return
   end
-end
-
-function GetOwnerEnemy(myid)
-  local result = 0
-  local owner = GetV(V_OWNER, myid)
-  local actors = GetActors()
-  local enemys = {}
-  local index = 1
-  local target
-  for i, v in ipairs(actors) do
-    if v ~= owner and v ~= myid then
-      target = GetV(V_TARGET, v)
-      if target == owner then
-        if IsMonster(v) == 1 then
-          enemys[index] = v
-          index = index + 1
-        else
-          local motion = GetV(V_MOTION, i)
-          if motion == MOTION_ATTACK or motion == MOTION_ATTACK2 then
-            enemys[index] = v
-            index = index + 1
-          end
-        end
-      end
-    end
-  end
-
-  local min_dis = 100
-  local dis
-  for i, v in ipairs(enemys) do
-    dis = GetDistance2(myid, v)
-    if dis < min_dis then
-      result = v
-      min_dis = dis
-    end
-  end
-
-  return result
-end
-
-function GetMyEnemy(myid)
-  local result = 0
-
-  local type = GetV(V_HOMUNTYPE, myid)
-  if
-    type == LIF
-    or type == LIF_H
-    or type == AMISTR
-    or type == AMISTR_H
-    or type == LIF2
-    or type == LIF_H2
-    or type == AMISTR2
-    or type == AMISTR_H2
-  then
-    result = GetMyEnemyA(myid)
-  elseif
-    type == FILIR
-    or type == FILIR_H
-    or type == VANILMIRTH
-    or type == VANILMIRTH_H
-    or type == FILIR2
-    or type == FILIR_H2
-    or type == VANILMIRTH2
-    or type == VANILMIRTH_H2
-  then
-    result = GetMyEnemyB(myid)
-  end
-  return result
-end
-
--------------------------------------------
---  GetMyEnemy
--------------------------------------------
-function GetMyEnemyA(myid)
-  local result = 0
-  local owner = GetV(V_OWNER, myid)
-  local actors = GetActors()
-  local enemys = {}
-  local index = 1
-  local target
-  for i, v in ipairs(actors) do
-    if v ~= owner and v ~= myid then
-      target = GetV(V_TARGET, v)
-      if target == myid then
-        enemys[index] = v
-        index = index + 1
-      end
-    end
-  end
-
-  local min_dis = 100
-  local dis
-  for i, v in ipairs(enemys) do
-    dis = GetDistance2(myid, v)
-    if dis < min_dis then
-      result = v
-      min_dis = dis
-    end
-  end
-
-  return result
-end
-
--------------------------------------------
---  GetMyEnemy
--------------------------------------------
-function GetMyEnemyB(myid)
-  local result = 0
-  local owner = GetV(V_OWNER, myid)
-  local actors = GetActors()
-  local enemys = {}
-  local index = 1
-  local type
-  for i, v in ipairs(actors) do
-    if v ~= owner and v ~= myid then
-      if 1 == IsMonster(v) then
-        enemys[index] = v
-        index = index + 1
-      end
-    end
-  end
-
-  local min_dis = 100
-  local dis
-  for i, v in ipairs(enemys) do
-    dis = GetDistance2(myid, v)
-    if dis < min_dis then
-      result = v
-      min_dis = dis
-    end
-  end
-
-  return result
 end
