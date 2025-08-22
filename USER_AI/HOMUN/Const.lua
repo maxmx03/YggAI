@@ -15,6 +15,25 @@ function	SkillGround (id,level,skill,x,y) end
 function	IsMonster (id) end --yes -> 1 no -> 0
 --]]
 
+-----------------------------
+-- STATE
+-----------------------------
+IDLE_ST = 0
+FOLLOW_ST = 1
+CHASE_ST = 2
+ATTACK_ST = 3
+MOVE_CMD_ST = 4
+STOP_CMD_ST = 5
+ATTACK_OBJECT_CMD_ST = 6
+ATTACK_AREA_CMD_ST = 7
+PATROL_CMD_ST = 8
+HOLD_CMD_ST = 9
+SKILL_OBJECT_CMD_ST = 10
+SKILL_AREA_CMD_ST = 11
+FOLLOW_CMD_ST = 12
+WATCH_ST = 13
+----------------------------
+
 -------------------------------------------------
 -- constants
 -------------------------------------------------
@@ -190,20 +209,27 @@ CurrentTime = 0
 ------------------------------------------
 -- HOMUNCULUS
 ------------------------------------------
-MyState = IDLE_ST -- initial state
+MyState = 0 -- initial state
 MyEnemy = 0 -- Enemy’s ID
 MyDestX = 0 -- x coordinate of a destination
 MyDestY = 0 -- y coordinate of a destination
 MyPatrolX = 0 -- x coordinate of a scouting location
 MyPatrolY = 0 -- y coordinate of a scouting location
-ResCmdList = List.new() -- List of queued commands
 MyID = 0 -- Homunculus ID
 MySkill = 0 -- Homunculus skills
 MySkillLevel = 0 -- Homunculus skill level
+MyOwner = 0 -- Homunculus owner
 MyCooldown = {
   [HAMI_BLOODLUST] = {
     cd = function(level)
       local duration_seconds = math.max(1, 60 - (level * 120))
+      return duration_seconds * 1000
+    end,
+    lastTime = 0,
+  },
+  [HAMI_DEFENCE] = {
+    cd = function(level)
+      local duration_seconds = math.max(1, 45 - (level * 5))
       return duration_seconds * 1000
     end,
     lastTime = 0,

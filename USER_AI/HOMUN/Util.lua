@@ -1,5 +1,3 @@
-dofile './AI/Const.lua'
-
 --------------------------------------------
 -- List utility
 --------------------------------------------
@@ -67,6 +65,59 @@ function List.size(list)
 end
 
 -------------------------------------------------
+---@param id number
+function IsAmistr(id)
+  local humntype = GetV(V_HOMUNTYPE, id)
+  return humntype == AMISTR or humntype == AMISTR_H or humntype == AMISTR2 or humntype == AMISTR_H2
+end
+
+---@param id number
+function IsFilir(id)
+  local humntype = GetV(V_HOMUNTYPE, id)
+  return humntype == FILIR or humntype == FILIR_H or humntype == FILIR2 or humntype == FILIR_H2
+end
+
+---@param id number
+function IsVanilmirth(id)
+  local humntype = GetV(V_HOMUNTYPE, id)
+  return humntype == VANILMIRTH or humntype == VANILMIRTH_H or humntype == VANILMIRTH2 or humntype == VANILMIRTH_H2
+end
+
+---@param id number
+function IsLif(id)
+  local humntype = GetV(V_HOMUNTYPE, id)
+  return humntype == LIF or humntype == LIF_H or humntype == LIF2 or type == LIF_H2
+end
+
+---@param id number
+function IsEira(id)
+  local humntype = GetV(V_HOMUNTYPE, id)
+  return humntype == EIRA
+end
+
+---@param id number
+function IsBayeri(id)
+  local humntype = GetV(V_HOMUNTYPE, id)
+  return humntype == BAYERI
+end
+
+---@param id number
+function IsSera(id)
+  local humntype = GetV(V_HOMUNTYPE, id)
+  return humntype == SERA
+end
+
+---@param id number
+function IsDieter(id)
+  local humntype = GetV(V_HOMUNTYPE, id)
+  return humntype == DIETER
+end
+
+---@param id number
+function IsElaner(id)
+  local humntype = GetV(V_HOMUNTYPE, id)
+  return humntype == ELEANOR
+end
 
 function GetDistance(x1, y1, x2, y2)
   return math.floor(math.sqrt((x1 - x2) ^ 2 + (y1 - y2) ^ 2))
@@ -135,20 +186,14 @@ function GetOwnerEnemy(myid)
   local actors = GetActors()
   local enemys = {}
   local index = 1
-  local target
   for i, v in ipairs(actors) do
     if v ~= owner and v ~= myid then
-      target = GetV(V_TARGET, owner)
-      if target == v then
+      local owner_target = GetV(V_TARGET, owner)
+      local target = GetV(V_TARGET, v)
+      if owner_target == v or target == owner then
         if IsMonster(v) == 1 then
           enemys[index] = v
           index = index + 1
-        else
-          local motion = GetV(V_MOTION, i)
-          if motion == MOTION_ATTACK or motion == MOTION_ATTACK2 then
-            enemys[index] = v
-            index = index + 1
-          end
         end
       end
     end
@@ -170,28 +215,9 @@ end
 function GetMyEnemy(myid)
   local result = 0
 
-  local type = GetV(V_HOMUNTYPE, myid)
-  if
-    type == LIF
-    or type == LIF_H
-    or type == AMISTR
-    or type == AMISTR_H
-    or type == LIF2
-    or type == LIF_H2
-    or type == AMISTR2
-    or type == AMISTR_H2
-  then
+  if IsLif(myid) or IsAmistr(myid) then
     result = GetMyEnemyA(myid)
-  elseif
-    type == FILIR
-    or type == FILIR_H
-    or type == VANILMIRTH
-    or type == VANILMIRTH_H
-    or type == FILIR2
-    or type == FILIR_H2
-    or type == VANILMIRTH2
-    or type == VANILMIRTH_H2
-  then
+  elseif IsFilir(myid) or IsVanilmirth(myid) then
     result = GetMyEnemyB(myid)
   end
   return result

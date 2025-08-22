@@ -1,47 +1,55 @@
-require 'AI.USER_AI.Const'
-require 'AI.USER_AI.Util'
-
------------------------------
--- STATE
------------------------------
-IDLE_ST = 0
-FOLLOW_ST = 1
-CHASE_ST = 2
-ATTACK_ST = 3
-----------------------------
-
 -------------- state process  --------------------
-function OnIDLE_ST()
-  TraceAI 'OnIDLE_ST'
-
-  local cmd = List.popleft(ResCmdList)
-  if cmd ~= nil then
-    ProcessCommand(cmd)
-    return
-  end
-
-  local object = GetOwnerEnemy(MyID)
-  if object ~= 0 then
-    MyState = CHASE_ST
-    MyEnemy = object
-    TraceAI 'IDLE_ST -> CHASE_ST : MYOWNER_ATTACKED_IN'
-    return
+function OnWATCH_ST()
+  local motion = GetV(V_MOTION, MyOwner)
+  local object = 0
+  if motion == MOTION_ATTACK or motion == MOTION_ATTACK2 then
+    object = GetOwnerEnemy(MyID)
+    if object ~= 0 then
+      MyState = CHASE_ST
+      MyEnemy = object
+      TraceAI 'WATCH_ST -> CHASE_ST : MYOWNER_ATTACKED_IN'
+      return
+    end
   end
 
   object = GetMyEnemy(MyID)
   if object ~= 0 then -- ATTACKED_IN
     MyState = CHASE_ST
     MyEnemy = object
-    TraceAI 'IDLE_ST -> CHASE_ST : ATTACKED_IN'
+    TraceAI 'WATCH_ST -> CHASE_ST : ATTACKED_IN'
     return
   end
 
+  if motion == MOTION_SIT then
+    MyState = PATROL_ST
+    TraceAI 'WATCH_ST -> PATROL_ST'
+    return
+  end
+
+  if motion == MOTION_STAND then
+    MyState = IDLE_ST
+    TraceAI 'WATCH_ST -> IDLE_ST'
+    return
+  end
+
+  MyState = IDLE_ST
+end
+
+function OnIDLE_ST()
+  TraceAI 'OnIDLE_ST'
   local distance = GetDistanceFromOwner(MyID)
-  if distance > 3 or distance == -1 then
+  if distance > 2 or distance == -1 then
     MyState = FOLLOW_ST
     TraceAI 'IDLE_ST -> FOLLOW_ST'
     return
   end
+
+  local cmd = List.popleft(ResCmdList)
+  if cmd ~= nil then
+    ProcessCommand(cmd)
+    return
+  end
+  MyState = WATCH_ST
 end
 
 function OnFOLLOW_ST()
@@ -56,6 +64,36 @@ function OnFOLLOW_ST()
     TraceAI 'FOLLOW_ST -> FOLLOW_ST'
     return
   end
+end
+
+LastTimePatrol = 0
+function OnPATROL_ST()
+  TraceAI 'OnPATROL_ST'
+  local OwnerMotion = GetV(V_MOTION, MyOwner)
+  local OwnerSitting = OwnerMotion == MOTION_SIT
+  if not OwnerSitting then
+    MyState = IDLE_ST
+    TraceAI 'ONPATROL_ST -> IDLE_ST'
+    return
+  end
+  local cooldown = math.random(10) * 1000
+  if (CurrentTime - LastTimePatrol) > cooldown then
+    local destX, destY = GetV(V_POSITION, MyOwner)
+    local randomX = math.random(-10, 10)
+    local randomY = math.random(-10, 10)
+    destX = destX + randomX
+    destY = destY + randomY
+    Move(MyID, destX, destY)
+    if IsOutOfSight(MyID, MyOwner) then
+      MoveToOwner(MYID)
+      return
+    else
+      MyState = WATCH_ST
+      TraceAI 'ONPATROL_ST -> WATCH_ST'
+    end
+    LastTimePatrol = CurrentTime
+  end
+  TraceAI 'ONPATROL_ST -> ENERGY_RECHARGED_IN'
 end
 
 function OnCHASE_ST()
@@ -106,30 +144,35 @@ function OnATTACK_ST()
     return
   end
 
-  local humun = GetV(V_HOMUNTYPE, MyID)
-
-  if humun == AMISTR or humun == AMISTR_H or humun == AMISTR2 or humun == AMISTR_H2 then
-    MySkill = HAMI_BLOODLUST
-    MySkillLevel = 3
-  elseif humun == FILIR or humun == FILIR_H or humun == FILIR2 or humun == FILIR_H2 then
+  if IsAmistr(MyID) then
+    MySkill = HAMI_DEFENCE
+    MySkillLevel = 5
+  elseif IsFilir(MyID) then
     MySkill = HFLI_FLEET
     MySkillLevel = 5
-  elseif humun == VANILMIRTH or humun == VANILMIRTH_H or humun == VANILMIRTH2 or humun == VANILMIRTH_H2 then
+  elseif IsVanilmirth(MyID) then
     MySkill = HVAN_CAPRICE
     MySkillLevel = 5
+  end
+
+  if not CanUseSkill(CurrentTime, MyCooldown[MySkill].lastTime, MyCooldown[MySkill].cd(MySkillLevel)) then
+    MySkill = 0
+    MySkillLevel = 0
   end
 
   if MySkill == 0 then
     Attack(MyID, MyEnemy)
   else
-    if CanUseSkill(CurrentTime, MyCooldown[MySkill].lastTime, MyCooldown[MySkill].cd(MySkillLevel)) then
-      if 1 == SkillObject(MyID, MySkillLevel, MySkill, MyEnemy) then
-        MyEnemy = 0
-        MyCooldown[MySkill].lastTime = CurrentTime
-      end
-      MySkill = 0
-      MySkillLevel = 0
+    if humun == AMISTR or humun == AMISTR_H or humun == AMISTR2 or humun == AMISTR_H2 then
+      local MyOwner = GetV(V_OWNER, MyID)
+      SkillObject(MyID, MySkillLevel, MySkill, MyOwner)
+    else
+      SkillObject(MyID, MySkillLevel, MySkill, MyEnemy)
     end
+    MyEnemy = 0
+    MyCooldown[MySkill].lastTime = CurrentTime
+    MySkill = 0
+    MySkillLevel = 0
   end
   TraceAI 'ATTACK_ST -> ATTACK_ST  : ENERGY_RECHARGED_IN'
 end

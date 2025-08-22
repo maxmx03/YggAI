@@ -1,11 +1,13 @@
 require 'AI.USER_AI.HOMUN.Const'
 require 'AI.USER_AI.HOMUN.Util'
+ResCmdList = List.new() -- List of queued commands
 require 'AI.USER_AI.HOMUN.CMD'
 require 'AI.USER_AI.HOMUN.ST'
 
 function AI(myid)
   CurrentTime = GetTick()
   MyID = myid
+  MyOwner = GetV(V_OWNER, myid)
   local msg = GetMsg(myid) -- command
   local rmsg = GetResMsg(myid) -- reserved command
 
@@ -28,6 +30,10 @@ function AI(myid)
     OnATTACK_ST()
   elseif MyState == FOLLOW_ST then
     OnFOLLOW_ST()
+  elseif MyState == WATCH_ST then
+    OnWATCH_ST()
+  elseif MyState == PATROL_ST then
+    OnPATROL_ST()
   elseif MyState == MOVE_CMD_ST then
     OnMOVE_CMD_ST()
   elseif MyState == STOP_CMD_ST then
