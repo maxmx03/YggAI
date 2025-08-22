@@ -1,6 +1,6 @@
---  c function
-
 --[[
+C BUILTIN FUNCTIONS
+
 function	TraceAI (string) end
 function	MoveToOwner (id) end
 function 	Move (id,x,y) end
@@ -13,7 +13,6 @@ function	GetResMsg (id) end
 function	SkillObject (id,level,skill,target) end
 function	SkillGround (id,level,skill,x,y) end
 function	IsMonster (id) end --yes -> 1 no -> 0
-
 --]]
 
 -------------------------------------------------
@@ -128,27 +127,62 @@ FOLLOW_CMD = 9
 --------------------------
 --- HOMUNCULUS SKILLS
 --------------------------
+-- LIF
 HLIF_HEAL = 8001
 HLIF_AVOID = 8002
 HLIF_CHANGE = 8004
 
+-- AMISTR
 HAMI_CASTLE = 8005
 HAMI_DEFENCE = 8006
 HAMI_BLOODLUST = 8008
 
+-- FILIR
+HFLI_MOON = 8009
 HFLI_FLEET = 8010
 HFLI_SPEED = 8011
+HFLI_SBR44 = 8012
 
+-- VANILMIRTH
+HVAN_CAPRICE = 8013
 HVAN_CHAOTIC = 8014
+HVAN_SELFDESTRUCT = 8016
+
+-- SERA
+MH_SUMMON_LEGION = 8018
+MH_NEEDLE_OF_PARALYZE = 8019
+MH_POISON_MIST = 8020
+MH_PAIN_KILLER = 8021
+
+-- EIRA
+MH_LIGHT_OF_REGENE = 8022
+MH_OVERED_BOOST = 8023
+MH_ERASER_CUTTER = 8024
+MH_XENO_SLASHER = 8025
+MH_SILENT_BREEZE = 8026
+
+-- ELEANOR
+MH_STYLE_CHANGE = 8027
+MH_SONIC_CRAW = 8028
+MH_SILVERVEIN_RUSH = 8029
+MH_MIDNIGHT_FRENZY = 8030
+MH_TINDER_BREAKER = 8036
+MH_CBC = 8037
+MH_EQC = 8038
+
+-- Bayeri
+MH_STAHL_HORN = 8031
 MH_GOLDENE_FERSE = 8032
 MH_STEINWAND = 8033
+MH_HEILIGE_STANGE = 8034
 MH_ANGRIFFS_MODUS = 8035
-MH_GRANITIC_ARMOR = 8040
+
+-- DIETER
 MH_MAGMA_FLOW = 8039
-MH_OVERED_BOOST = 8023
-MH_LIGHT_OF_REGENE = 8022
-MH_SILENT_BREEZE = 8026
-MH_PAIN_KILLER = 8021
+MH_GRANITIC_ARMOR = 8040
+MH_LAVA_SLIDE = 8041
+MH_PYROCLASTIC = 8042
+MH_VOLCANIC_ASH = 8043
 
 ------------------------------------------
 -- HOMUNCULUS
@@ -163,5 +197,4 @@ ResCmdList = List.new() -- List of queued commands
 MyID = 0 -- Homunculus ID
 MySkill = 0 -- Homunculus skills
 MySkillLevel = 0 -- Homunculus skill level
-MySkillCoolDown = 0 -- Homunculus skill cooldown
 ------------------------------------------
