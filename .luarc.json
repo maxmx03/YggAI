@@ -12,6 +12,5 @@
     "SkillGround",
     "SkillObject"
   ],
-  "diagnostics.disable": ["redundant-parameter",
-        "undefined-global"]
+  "diagnostics.disable": ["redundant-parameter"]
 }

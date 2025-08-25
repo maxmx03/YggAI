@@ -31,7 +31,7 @@ HOLD_CMD_ST = 9
 SKILL_OBJECT_CMD_ST = 10
 SKILL_AREA_CMD_ST = 11
 FOLLOW_CMD_ST = 12
-WATCH_ST = 13
+PATROL_ST = 13
 ----------------------------
 
 -------------------------------------------------
