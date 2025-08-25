@@ -30,8 +30,6 @@ function AI(myid)
     OnATTACK_ST()
   elseif MyState == FOLLOW_ST then
     OnFOLLOW_ST()
-  elseif MyState == WATCH_ST then
-    OnWATCH_ST()
   elseif MyState == PATROL_ST then
     OnPATROL_ST()
   elseif MyState == MOVE_CMD_ST then

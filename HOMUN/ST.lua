@@ -1,55 +1,38 @@
 -------------- state process  --------------------
-function OnWATCH_ST()
-  local motion = GetV(V_MOTION, MyOwner)
-  local object = 0
-  if motion == MOTION_ATTACK or motion == MOTION_ATTACK2 then
-    object = GetOwnerEnemy(MyID)
-    if object ~= 0 then
-      MyState = CHASE_ST
-      MyEnemy = object
-      TraceAI 'WATCH_ST -> CHASE_ST : MYOWNER_ATTACKED_IN'
-      return
-    end
-  end
-
-  object = GetMyEnemy(MyID)
-  if object ~= 0 then -- ATTACKED_IN
-    MyState = CHASE_ST
-    MyEnemy = object
-    TraceAI 'WATCH_ST -> CHASE_ST : ATTACKED_IN'
-    return
-  end
-
-  if motion == MOTION_SIT then
-    MyState = PATROL_ST
-    TraceAI 'WATCH_ST -> PATROL_ST'
-    return
-  end
-
-  if motion == MOTION_STAND then
-    MyState = IDLE_ST
-    TraceAI 'WATCH_ST -> IDLE_ST'
-    return
-  end
-
-  MyState = IDLE_ST
-end
-
 function OnIDLE_ST()
   TraceAI 'OnIDLE_ST'
+  local object = 0
+  object = GetOwnerEnemy(MyID)
+  if object ~= 0 then
+    MyState = CHASE_ST
+    MyEnemy = object
+    TraceAI 'IDLE_ST -> CHASE_ST : MYOWNER_ATTACKED_IN'
+    return
+  end
+  object = GetMyEnemy(MyID)
+  if object ~= 0 then
+    MyState = CHASE_ST
+    MyEnemy = object
+    TraceAI 'IDLE_ST -> CHASE_ST : ATTACKED_IN'
+    return
+  end
   local distance = GetDistanceFromOwner(MyID)
   if distance > 2 or distance == -1 then
     MyState = FOLLOW_ST
     TraceAI 'IDLE_ST -> FOLLOW_ST'
     return
   end
-
   local cmd = List.popleft(ResCmdList)
   if cmd ~= nil then
     ProcessCommand(cmd)
     return
   end
-  MyState = WATCH_ST
+  local motion = GetV(V_MOTION, MyOwner)
+  if motion == MOTION_SIT then
+    MyState = PATROL_ST
+    TraceAI 'IDLE_ST -> PATROL_ST'
+    return
+  end
 end
 
 function OnFOLLOW_ST()
@@ -85,11 +68,11 @@ function OnPATROL_ST()
     destY = destY + randomY
     Move(MyID, destX, destY)
     if IsOutOfSight(MyID, MyOwner) then
-      MoveToOwner(MYID)
+      MoveToOwner(MyID)
       return
     else
-      MyState = WATCH_ST
-      TraceAI 'ONPATROL_ST -> WATCH_ST'
+      MyState = IDLE_ST
+      TraceAI 'ONPATROL_ST -> IDLE_ST'
     end
     LastTimePatrol = CurrentTime
   end
@@ -98,23 +81,27 @@ end
 
 function OnCHASE_ST()
   TraceAI 'OnCHASE_ST'
-
-  if true == IsOutOfSight(MyID, MyEnemy) then
+  if IsOutOfSight(MyID, MyEnemy) then
     MyState = IDLE_ST
     MyEnemy = 0
     MyDestX, MyDestY = 0, 0
     TraceAI 'CHASE_ST -> IDLE_ST : ENEMY_OUTSIGHT_IN'
     return
   end
-  if true == IsInAttackSight(MyID, MyEnemy) then
+  if IsInAttackSight(MyID, MyEnemy) then
     MyState = ATTACK_ST
     TraceAI 'CHASE_ST -> ATTACK_ST : ENEMY_INATTACKSIGHT_IN'
     return
   end
-
-  local x, y = GetV(V_POSITION_APPLY_SKILLATTACKRANGE, MyEnemy, MySkill, MySkillLevel)
+  if MOTION_DEAD == GetV(V_MOTION, MyEnemy) then
+    MyState = IDLE_ST
+    MyEnemy = 0
+    TraceAI 'ATTACK_ST -> IDLE_ST'
+    return
+  end
+  local x, y = GetV(V_POSITION, MyEnemy)
   if MyDestX ~= x or MyDestY ~= y then
-    MyDestX, MyDestY = GetV(V_POSITION_APPLY_SKILLATTACKRANGE, MyEnemy, MySkill, MySkillLevel)
+    MyDestX, MyDestY = GetV(V_POSITION, MyEnemy)
     Move(MyID, MyDestX, MyDestY)
     TraceAI 'CHASE_ST -> CHASE_ST : DESTCHANGED_IN'
     return
@@ -124,19 +111,21 @@ end
 function OnATTACK_ST()
   TraceAI 'OnATTACK_ST'
 
-  if true == IsOutOfSight(MyID, MyEnemy) then
+  if IsOutOfSight(MyID, MyEnemy) then
     MyState = IDLE_ST
+    MyEnemy = 0
     TraceAI 'ATTACK_ST -> IDLE_ST'
     return
   end
 
   if MOTION_DEAD == GetV(V_MOTION, MyEnemy) then
     MyState = IDLE_ST
+    MyEnemy = 0
     TraceAI 'ATTACK_ST -> IDLE_ST'
     return
   end
 
-  if false == IsInAttackSight(MyID, MyEnemy) then
+  if not IsInAttackSight(MyID, MyEnemy) then
     MyState = CHASE_ST
     MyDestX, MyDestY = GetV(V_POSITION_APPLY_SKILLATTACKRANGE, MyEnemy, MySkill, MySkillLevel)
     Move(MyID, MyDestX, MyDestY)

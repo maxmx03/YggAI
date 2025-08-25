@@ -213,11 +213,8 @@ function GetOwnerEnemy(myid)
 end
 
 function GetMyEnemy(myid)
-  local result = 0
-
-  if IsLif(myid) or IsAmistr(myid) then
-    result = GetMyEnemyA(myid)
-  elseif IsFilir(myid) or IsVanilmirth(myid) then
+  local result = GetMyEnemyA(myid)
+  if result == 0 then
     result = GetMyEnemyB(myid)
   end
   return result
