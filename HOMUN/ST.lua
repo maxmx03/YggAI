@@ -9,6 +9,13 @@ function OnIDLE_ST()
     TraceAI 'IDLE_ST -> CHASE_ST : MYOWNER_ATTACKED_IN'
     return
   end
+  local motion = GetV(V_MOTION, MyOwner)
+  local distance = GetDistanceFromOwner(MyID)
+  if (distance >= 3 and motion == MOTION_MOVE) or distance == -1 then
+    MyState = FOLLOW_ST
+    TraceAI 'IDLE_ST -> FOLLOW_ST'
+    return
+  end
   object = GetMyEnemy(MyID)
   if object ~= 0 then
     MyState = CHASE_ST
@@ -16,18 +23,11 @@ function OnIDLE_ST()
     TraceAI 'IDLE_ST -> CHASE_ST : ATTACKED_IN'
     return
   end
-  local distance = GetDistanceFromOwner(MyID)
-  if distance > 2 or distance == -1 then
-    MyState = FOLLOW_ST
-    TraceAI 'IDLE_ST -> FOLLOW_ST'
-    return
-  end
   local cmd = List.popleft(ResCmdList)
   if cmd ~= nil then
     ProcessCommand(cmd)
     return
   end
-  local motion = GetV(V_MOTION, MyOwner)
   if motion == MOTION_SIT then
     MyState = PATROL_ST
     TraceAI 'IDLE_ST -> PATROL_ST'
@@ -37,12 +37,11 @@ end
 
 function OnFOLLOW_ST()
   TraceAI 'OnFOLLOW_ST'
-
   if GetDistanceFromOwner(MyID) <= 3 then
     MyState = IDLE_ST
-    TraceAI 'FOLLOW_ST -> IDLW_ST'
+    TraceAI 'FOLLOW_ST -> IDLE_ST'
     return
-  elseif GetV(V_MOTION, MyID) == MOTION_STAND then
+  elseif GetV(V_MOTION, MyID) == MOTION_STAND and GetV(V_MOTION, MyOwner) == MOTION_MOVE then
     MoveToOwner(MyID)
     TraceAI 'FOLLOW_ST -> FOLLOW_ST'
     return
@@ -81,6 +80,12 @@ end
 
 function OnCHASE_ST()
   TraceAI 'OnCHASE_ST'
+  if EnemyIsOutOfSight(MyEnemy) then
+    MyState = IDLE_ST
+    MyEnemy = 0
+    TraceAI 'CHASE_ST -> IDLE_ST : ENEMY_OUTSIGHT_IN2'
+    return
+  end
   if IsOutOfSight(MyID, MyEnemy) then
     MyState = IDLE_ST
     MyEnemy = 0
@@ -110,11 +115,16 @@ end
 
 function OnATTACK_ST()
   TraceAI 'OnATTACK_ST'
-
+  if EnemyIsOutOfSight(MyEnemy) then
+    MyState = IDLE_ST
+    MyEnemy = 0
+    TraceAI 'ATTACK_ST -> IDLE_ST : ENEMY_OUTSIGHT_IN2'
+    return
+  end
   if IsOutOfSight(MyID, MyEnemy) then
     MyState = IDLE_ST
     MyEnemy = 0
-    TraceAI 'ATTACK_ST -> IDLE_ST'
+    TraceAI 'ATTACK_ST -> IDLE_ST : ENEMY_OUTSIGHT_IN'
     return
   end
 
