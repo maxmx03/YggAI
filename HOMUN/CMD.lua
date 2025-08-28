@@ -1,6 +1,7 @@
 ------------- command process  ---------------------
 function OnMOVE_CMD(x, y)
-  TraceAI('OnMOVE_CMD')
+  TraceAI 'OnMOVE_CMD'
+  LastMoveTime = CurrentTime
 
   if x == MyDestX and y == MyDestY and MOTION_MOVE == GetV(V_MOTION, MyID) then
     return
@@ -20,10 +21,13 @@ function OnMOVE_CMD(x, y)
   MyDestY = y
   MyEnemy = 0
   MySkill = 0
+
+  LastMoveTime = CurrentTime
+  LastPosX, LastPosY = curX, curY
 end
 
 function OnSTOP_CMD()
-  TraceAI('OnSTOP_CMD')
+  TraceAI 'OnSTOP_CMD'
 
   if GetV(V_MOTION, MyID) ~= MOTION_STAND then
     Move(MyID, GetV(V_POSITION, MyID))
@@ -36,7 +40,7 @@ function OnSTOP_CMD()
 end
 
 function OnATTACK_OBJECT_CMD(id)
-  TraceAI('OnATTACK_OBJECT_CMD')
+  TraceAI 'OnATTACK_OBJECT_CMD'
 
   MySkill = 0
   MyEnemy = id
@@ -44,7 +48,7 @@ function OnATTACK_OBJECT_CMD(id)
 end
 
 function OnATTACK_AREA_CMD(x, y)
-  TraceAI('OnATTACK_AREA_CMD')
+  TraceAI 'OnATTACK_AREA_CMD'
 
   if x ~= MyDestX or y ~= MyDestY or MOTION_MOVE ~= GetV(V_MOTION, MyID) then
     Move(MyID, x, y)
@@ -56,7 +60,7 @@ function OnATTACK_AREA_CMD(x, y)
 end
 
 function OnPATROL_CMD(x, y)
-  TraceAI('OnPATROL_CMD')
+  TraceAI 'OnPATROL_CMD'
 
   MyPatrolX, MyPatrolY = GetV(V_POSITION, MyID)
   MyDestX = x
@@ -66,7 +70,7 @@ function OnPATROL_CMD(x, y)
 end
 
 function OnHOLD_CMD()
-  TraceAI('OnHOLD_CMD')
+  TraceAI 'OnHOLD_CMD'
 
   MyDestX = 0
   MyDestY = 0
@@ -75,7 +79,7 @@ function OnHOLD_CMD()
 end
 
 function OnSKILL_OBJECT_CMD(level, skill, id)
-  TraceAI('OnSKILL_OBJECT_CMD')
+  TraceAI 'OnSKILL_OBJECT_CMD'
 
   MySkillLevel = level
   MySkill = skill
@@ -84,7 +88,7 @@ function OnSKILL_OBJECT_CMD(level, skill, id)
 end
 
 function OnSKILL_AREA_CMD(level, skill, x, y)
-  TraceAI('OnSKILL_AREA_CMD')
+  TraceAI 'OnSKILL_AREA_CMD'
 
   Move(MyID, x, y)
   MyDestX = x
@@ -101,42 +105,42 @@ function OnFOLLOW_CMD()
     MyDestX, MyDestY = GetV(V_POSITION, GetV(V_OWNER, MyID))
     MyEnemy = 0
     MySkill = 0
-    TraceAI('OnFOLLOW_CMD')
+    TraceAI 'OnFOLLOW_CMD'
   else
     MyState = IDLE_ST
     MyEnemy = 0
     MySkill = 0
-    TraceAI('FOLLOW_CMD_ST --> IDLE_ST')
+    TraceAI 'FOLLOW_CMD_ST --> IDLE_ST'
   end
 end
 
 function ProcessCommand(msg)
   if msg[1] == MOVE_CMD then
     OnMOVE_CMD(msg[2], msg[3])
-    TraceAI('MOVE_CMD')
+    TraceAI 'MOVE_CMD'
   elseif msg[1] == STOP_CMD then
     OnSTOP_CMD()
-    TraceAI('STOP_CMD')
+    TraceAI 'STOP_CMD'
   elseif msg[1] == ATTACK_OBJECT_CMD then
     OnATTACK_OBJECT_CMD(msg[2])
-    TraceAI('ATTACK_OBJECT_CMD')
+    TraceAI 'ATTACK_OBJECT_CMD'
   elseif msg[1] == ATTACK_AREA_CMD then
     OnATTACK_AREA_CMD(msg[2], msg[3])
-    TraceAI('ATTACK_AREA_CMD')
+    TraceAI 'ATTACK_AREA_CMD'
   elseif msg[1] == PATROL_CMD then
     OnPATROL_CMD(msg[2], msg[3])
-    TraceAI('PATROL_CMD')
+    TraceAI 'PATROL_CMD'
   elseif msg[1] == HOLD_CMD then
     OnHOLD_CMD()
-    TraceAI('HOLD_CMD')
+    TraceAI 'HOLD_CMD'
   elseif msg[1] == SKILL_OBJECT_CMD then
     OnSKILL_OBJECT_CMD(msg[2], msg[3], msg[4], msg[5])
-    TraceAI('SKILL_OBJECT_CMD')
+    TraceAI 'SKILL_OBJECT_CMD'
   elseif msg[1] == SKILL_AREA_CMD then
     OnSKILL_AREA_CMD(msg[2], msg[3], msg[4], msg[5])
-    TraceAI('SKILL_AREA_CMD')
+    TraceAI 'SKILL_AREA_CMD'
   elseif msg[1] == FOLLOW_CMD then
     OnFOLLOW_CMD()
-    TraceAI('FOLLOW_CMD')
+    TraceAI 'FOLLOW_CMD'
   end
 end

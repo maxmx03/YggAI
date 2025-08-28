@@ -41,14 +41,13 @@ function OnFOLLOW_ST()
     MyState = IDLE_ST
     TraceAI 'FOLLOW_ST -> IDLE_ST'
     return
-  elseif GetV(V_MOTION, MyID) == MOTION_STAND and GetV(V_MOTION, MyOwner) == MOTION_MOVE then
+  elseif GetV(V_MOTION, MyID) == MOTION_STAND then
     MoveToOwner(MyID)
     TraceAI 'FOLLOW_ST -> FOLLOW_ST'
     return
   end
 end
 
-LastTimePatrol = 0
 function OnPATROL_ST()
   TraceAI 'OnPATROL_ST'
   local OwnerMotion = GetV(V_MOTION, MyOwner)
@@ -83,7 +82,7 @@ function OnCHASE_ST()
   if EnemyIsOutOfSight(MyEnemy) then
     MyState = IDLE_ST
     MyEnemy = 0
-    TraceAI 'CHASE_ST -> IDLE_ST : ENEMY_OUTSIGHT_IN2'
+    TraceAI('CHASE_ST -> IDLE_ST : ENEMY_OUTSIGHT_IN2 -> ENEMY: ' .. MyEnemy)
     return
   end
   if IsOutOfSight(MyID, MyEnemy) then
@@ -108,7 +107,7 @@ function OnCHASE_ST()
   if MyDestX ~= x or MyDestY ~= y then
     MyDestX, MyDestY = GetV(V_POSITION, MyEnemy)
     Move(MyID, MyDestX, MyDestY)
-    TraceAI 'CHASE_ST -> CHASE_ST : DESTCHANGED_IN'
+    TraceAI('CHASE_ST -> CHASE_ST : DESTCHANGED_IN -> ENEMY: ' .. MyEnemy)
     return
   end
 end
@@ -178,10 +177,22 @@ end
 
 function OnMOVE_CMD_ST()
   TraceAI 'OnMOVE_CMD_ST'
-
   local x, y = GetV(V_POSITION, MyID)
   if x == MyDestX and y == MyDestY then
     MyState = IDLE_ST
+    return
+  end
+
+  -- TODO: CAST SKILL IN AREA
+  if (x == LastPosX and y == LastPosY) and ((CurrentTime - LastMoveTime) > 3000) then
+    MyState = CHASE_ST
+    TraceAI 'MOVE_CMD_ST -> CHASE_ST : STUCK_FIX'
+    return
+  end
+
+  if x ~= LastPosX or y ~= LastPosY then
+    LastMoveTime = CurrentTime
+    LastPosX, LastPosY = x, y
   end
 end
 

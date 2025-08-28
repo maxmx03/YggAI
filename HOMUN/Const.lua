@@ -203,8 +203,13 @@ MH_LAVA_SLIDE = 8041
 MH_PYROCLASTIC = 8042
 MH_VOLCANIC_ASH = 8043
 
--- FOR COOLDOWN
+-- For cooldown, patrol
 CurrentTime = 0
+LastTimePatrol = 0
+
+--- FOR ON_MOVE_CMD
+LastPosX, LastPosY = 0, 0
+LastMoveTime = 0
 
 ------------------------------------------
 -- HOMUNCULUS
@@ -248,4 +253,3 @@ MyCooldown = {
     lastTime = 0,
   },
 }
-------------------------------------------
