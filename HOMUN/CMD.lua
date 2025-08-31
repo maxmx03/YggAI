@@ -1,7 +1,6 @@
 ------------- command process  ---------------------
 function OnMOVE_CMD(x, y)
   TraceAI 'OnMOVE_CMD'
-  LastMoveTime = CurrentTime
 
   if x == MyDestX and y == MyDestY and MOTION_MOVE == GetV(V_MOTION, MyID) then
     return
@@ -21,9 +20,6 @@ function OnMOVE_CMD(x, y)
   MyDestY = y
   MyEnemy = 0
   MySkill = 0
-
-  LastMoveTime = CurrentTime
-  LastPosX, LastPosY = curX, curY
 end
 
 function OnSTOP_CMD()
@@ -41,7 +37,6 @@ end
 
 function OnATTACK_OBJECT_CMD(id)
   TraceAI 'OnATTACK_OBJECT_CMD'
-
   MySkill = 0
   MyEnemy = id
   MyState = CHASE_ST

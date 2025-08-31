@@ -206,11 +206,6 @@ MH_VOLCANIC_ASH = 8043
 -- For cooldown, patrol
 CurrentTime = 0
 LastTimePatrol = 0
-
---- FOR ON_MOVE_CMD
-LastPosX, LastPosY = 0, 0
-LastMoveTime = 0
-
 ------------------------------------------
 -- HOMUNCULUS
 ------------------------------------------

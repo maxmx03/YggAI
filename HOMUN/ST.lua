@@ -33,6 +33,15 @@ function OnIDLE_ST()
     TraceAI 'IDLE_ST -> PATROL_ST'
     return
   end
+  if motion == MOTION_MOVE and GetDistanceFromOwner(MyID) < 10 then
+    object = GetOwnerEnemy(MyID)
+    if object ~= 0 then
+      MyState = CHASE_ST
+      MyEnemy = object
+      TraceAI 'IDLE_ST -> CHASE_ST : ATTACKED_IN'
+      return
+    end
+  end
 end
 
 function OnFOLLOW_ST()
@@ -79,6 +88,10 @@ end
 
 function OnCHASE_ST()
   TraceAI 'OnCHASE_ST'
+  if GetDistanceFromOwner(MyID) > 10 then
+    MoveToOwner(MyID)
+    return
+  end
   if EnemyIsOutOfSight(MyEnemy) then
     MyState = IDLE_ST
     MyEnemy = 0
@@ -108,12 +121,15 @@ function OnCHASE_ST()
     MyDestX, MyDestY = GetV(V_POSITION, MyEnemy)
     Move(MyID, MyDestX, MyDestY)
     TraceAI('CHASE_ST -> CHASE_ST : DESTCHANGED_IN -> ENEMY: ' .. MyEnemy)
-    return
   end
 end
 
 function OnATTACK_ST()
   TraceAI 'OnATTACK_ST'
+  if GetDistanceFromOwner(MyID) > 10 then
+    MoveToOwner(MyID)
+    return
+  end
   if EnemyIsOutOfSight(MyEnemy) then
     MyState = IDLE_ST
     MyEnemy = 0
@@ -181,18 +197,6 @@ function OnMOVE_CMD_ST()
   if x == MyDestX and y == MyDestY then
     MyState = IDLE_ST
     return
-  end
-
-  -- TODO: CAST SKILL IN AREA
-  if (x == LastPosX and y == LastPosY) and ((CurrentTime - LastMoveTime) > 3000) then
-    MyState = CHASE_ST
-    TraceAI 'MOVE_CMD_ST -> CHASE_ST : STUCK_FIX'
-    return
-  end
-
-  if x ~= LastPosX or y ~= LastPosY then
-    LastMoveTime = CurrentTime
-    LastPosX, LastPosY = x, y
   end
 end
 

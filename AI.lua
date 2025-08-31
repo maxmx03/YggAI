@@ -50,5 +50,7 @@ function AI(myid)
     OnSKILL_AREA_CMD_ST()
   elseif MyState == FOLLOW_CMD_ST then
     OnFOLLOW_CMD_ST()
+  else
+    OnIDLE_ST()
   end
 end
