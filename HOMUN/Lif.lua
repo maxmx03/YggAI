@@ -1,37 +1,37 @@
 ---@class Cooldown
 local MyCooldown = {
-  [HAMI_CASTLE] = 0,
-  [HAMI_DEFENCE] = 0,
-  [HAMI_BLOODLUST] = 0,
+  [HLIF_HEAL] = 0,
+  [HLIF_AVOID] = 0,
+  [HLIF_CHANGE] = 0,
 }
 
 ---@class Skills
 local MySkills = {
   ---@type Skill
-  [HAMI_CASTLE] = {
-    sp = function(_)
-      return 10
+  [HLIF_HEAL] = {
+    sp = function(level)
+      return math.max(1, 10 + level * 3)
     end,
     cooldown = function(_)
-      return 1
+      return 20
     end,
-    level_requirement = 25,
+    level_requirement = 15,
     level = 5,
   },
   ---@type Skill
-  [HAMI_DEFENCE] = {
+  [HLIF_AVOID] = {
     sp = function(level)
       return math.max(1, 15 + level * 5)
     end,
-    cooldown = function(_)
-      return 30
+    cooldown = function(level)
+      return math.max(1, 45 - level * 5)
     end,
-    level_requirement = 50,
+    level_requirement = 40,
     level = 5,
   },
-  [HAMI_BLOODLUST] = {
+  [HLIF_CHANGE] = {
     sp = function()
-      return 120
+      return 100
     end,
     cooldown = function(level)
       return math.max(1, 60 - level * 120)
@@ -57,14 +57,15 @@ local check = function(mySkill)
 end
 
 ---@param mySkill number
-local cast = function(mySkill)
+---@param target number
+local cast = function(mySkill, target)
   MySkill = mySkill
   ---@type Skill
   local s = MySkills[MySkill]
   local cd = s.cooldown(s.level)
   local lastTime = MyCooldown[MySkill]
   local sk = { level = s.level, id = MySkill, cooldown = cd, lastTime = lastTime, currentTime = CurrentTime }
-  local casted = CastSkill(MyID, MyID, sk)
+  local casted = CastSkill(MyID, target, sk)
   if casted then
     MyCooldown[MySkill] = CurrentTime
     return STATUS.RUNNING
@@ -73,36 +74,34 @@ local cast = function(mySkill)
   return STATUS.FAILURE
 end
 
--- local castle = {}
--- function castle.CheckCanCastSkill()
---   return check(HAMI_CASTLE)
--- end
---
--- function castle.CastSkill()
---   return cast(HAMI_CASTLE)
--- end
-
-local defense = {}
-function defense.CheckCanCastSkill()
-  return check(HAMI_DEFENCE)
+local heal = {}
+function heal.CheckCanCastSkill()
+  return check(HLIF_HEAL)
+end
+function heal.CastSkill()
+  if LifCanHeal then
+    return cast(HLIF_HEAL, MyOwner)
+  end
+  return STATUS.FAILURE
 end
 
-function defense.CastSkill()
-  return cast(HAMI_DEFENCE)
+local avoid = {}
+function avoid.CheckCanCastSkill()
+  return check(HLIF_AVOID)
+end
+function avoid.CastSkill()
+  return cast(HLIF_AVOID, MyOwner)
 end
 
-local bloodlust = {}
-
-function bloodlust.CheckCanCastSkill()
-  return check(HAMI_BLOODLUST)
+local change = {}
+function change.CheckCanCastSkill()
+  return check(HLIF_CHANGE)
 end
-
-function bloodlust.CastSkill()
-  return cast(HAMI_BLOODLUST)
+function change.CastSkill()
+  return cast(HLIF_CHANGE, MyID)
 end
 
 local combatNode = Parallel({
-  CheckOwnerToofar,
   ChaseEnemyNode,
   BasicAttackNode,
   CheckEnemyIsDead,
@@ -111,16 +110,22 @@ local combatNode = Parallel({
 
 return Selector({
   Sequence({
+    heal.CheckCanCastSkill,
+    CheckOwnerIsDying,
+    heal.CastSkill,
+  }),
+  Sequence({
     CheckIfHasEnemy,
+    CheckOwnerToofar,
     Selector({
       Sequence({
-        defense.CheckCanCastSkill,
-        defense.CastSkill,
+        avoid.CheckCanCastSkill,
+        avoid.CastSkill,
         combatNode,
       }),
       Sequence({
-        bloodlust.CheckCanCastSkill,
-        bloodlust.CastSkill,
+        change.CheckCanCastSkill,
+        change.CastSkill,
         combatNode,
       }),
       combatNode,

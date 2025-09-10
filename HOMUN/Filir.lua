@@ -1,43 +1,43 @@
 ---@class Cooldown
 local MyCooldown = {
-  [HAMI_CASTLE] = 0,
-  [HAMI_DEFENCE] = 0,
-  [HAMI_BLOODLUST] = 0,
+  [HFLI_MOON] = 0,
+  [HFLI_FLEET] = 0,
+  [HFLI_SPEED] = 0,
 }
 
 ---@class Skills
 local MySkills = {
   ---@type Skill
-  [HAMI_CASTLE] = {
-    sp = function(_)
-      return 10
+  [HFLI_MOON] = {
+    sp = function(level)
+      return math.max(1, level * 4)
     end,
     cooldown = function(_)
-      return 1
+      return 2
     end,
     level_requirement = 25,
     level = 5,
   },
   ---@type Skill
-  [HAMI_DEFENCE] = {
+  [HFLI_FLEET] = {
     sp = function(level)
-      return math.max(1, 15 + level * 5)
+      return math.max(1, 20 + level * 10)
     end,
-    cooldown = function(_)
-      return 30
+    cooldown = function(level)
+      return math.max(1, 65 + level * 5)
     end,
     level_requirement = 50,
     level = 5,
   },
-  [HAMI_BLOODLUST] = {
-    sp = function()
-      return 120
+  [HFLI_SPEED] = {
+    sp = function(level)
+      return math.max(1, 20 + level * 10)
     end,
     cooldown = function(level)
-      return math.max(1, 60 - level * 120)
+      return math.max(1, 65 + level * 5)
     end,
     level_requirement = 70,
-    level = 3,
+    level = 5,
   },
 }
 
@@ -57,14 +57,15 @@ local check = function(mySkill)
 end
 
 ---@param mySkill number
-local cast = function(mySkill)
+---@param target number
+local cast = function(mySkill, target)
   MySkill = mySkill
   ---@type Skill
   local s = MySkills[MySkill]
   local cd = s.cooldown(s.level)
   local lastTime = MyCooldown[MySkill]
   local sk = { level = s.level, id = MySkill, cooldown = cd, lastTime = lastTime, currentTime = CurrentTime }
-  local casted = CastSkill(MyID, MyID, sk)
+  local casted = CastSkill(MyID, target, sk)
   if casted then
     MyCooldown[MySkill] = CurrentTime
     return STATUS.RUNNING
@@ -73,36 +74,37 @@ local cast = function(mySkill)
   return STATUS.FAILURE
 end
 
--- local castle = {}
--- function castle.CheckCanCastSkill()
---   return check(HAMI_CASTLE)
--- end
---
--- function castle.CastSkill()
---   return cast(HAMI_CASTLE)
--- end
+local moon = {}
 
-local defense = {}
-function defense.CheckCanCastSkill()
-  return check(HAMI_DEFENCE)
+function moon.CheckCanCastSkill()
+  return check(HFLI_MOON)
 end
 
-function defense.CastSkill()
-  return cast(HAMI_DEFENCE)
+function moon.CastSkill()
+  return cast(HFLI_MOON, MyEnemy)
 end
 
-local bloodlust = {}
+local fleet = {}
 
-function bloodlust.CheckCanCastSkill()
-  return check(HAMI_BLOODLUST)
+function fleet.CheckCanCastSkill()
+  return check(HFLI_FLEET)
 end
 
-function bloodlust.CastSkill()
-  return cast(HAMI_BLOODLUST)
+function fleet.CastSkill()
+  return cast(HFLI_FLEET, MyID)
+end
+
+local speed = {}
+
+function speed.CheckCanCastSkill()
+  return check(HFLI_SPEED)
+end
+
+function speed.CastSkill()
+  return cast(HFLI_SPEED, MyID)
 end
 
 local combatNode = Parallel({
-  CheckOwnerToofar,
   ChaseEnemyNode,
   BasicAttackNode,
   CheckEnemyIsDead,
@@ -112,16 +114,24 @@ local combatNode = Parallel({
 return Selector({
   Sequence({
     CheckIfHasEnemy,
+    CheckOwnerToofar,
     Selector({
       Sequence({
-        defense.CheckCanCastSkill,
-        defense.CastSkill,
-        combatNode,
+        fleet.CheckCanCastSkill,
+        fleet.CastSkill,
       }),
       Sequence({
-        bloodlust.CheckCanCastSkill,
-        bloodlust.CastSkill,
-        combatNode,
+        speed.CheckCanCastSkill,
+        speed.CastSkill,
+      }),
+      Sequence({
+        moon.CheckCanCastSkill,
+        Parallel({
+          ChaseEnemyNode,
+          moon.CastSkill,
+          CheckEnemyIsDead,
+          CheckEnemyIsOutOfSight,
+        }),
       }),
       combatNode,
     }),

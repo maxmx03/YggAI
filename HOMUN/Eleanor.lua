@@ -1,5 +1,5 @@
 ---@class Cooldown
-MyCooldown = {
+local MyCooldown = {
   [MH_STYLE_CHANGE] = 0,
   [MH_SONIC_CRAW] = 0,
   [MH_SILVERVEIN_RUSH] = 0,

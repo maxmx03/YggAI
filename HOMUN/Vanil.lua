@@ -14,7 +14,7 @@ local MySkills = {
     cooldown = function(level)
       return math.max(1, 2 + level * 0.2)
     end,
-    level_requirement = 25,
+    level_requirement = 15,
     level = 5,
   },
   ---@type Skill
@@ -25,7 +25,7 @@ local MySkills = {
     cooldown = function(_)
       return 3
     end,
-    level_requirement = 50,
+    level_requirement = 40,
     level = 5,
   },
 }
@@ -74,13 +74,11 @@ function caprice.CastSkill()
 end
 
 local chaotic = {}
-
 function chaotic.CheckCanCastSkill()
   return check(HVAN_CHAOTIC)
 end
-
 function chaotic.CastSkill()
-  return cast(HVAN_CHAOTIC, MyID)
+  return cast(HVAN_CHAOTIC, MyOwner)
 end
 
 return Selector({
@@ -96,9 +94,9 @@ return Selector({
   }),
   Sequence({
     CheckIfHasEnemy,
-    CheckOwnerToofar,
     Selector({
       Sequence({
+        CheckOwnerToofar,
         caprice.CheckCanCastSkill,
         Parallel({
           ChaseEnemyNode,
@@ -108,6 +106,7 @@ return Selector({
         }),
       }),
       Parallel({
+        CheckOwnerToofar,
         ChaseEnemyNode,
         BasicAttackNode,
         CheckEnemyIsDead,

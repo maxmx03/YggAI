@@ -134,7 +134,7 @@ end
 function CheckOwnerIsDying()
   local ownerHp = GetHp(MyOwner)
   local ownerMaxHp = GetMaxHp(MyOwner)
-  local ownerDying = ownerHp <= ownerMaxHp * 0.2
+  local ownerDying = ownerHp <= ownerMaxHp * 0.3
   if ownerDying then
     return STATUS.SUCCESS
   end

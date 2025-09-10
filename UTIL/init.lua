@@ -116,7 +116,7 @@ function IsDieter(id)
 end
 
 ---@param id number
-function IsEleaner(id)
+function IsEleanor(id)
   local humntype = GetV(V_HOMUNTYPE, id)
   return humntype == ELEANOR
 end

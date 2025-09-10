@@ -6,6 +6,8 @@ require('AI.USER_AI.BT.nodes')
 local vanilmirth = require('AI.USER_AI.HOMUN.Vanil')
 local amistr = require('AI.USER_AI.HOMUN.Amistr')
 local eleanor = require('AI.USER_AI.HOMUN.Eleanor')
+local lif = require('AI.USER_AI.HOMUN.Lif')
+local filir = require('AI.USER_AI.HOMUN.Filir')
 
 local root = nil
 local idle = Selector({
@@ -45,7 +47,17 @@ function AI(myid)
       amistr,
       idle,
     })
-  elseif IsEleaner(myid) then
+  elseif IsLif(myid) then
+    root = Selector({
+      lif,
+      idle,
+    })
+  elseif IsFilir(myid) then
+    root = Selector({
+      filir,
+      idle,
+    })
+  elseif IsEleanor(myid) then
     root = Selector({
       eleanor,
       idle,

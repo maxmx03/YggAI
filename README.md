@@ -1,42 +1,78 @@
-## Homunculus
+# Ragnarok Online - AI
 
-- [Homunculus System](https://irowiki.org/wiki/Homunculus_System)
-- [Installation](https://irowiki.org/wiki/Homunculus_System)
+## Introdução
 
-- [Homunculus](https://browiki.org/wiki/Homunculus)
-- [Instalação](https://browiki.org/wiki/Homunculus#AI)
+Este é um projeto de AI para o jogo Ragnarok Online, desenvolvido em Lua.
 
-## Mercenary
+## Como usar
 
-- [Mercenary System](https://irowiki.org/wiki/Mercenary_System#)
-- [Installaton](https://irowiki.org/wiki/Mercenary_System#AI)
+### Arquivo zip
 
-- [Assistentes](https://browiki.org/wiki/Assistentes)
-- [Instalação](https://browiki.org/wiki/Assistentes#AI)
+Click em Code > Download ZIP e extraia o arquivo zip para a pasta `C:\\Gravity\\Ragnarok\\AI`,
+deverá ficar assim: `C:\\Gravity\\Ragnarok\\AI\\USER_AI`.
 
-## Manual
+### Ferramenta de versionamento
 
-- [User guide](https://github.com/maxmx03/USER_AI/blob/main/Homunculus%20AI%20Script%20User%20Guide.md)
+Se você usar um software de versionamento, como o [Git](https://git-scm.com/downloads), você pode clonar o repositório do projeto usando o comando no terminal:
 
-## Todo-list
+```bash
+git clone https://github.com/maxmx03/USER_AI.git C:\\Gravity\\Ragnarok\\AI\\USER_AI
+cd C:\\Gravity\\Ragnarok\\AI\\USER_AI
+git pull # busca por novas atualizações.
+```
 
-- [x] Behavior-Tree Basic Implementation
-- [x] Behavior-Tree Performance
+Caso não queira utilizar o terminal, você pode utilizar o [Github Desktop](https://desktop.github.com).
+
+## Config.lua
+
+Abra o arquivo `config.lua` e atualize as variáveis conforme necessário, você
+pode utilizar qualquer editor de texto disponível no seu sistema operacional.
+
+- [Notepad](https://apps.microsoft.com/detail/9msmlrh6lzf3?hl=pt-BR&gl=BR)
+- [Notepad++](https://notepad-plus-plus.org)
+- [Vscode](https://code.visualstudio.com)
+
+| Variável   | Descrição                                |
+| ---------- | ---------------------------------------- |
+| MyLevel    | Level do seu homunculus, sempre atualize |
+| LifCanHeal | LIF pode usar curar?                     |
+
+### Exemplo
+
+```lua
+MyLevel = 50 -- level do seu homunculus, sempre atualize
+LifCanHeal = true -- LIF pode usar curar? true ou false (requer poção compacta)
+```
+
+## Contribuindo
+
+Você pode contribuir com o projeto, seja reportando bugs, sugerindo novas
+funcionalidades ou até mesmo corrigindo bugs.
+Para reportar um bug, crie um novo tópico no [Issues](https://github.com/maxmx03/USER_AI/issues).
+
+Caso queira contribuir de outra forma mande um rodex no jogo para `Freya/Pelunia (BIO)`
+ou `Freya/Millianor (AB)`, mandando zenys ou semente da vida.
+
+## TODO
+
 - [ ] Homunculus
-  - [ ] Lif
-  - [x] Amistr
-  - [ ] Filir
+  - [x] Lif
   - [x] Vanilmirth
+  - [x] Amistr
+  - [x] Filir
+- [ ] Homunculus S
   - [ ] Bayeri
   - [ ] Dieter
   - [ ] Eira
   - [ ] Sera
   - [x] Eleanor
-    - [x] Combo
-- [x] SkillS
-- [x] Cooldown System
-- [ ] Detect MVP (For Sera and Eleanor)
-- [ ] Skill in area only for multiple monsters
-- [ ] PVP and WOE
-- [ ] Userconfig (GUI or WEB)
-- [ ] User Commands
+- [ ] PVP
+- [ ] WOE
+- [x] PVM
+- [ ] Detect MVP
+- [x] Skill and Cooldown
+- [ ] User commands
+
+## Projetos Alternativos
+
+- [AzzyAI](https://github.com/SpenceKonde/AzzyAI)
