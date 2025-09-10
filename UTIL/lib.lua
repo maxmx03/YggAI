@@ -75,3 +75,10 @@ function IsMonster(id)
   print(id)
   return ''
 end
+
+---@class Skill
+---@field sp fun(level: number): number
+---@field cooldown fun(level: number): number
+---@field level_requirement number
+---@field level number
+---@field sphere_cost? number

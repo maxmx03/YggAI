@@ -209,7 +209,6 @@ LastTimePatrol = 0
 ------------------------------------------
 -- HOMUNCULUS
 ------------------------------------------
-MyState = 0 -- initial state
 MyEnemy = 0 -- Enemy’s ID
 MyDestX = 0 -- x coordinate of a destination
 MyDestY = 0 -- y coordinate of a destination
@@ -219,32 +218,5 @@ MyID = 0 -- Homunculus ID
 MySkill = 0 -- Homunculus skills
 MySkillLevel = 0 -- Homunculus skill level
 MyOwner = 0 -- Homunculus owner
-MyCooldown = {
-  [HAMI_BLOODLUST] = {
-    cd = function(level)
-      local duration_seconds = math.max(1, 60 - (level * 120))
-      return duration_seconds * 1000
-    end,
-    lastTime = 0,
-  },
-  [HAMI_DEFENCE] = {
-    cd = function(level)
-      local duration_seconds = math.max(1, 45 - (level * 5))
-      return duration_seconds * 1000
-    end,
-    lastTime = 0,
-  },
-  [HFLI_MOON] = {
-    cd = function()
-      return 2000
-    end,
-    lastTime = 0,
-  },
-  [HVAN_CAPRICE] = {
-    cd = function(level)
-      local cd_seconds = 2 + (level * 0.2) -- segundos
-      return cd_seconds * 1000 -- converte para ms
-    end,
-    lastTime = 0,
-  },
-}
+MySpheres = 5 -- Eleanor only
+MySkillKey = 0

@@ -1,3 +1,5 @@
+require('AI.USER_AI.UTIL.Const')
+
 --------------------------------------------
 -- List utility
 --------------------------------------------
@@ -114,7 +116,7 @@ function IsDieter(id)
 end
 
 ---@param id number
-function IsElaner(id)
+function IsEleaner(id)
   local humntype = GetV(V_HOMUNTYPE, id)
   return humntype == ELEANOR
 end
@@ -186,7 +188,7 @@ function GetOwnerEnemy(myid)
   local actors = GetActors()
   local enemys = {}
   local index = 1
-  for i, v in ipairs(actors) do
+  for _, v in ipairs(actors) do
     if v ~= owner and v ~= myid then
       local owner_target = GetV(V_TARGET, owner)
       local target = GetV(V_TARGET, v)
@@ -201,7 +203,7 @@ function GetOwnerEnemy(myid)
 
   local min_dis = 100
   local dis
-  for i, v in ipairs(enemys) do
+  for _, v in ipairs(enemys) do
     dis = GetDistance2(myid, v)
     if dis < min_dis then
       result = v
@@ -262,8 +264,7 @@ function GetMyEnemyB(myid)
   local actors = GetActors()
   local enemys = {}
   local index = 1
-  local type
-  for i, v in ipairs(actors) do
+  for _, v in ipairs(actors) do
     if v ~= owner and v ~= myid then
       if 1 == IsMonster(v) then
         enemys[index] = v
@@ -274,7 +275,7 @@ function GetMyEnemyB(myid)
 
   local min_dis = 100
   local dis
-  for i, v in ipairs(enemys) do
+  for _, v in ipairs(enemys) do
     dis = GetDistance2(myid, v)
     if dis < min_dis then
       result = v
@@ -283,16 +284,6 @@ function GetMyEnemyB(myid)
   end
 
   return result
-end
-
----@param currentTime number
----@param lastTime number
----@param cooldown number
-function CanUseSkill(currentTime, lastTime, cooldown)
-  if (currentTime - lastTime) > cooldown then
-    return true
-  end
-  return false
 end
 
 function GetHp(id)
@@ -311,7 +302,53 @@ function GetMaxSp(id)
   return GetV(V_MAXSP, id)
 end
 
----@param enemyId number
-function EnemyIsOutOfSight(enemyId)
-  return enemyId == -1
+---@param currentTime number
+---@param lastTime number
+---@param cooldown number
+function CanUseSkill(currentTime, lastTime, cooldown)
+  if not currentTime or not lastTime or not cooldown then
+    TraceAI(string.format(
+      [[
+      CanUseSkill ->
+    CURRENT_TIME: %s
+    LAST_TIME: %s
+    COOLDOWN: %s
+    ]],
+      tostring(currentTime),
+      tostring(lastTime),
+      tostring(cooldown)
+    ))
+    return false
+  end
+  if (currentTime - lastTime) >= cooldown then
+    return true
+  end
+  return false
+end
+
+---@class sk
+---@field lastTime number
+---@field cooldown number
+---@field currentTime number
+---@field level number
+---@field id number
+
+---@param myid number
+---@param target number
+---@param sk sk
+---@return boolean
+function CastSkill(myid, target, sk)
+  if CanUseSkill(sk.currentTime, sk.lastTime, sk.cooldown) then
+    SkillObject(myid, sk.level, sk.id, target)
+    TraceAI('AUTO_CAST -> USE_SKILL: ' .. sk.id)
+    return true
+  else
+    TraceAI('SKILL_IN_COOLDOWN ' .. sk.id)
+    return false
+  end
+end
+
+function HasEnoughSp(sp)
+  local enoughSp = GetSp(MyID) > sp
+  return enoughSp
 end

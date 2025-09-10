@@ -1,4 +1,3 @@
-
 ## Homunculus
 
 - [Homunculus System](https://irowiki.org/wiki/Homunculus_System)
@@ -15,7 +14,29 @@
 - [Assistentes](https://browiki.org/wiki/Assistentes)
 - [Instalação](https://browiki.org/wiki/Assistentes#AI)
 
-
 ## Manual
 
 - [User guide](https://github.com/maxmx03/USER_AI/blob/main/Homunculus%20AI%20Script%20User%20Guide.md)
+
+## Todo-list
+
+- [x] Behavior-Tree Basic Implementation
+- [x] Behavior-Tree Performance
+- [ ] Homunculus
+  - [ ] Lif
+  - [x] Amistr
+  - [ ] Filir
+  - [x] Vanilmirth
+  - [ ] Bayeri
+  - [ ] Dieter
+  - [ ] Eira
+  - [ ] Sera
+  - [x] Eleanor
+    - [x] Combo
+- [x] SkillS
+- [x] Cooldown System
+- [ ] Detect MVP (For Sera and Eleanor)
+- [ ] Skill in area only for multiple monsters
+- [ ] PVP and WOE
+- [ ] Userconfig (GUI or WEB)
+- [ ] User Commands

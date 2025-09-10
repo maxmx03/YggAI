@@ -12,5 +12,5 @@
     "SkillGround",
     "SkillObject"
   ],
-  "diagnostics.disable": ["redundant-parameter"]
+  "diagnostics.disable": ["redundant-parameter", "inject-field"]
 }

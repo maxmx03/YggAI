@@ -1,5 +1,1 @@
-HOMUN = {
-  BASE = AMISTR,
-  S = DIETER,
-  SKILLS = {},
-}
+MyLevel = 113
