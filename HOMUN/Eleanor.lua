@@ -26,7 +26,7 @@ MySkills = {
   ---@type Skill
   [MH_SONIC_CRAW] = {
     sp = function(level)
-      return math.max(1, 15 - level * 5)
+      return math.max(1, 15 + level * 5)
     end,
     cooldown = function(_)
       return 0.5
@@ -86,7 +86,7 @@ MySkills = {
   ---@type Skill
   [MH_EQC] = {
     sp = function(level)
-      return math.max(1, 20 + level * 5)
+      return math.max(1, 20 + level * 4)
     end,
     cooldown = function()
       return 0.3
