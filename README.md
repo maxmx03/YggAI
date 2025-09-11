@@ -55,7 +55,7 @@ ou `Freya/Millianor (AB)`, mandando zenys ou semente da vida.
 
 ## TODO
 
-- [ ] Homunculus
+- [x] Homunculus
   - [x] Lif
   - [x] Vanilmirth
   - [x] Amistr

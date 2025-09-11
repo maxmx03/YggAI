@@ -1,2 +1,2 @@
-MyLevel = 99 -- level do seu homunculus, sempre atualize
-LifCanHeal = true -- LIF pode usar curar? true ou false (requer poção compacta)
+MyLevel = 999 -- level do seu homunculus, sempre atualize
+LifCanHeal = false -- LIF pode usar curar? true ou false (requer poção compacta)

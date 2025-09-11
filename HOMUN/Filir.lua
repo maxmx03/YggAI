@@ -105,6 +105,7 @@ function speed.CastSkill()
 end
 
 local combatNode = Parallel({
+  CheckOwnerToofar,
   ChaseEnemyNode,
   BasicAttackNode,
   CheckEnemyIsDead,
@@ -114,7 +115,6 @@ local combatNode = Parallel({
 return Selector({
   Sequence({
     CheckIfHasEnemy,
-    CheckOwnerToofar,
     Selector({
       Sequence({
         fleet.CheckCanCastSkill,
@@ -127,6 +127,7 @@ return Selector({
       Sequence({
         moon.CheckCanCastSkill,
         Parallel({
+          CheckOwnerToofar,
           ChaseEnemyNode,
           moon.CastSkill,
           CheckEnemyIsDead,

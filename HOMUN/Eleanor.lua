@@ -259,15 +259,16 @@ local SkillAttackSequence = Selector({
 return Selector({
   Sequence({
     CheckIfHasEnemy,
-    CheckOwnerToofar,
     Selector({
       Parallel({
+        CheckOwnerToofar,
         ChaseEnemyNode,
         SkillAttackSequence,
         CheckEnemyIsDead,
         CheckEnemyIsOutOfSight,
       }),
       Parallel({
+        CheckOwnerToofar,
         ChaseEnemyNode,
         BasicAttack,
         CheckEnemyIsDead,

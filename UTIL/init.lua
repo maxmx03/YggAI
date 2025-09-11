@@ -235,7 +235,8 @@ function GetMyEnemyA(myid)
   for _, v in ipairs(actors) do
     if v ~= owner and v ~= myid then
       target = GetV(V_TARGET, v)
-      if target == myid or target == owner then
+      local owner_target = GetV(V_TARGET, owner)
+      if target == myid or target == owner or owner_target == v then
         enemys[index] = v
         index = index + 1
       end
