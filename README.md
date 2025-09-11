@@ -4,6 +4,12 @@
 
 Este é um projeto de AI para o jogo Ragnarok Online, desenvolvido em Lua.
 
+## Arquitetura
+
+A inteligência artificial deste projeto é construída utilizando [Behavior Trees](https://dev.epicgames.com/documentation/en-us/unreal-engine/behavior-tree-in-unreal-engine---overview). Essa abordagem organiza a lógica de decisão em uma estrutura hierárquica,
+permitindo um comportamento adaptável e fácil de gerenciar para os personagens
+controlados pela AI.
+
 ## Como usar
 
 ### Arquivo zip
