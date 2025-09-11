@@ -22,7 +22,7 @@ deverá ficar assim: `C:\\Gravity\\Ragnarok\\AI\\USER_AI`.
 Se você usar um software de versionamento, como o [Git](https://git-scm.com/downloads), você pode clonar o repositório do projeto usando o comando no terminal:
 
 ```bash
-git clone https://github.com/maxmx03/USER_AI.git C:\\Gravity\\Ragnarok\\AI\\USER_AI
+git clone https://github.com/maxmx03/YggAI.git C:\\Gravity\\Ragnarok\\AI\\USER_AI
 cd C:\\Gravity\\Ragnarok\\AI\\USER_AI
 git pull # busca por novas atualizações.
 ```
