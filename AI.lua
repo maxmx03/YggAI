@@ -8,6 +8,7 @@ local amistr = require('AI.USER_AI.HOMUN.Amistr')
 local eleanor = require('AI.USER_AI.HOMUN.Eleanor')
 local lif = require('AI.USER_AI.HOMUN.Lif')
 local filir = require('AI.USER_AI.HOMUN.Filir')
+local dieter = require('AI.USER_AI.HOMUN.Dieter')
 
 local root = nil
 local idle = Selector({
@@ -37,7 +38,17 @@ function AI(myid)
   CurrentTime = GetTick() / 1000
   MyID = myid
   MyOwner = GetV(V_OWNER, myid)
-  if IsVanilmirth(myid) then
+  if IsDieter(myid) then
+    root = Selector({
+      dieter,
+      idle,
+    })
+  elseif IsEleanor(myid) then
+    root = Selector({
+      eleanor,
+      idle,
+    })
+  elseif IsVanilmirth(myid) then
     root = Selector({
       vanilmirth,
       idle,
@@ -55,11 +66,6 @@ function AI(myid)
   elseif IsFilir(myid) then
     root = Selector({
       filir,
-      idle,
-    })
-  elseif IsEleanor(myid) then
-    root = Selector({
-      eleanor,
       idle,
     })
   else

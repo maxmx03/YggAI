@@ -101,7 +101,7 @@ return Selector({
         Parallel({
           ChaseEnemyNode,
           caprice.CastSkill,
-          CheckEnemyIsDead,
+          CheckEnemyIsAlive,
           CheckEnemyIsOutOfSight,
         }),
       }),
@@ -109,7 +109,7 @@ return Selector({
         CheckOwnerToofar,
         ChaseEnemyNode,
         BasicAttackNode,
-        CheckEnemyIsDead,
+        CheckEnemyIsAlive,
         CheckEnemyIsOutOfSight,
       }),
     }),

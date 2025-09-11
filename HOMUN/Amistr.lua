@@ -15,7 +15,7 @@ local MySkills = {
     cooldown = function(_)
       return 1
     end,
-    level_requirement = 25,
+    level_requirement = 15,
     level = 5,
   },
   ---@type Skill
@@ -26,7 +26,7 @@ local MySkills = {
     cooldown = function(_)
       return 30
     end,
-    level_requirement = 50,
+    level_requirement = 40,
     level = 5,
   },
   [HAMI_BLOODLUST] = {
@@ -105,7 +105,7 @@ local combatNode = Parallel({
   CheckOwnerToofar,
   ChaseEnemyNode,
   BasicAttackNode,
-  CheckEnemyIsDead,
+  CheckEnemyIsAlive,
   CheckEnemyIsOutOfSight,
 })
 

@@ -15,7 +15,7 @@ local MySkills = {
     cooldown = function(_)
       return 2
     end,
-    level_requirement = 25,
+    level_requirement = 15,
     level = 5,
   },
   ---@type Skill
@@ -26,7 +26,7 @@ local MySkills = {
     cooldown = function(level)
       return math.max(1, 65 + level * 5)
     end,
-    level_requirement = 50,
+    level_requirement = 40,
     level = 5,
   },
   [HFLI_SPEED] = {
@@ -108,7 +108,7 @@ local combatNode = Parallel({
   CheckOwnerToofar,
   ChaseEnemyNode,
   BasicAttackNode,
-  CheckEnemyIsDead,
+  CheckEnemyIsAlive,
   CheckEnemyIsOutOfSight,
 })
 
@@ -130,7 +130,7 @@ return Selector({
           CheckOwnerToofar,
           ChaseEnemyNode,
           moon.CastSkill,
-          CheckEnemyIsDead,
+          CheckEnemyIsAlive,
           CheckEnemyIsOutOfSight,
         }),
       }),

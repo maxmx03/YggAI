@@ -18,15 +18,12 @@ function CheckEnemyIsOutOfSight()
 end
 
 ---@return Status
-function CheckEnemyIsDead()
+function CheckEnemyIsAlive()
   if GetV(V_MOTION, MyEnemy) == MOTION_DEAD then
     MyEnemy = 0
-    return STATUS.SUCCESS
-  elseif GetV(V_MOTION, MyEnemy) ~= MOTION_DEAD then
-    return STATUS.RUNNING
+    return STATUS.FAILURE
   end
-  MyEnemy = 0
-  return STATUS.FAILURE
+  return STATUS.SUCCESS
 end
 
 ---@return Status
@@ -39,7 +36,7 @@ end
 
 ---@return Status
 function CheckOwnerToofar()
-  if GetDistanceFromOwner(MyID) >= 10 then
+  if GetDistanceFromOwner(MyID) > 7 and GetV(V_MOTION, MyOwner) == MOTION_MOVE then
     return STATUS.FAILURE
   end
   return STATUS.SUCCESS
@@ -84,7 +81,6 @@ function BasicAttackNode()
   if MyEnemy == 0 then
     return STATUS.FAILURE
   elseif MyEnemy ~= 0 then
-    TraceAI('BasicAttackNode -> Attack')
     Attack(MyID, MyEnemy)
     return STATUS.RUNNING
   end

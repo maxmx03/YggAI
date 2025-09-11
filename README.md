@@ -68,7 +68,7 @@ ou `Freya/Millianor (AB)`, mandando zenys ou semente da vida.
   - [x] Filir
 - [ ] Homunculus S
   - [ ] Bayeri
-  - [ ] Dieter
+  - [x] Dieter
   - [ ] Eira
   - [ ] Sera
   - [x] Eleanor

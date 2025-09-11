@@ -104,7 +104,7 @@ end
 local combatNode = Parallel({
   ChaseEnemyNode,
   BasicAttackNode,
-  CheckEnemyIsDead,
+  CheckEnemyIsAlive,
   CheckEnemyIsOutOfSight,
 })
 

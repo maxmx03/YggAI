@@ -146,7 +146,6 @@ end
 local function BasicAttack()
   local status = BasicAttackNode()
   local maxSpheres = 5
-  local minSp = 200
   if status == STATUS.RUNNING then
     if MySpheres < maxSpheres then
       if math.random(2) == 1 then
@@ -154,8 +153,12 @@ local function BasicAttack()
       end
     end
   end
-  if MySpheres == maxSpheres and HasEnoughSp(minSp) then
-    return STATUS.FAILURE
+  if MySpheres == maxSpheres then
+    local sonicStatus = check(MH_SONIC_CRAW)
+    local silverStatus = check(MH_TINDER_BREAKER)
+    if sonicStatus == STATUS.SUCCESS and silverStatus == STATUS.SUCCESS then
+      return STATUS.FAILURE
+    end
   end
   return status
 end
@@ -264,14 +267,14 @@ return Selector({
         CheckOwnerToofar,
         ChaseEnemyNode,
         SkillAttackSequence,
-        CheckEnemyIsDead,
+        CheckEnemyIsAlive,
         CheckEnemyIsOutOfSight,
       }),
       Parallel({
         CheckOwnerToofar,
         ChaseEnemyNode,
         BasicAttack,
-        CheckEnemyIsDead,
+        CheckEnemyIsAlive,
         CheckEnemyIsOutOfSight,
       }),
     }),

@@ -308,17 +308,6 @@ end
 ---@param cooldown number
 function CanUseSkill(currentTime, lastTime, cooldown)
   if not currentTime or not lastTime or not cooldown then
-    TraceAI(string.format(
-      [[
-      CanUseSkill ->
-    CURRENT_TIME: %s
-    LAST_TIME: %s
-    COOLDOWN: %s
-    ]],
-      tostring(currentTime),
-      tostring(lastTime),
-      tostring(cooldown)
-    ))
     return false
   end
   if (currentTime - lastTime) >= cooldown then
@@ -341,10 +330,25 @@ end
 function CastSkill(myid, target, sk)
   if CanUseSkill(sk.currentTime, sk.lastTime, sk.cooldown) then
     SkillObject(myid, sk.level, sk.id, target)
-    TraceAI('AUTO_CAST -> USE_SKILL: ' .. sk.id)
     return true
   else
-    TraceAI('SKILL_IN_COOLDOWN ' .. sk.id)
+    return false
+  end
+end
+
+---@class Position
+---@field x number
+---@field y number
+
+---@param myid number
+---@param position Position
+---@param sk sk
+---@return boolean
+function CastSkillGround(myid, position, sk)
+  if CanUseSkill(sk.currentTime, sk.lastTime, sk.cooldown) then
+    SkillGround(myid, sk.level, sk.id, position.x, position.y)
+    return true
+  else
     return false
   end
 end
