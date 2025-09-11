@@ -1,65 +1,65 @@
 ---@class Cooldown
 local MyCooldown = {
-  [MH_VOLCANIC_ASH] = 0,
-  [MH_LAVA_SLIDE] = 0,
-  [MH_GRANITIC_ARMOR] = 0,
-  [MH_MAGMA_FLOW] = 0,
-  [MH_PYROCLASTIC] = 0,
+  [MH_ERASER_CUTTER] = 0,
+  [MH_OVERED_BOOST] = 0,
+  [MH_XENO_SLASHER] = 0,
+  [MH_LIGHT_OF_REGENE] = 0,
+  [MH_SILENT_BREEZE] = 0,
 }
 
 ---@class Skills
 local MySkills = {
   ---@type Skill
-  [MH_VOLCANIC_ASH] = {
+  [MH_ERASER_CUTTER] = {
     sp = function(level)
-      return math.max(1, 55 + level * 5)
+      return math.max(1, 20 + level * 5)
     end,
     cooldown = function(_)
-      return 13
+      return 0.3
     end,
-    level_requirement = 102,
-    level = 5,
-  },
-  ---@type Skill
-  [MH_LAVA_SLIDE] = {
-    sp = function(level)
-      return math.max(1, 35 + level * 5)
-    end,
-    cooldown = function(_)
-      return 5
-    end,
-    level_requirement = 109,
+    level_requirement = 106,
     level = 10,
   },
-  [MH_GRANITIC_ARMOR] = {
+  ---@type Skill
+  [MH_OVERED_BOOST] = {
     sp = function(level)
-      return math.max(1, 50 + level * 4)
-    end,
-    cooldown = function(_)
-      return 60
-    end,
-    level_requirement = 116,
-    level = 5,
-  },
-  [MH_MAGMA_FLOW] = {
-    sp = function(level)
-      return math.max(1, 30 + level * 4)
+      return math.max(1, 50 + level * 20)
     end,
     cooldown = function(level)
       return math.max(1, 15 + level * 5)
     end,
-    level_requirement = 122,
+    level_requirement = 114,
     level = 5,
   },
-  [MH_PYROCLASTIC] = {
+  [MH_XENO_SLASHER] = {
     sp = function(level)
-      return math.max(1, 12 * level * 8)
+      return math.max(1, 80 + level * 10)
+    end,
+    cooldown = function(_)
+      return 0.3
+    end,
+    level_requirement = 121,
+    level = 10,
+  },
+  [MH_LIGHT_OF_REGENE] = {
+    sp = function()
+      return 40
     end,
     cooldown = function(level)
-      return math.max(1, 300 + level * 30)
+      return math.max(1, 300 + level * 60)
     end,
-    level_requirement = 131,
-    level = 10,
+    level_requirement = 128,
+    level = 5,
+  },
+  [MH_SILENT_BREEZE] = {
+    sp = function(level)
+      return math.max(1, 36 * level * 9)
+    end,
+    cooldown = function()
+      return 1.5
+    end,
+    level_requirement = 137,
+    level = 5,
   },
 }
 
@@ -114,13 +114,29 @@ local castGround = function(mySkill)
   return STATUS.FAILURE
 end
 
-local volcanic = {}
-function volcanic.CheckCanCastSkill()
-  return check(MH_VOLCANIC_ASH)
+local cutter = {}
+function cutter.CheckCanCastSkill()
+  return check(MH_ERASER_CUTTER)
 end
-function volcanic.CastSkill()
+function cutter.CastSkill()
+  return cast(MH_ERASER_CUTTER, MyEnemy)
+end
+
+-- local overed = {}
+-- function overed.CheckCanCastSkill()
+--   return check(MH_OVERED_BOOST)
+-- end
+-- function overed.CastSkill()
+--   return cast(MH_OVERED_BOOST, MyID)
+-- end
+
+local xeno = {}
+function xeno.CheckCanCastSkill()
+  return check(MH_XENO_SLASHER)
+end
+function xeno.CastSkill()
   local target = GetV(V_TARGET, MyEnemy)
-  local mySkill = MH_VOLCANIC_ASH
+  local mySkill = MH_XENO_SLASHER
   if target == MyID then
     return castGround(mySkill, MyID)
   elseif target ~= MyOwner then
@@ -129,48 +145,17 @@ function volcanic.CastSkill()
   return castGround(mySkill, MyEnemy)
 end
 
-local lava = {}
-function lava.CheckCanCastSkill()
-  return check(MH_LAVA_SLIDE)
+local light = {}
+function light.CheckCanCastSkill()
+  return check(MH_LIGHT_OF_REGENE)
 end
-function lava.CastSkill()
-  local target = GetV(V_TARGET, MyEnemy)
-  local mySkill = MH_LAVA_SLIDE
-  if target == MyID then
-    return castGround(mySkill, MyID)
-  elseif target ~= MyOwner then
-    return castGround(mySkill, MyOwner)
-  end
-  return castGround(mySkill, MyEnemy)
-end
-
-local granitic = {}
-function granitic.CheckCanCastSkill()
-  return check(MH_GRANITIC_ARMOR)
-end
-function granitic.CastSkill()
-  return cast(MH_GRANITIC_ARMOR, MyID)
-end
-
-local magma = {}
-function magma.CheckCanCastSkill()
-  return check(MH_MAGMA_FLOW)
-end
-function magma.CastSkill()
-  return cast(MH_MAGMA_FLOW, MyID)
-end
-
-local pyroclastic = {}
-function pyroclastic.CheckCanCastSkill()
-  return check(MH_PYROCLASTIC)
-end
-function pyroclastic.CastSkill()
-  return cast(MH_PYROCLASTIC, MyID)
+function light.CastSkill()
+  return cast(MH_LIGHT_OF_REGENE, MyOwner)
 end
 
 local function basicAttack()
   local status = BasicAttackNode()
-  if check(MH_LAVA_SLIDE) == STATUS.SUCCESS or check(MH_VOLCANIC_ASH) == STATUS.SUCCESS then
+  if check(MH_XENO_SLASHER) == STATUS.SUCCESS or check(MH_ERASER_CUTTER) == STATUS.SUCCESS then
     return STATUS.FAILURE
   end
   return status
@@ -186,39 +171,31 @@ local combatNode = Parallel({
 
 return Selector({
   Sequence({
-    CheckOwnerIsDying,
-    granitic.CheckCanCastSkill,
-    granitic.CastSkill,
+    CheckOwnerIsDead,
+    light.CheckCanCastSkill,
+    light.CastSkill,
   }),
   Sequence({
     CheckIfHasEnemy,
     Selector({
       combatNode,
       Sequence({
-        magma.CheckCanCastSkill,
-        magma.CastSkill,
-      }),
-      Sequence({
-        pyroclastic.CheckCanCastSkill,
-        pyroclastic.CastSkill,
-      }),
-      Sequence({
         CheckEnemyIsAlive,
-        lava.CheckCanCastSkill,
+        xeno.CheckCanCastSkill,
         Parallel({
-          CheckOwnerToofar,
           ChaseEnemyNode,
-          lava.CastSkill,
+          xeno.CastSkill,
           CheckEnemyIsAlive,
           CheckEnemyIsOutOfSight,
         }),
       }),
       Sequence({
         CheckEnemyIsAlive,
-        volcanic.CheckCanCastSkill,
+        cutter.CheckCanCastSkill,
         Parallel({
+          CheckOwnerToofar,
           ChaseEnemyNode,
-          volcanic.CastSkill,
+          cutter.CastSkill,
           CheckEnemyIsAlive,
           CheckEnemyIsOutOfSight,
         }),

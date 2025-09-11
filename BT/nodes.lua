@@ -36,7 +36,7 @@ end
 
 ---@return Status
 function CheckOwnerToofar()
-  if GetDistanceFromOwner(MyID) > 7 and GetV(V_MOTION, MyOwner) == MOTION_MOVE then
+  if GetDistanceFromOwner(MyID) > 10 and GetV(V_MOTION, MyOwner) == MOTION_MOVE then
     return STATUS.FAILURE
   end
   return STATUS.SUCCESS
@@ -132,6 +132,14 @@ function CheckOwnerIsDying()
   local ownerMaxHp = GetMaxHp(MyOwner)
   local ownerDying = ownerHp <= ownerMaxHp * 0.3
   if ownerDying then
+    return STATUS.SUCCESS
+  end
+  return STATUS.FAILURE
+end
+
+function CheckOwnerIsDead()
+  local ownerDead = GetV(V_MOTION, MyOwner) == MOTION_DEAD
+  if ownerDead then
     return STATUS.SUCCESS
   end
   return STATUS.FAILURE

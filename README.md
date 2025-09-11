@@ -69,7 +69,7 @@ ou `Freya/Millianor (AB)`, mandando zenys ou semente da vida.
 - [ ] Homunculus S
   - [ ] Bayeri
   - [x] Dieter
-  - [ ] Eira
+  - [x] Eira
   - [ ] Sera
   - [x] Eleanor
 - [ ] PVP

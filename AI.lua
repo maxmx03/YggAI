@@ -9,6 +9,7 @@ local eleanor = require('AI.USER_AI.HOMUN.Eleanor')
 local lif = require('AI.USER_AI.HOMUN.Lif')
 local filir = require('AI.USER_AI.HOMUN.Filir')
 local dieter = require('AI.USER_AI.HOMUN.Dieter')
+local eira = require('AI.USER_AI.HOMUN.Eira')
 
 local root = nil
 local idle = Selector({
@@ -29,7 +30,7 @@ local defaultCombatNode = Sequence({
     ChaseEnemyNode,
     BasicAttackNode,
     CheckEnemyIsOutOfSight,
-    CheckEnemyIsDead,
+    CheckEnemyIsAlive,
     CheckOwnerToofar,
   }),
 })
@@ -41,6 +42,11 @@ function AI(myid)
   if IsDieter(myid) then
     root = Selector({
       dieter,
+      idle,
+    })
+  elseif IsEira(myid) then
+    root = Selector({
+      eira,
       idle,
     })
   elseif IsEleanor(myid) then
