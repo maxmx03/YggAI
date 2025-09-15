@@ -218,9 +218,10 @@ function GetMyEnemy(myid)
   local result = GetMyEnemyC(myid) -- MVP
   if result == 0 or result == -1 then
     result = GetMyEnemyA(myid) -- Defensive
-    if result == 0 or result == -1 then
-      result = GetMyEnemyB(myid) -- Aggressive
-    end
+    -- disabled, because of ROLATAM BUG
+    -- if result == 0 or result == -1 then
+    --   result = GetMyEnemyB(myid) -- Aggressive
+    -- end
   end
   return result
 end
@@ -234,14 +235,14 @@ function GetMyEnemyA(myid)
   local actors = GetActors()
   local enemys = {}
   local index = 1
-  local target
   for _, v in ipairs(actors) do
     if v ~= owner and v ~= myid then
-      target = GetV(V_TARGET, v)
+      -- local target = GetV(V_TARGET, v)
       local actorId = GetV(V_HOMUNTYPE, v)
       local owner_target = GetV(V_TARGET, owner)
       if not MyAvoid[actorId] then
-        if target == myid or target == owner or owner_target == v then
+        -- if target == myid or target == owner or owner_target == v then -- disabled because ROLATAM BUG
+        if owner_target == v then
           enemys[index] = v
           index = index + 1
         end

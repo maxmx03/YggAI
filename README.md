@@ -1,4 +1,13 @@
-# Ragnarok Online - AI
+# Ragnarok Online - YggAI
+
+> [!CAUTION]
+> O ROLATAM apresenta um bug que duplica o homunculus quando o dono passa pelo portal.
+> Isso ocorre porque o homunculus ataca um monstro no momento em que o dono tenta atravessar o portal.
+> Devido a isso, o meu script fará com que o homunculus só ataque se for um MVP ou se o dono atacar um monstro, e utilizará buffs apenas se o dono estiver em combate, para evitar que o homunculus use habilidades dentro da cidade. [Veja](https://youtu.be/A_NnJk_ZBRQ?si=M3BAxdLwUaw-pCib)
+
+> [!CAUTION]
+> Usuários do AzzyAI, desativem qualquer autobuff ou qualquer
+> outra função que faça com que o homunculus cause este bug de duplicação.
 
 ## Introdução
 
