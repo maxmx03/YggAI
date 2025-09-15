@@ -3,11 +3,7 @@
 > [!CAUTION]
 > O ROLATAM apresenta um bug que duplica o homunculus quando o dono passa pelo portal.
 > Isso ocorre porque o homunculus ataca um monstro no momento em que o dono tenta atravessar o portal.
-> Devido a isso, o meu script fará com que o homunculus só ataque se for um MVP ou se o dono atacar um monstro, e utilizará buffs apenas se o dono estiver em combate, para evitar que o homunculus use habilidades dentro da cidade. [Veja](https://youtu.be/A_NnJk_ZBRQ?si=M3BAxdLwUaw-pCib)
-
-> [!CAUTION]
-> Usuários do AzzyAI, desativem qualquer autobuff ou qualquer
-> outra função que faça com que o homunculus cause este bug de duplicação.
+> Devido a isso, o meu script fará com que o homunculus seja agressivo contra monstros de instância, illusionais, boss e MVP, e só utilizará buffs apenas se o dono estiver em combate, para evitar que o homunculus use habilidades dentro da cidade. [Veja](https://youtu.be/A_NnJk_ZBRQ?si=M3BAxdLwUaw-pCib)
 
 ## Introdução
 
@@ -48,10 +44,11 @@ pode utilizar qualquer editor de texto disponível no seu sistema operacional.
 - [Notepad++](https://notepad-plus-plus.org)
 - [Vscode](https://code.visualstudio.com)
 
-| Variável   | Descrição                                |
-| ---------- | ---------------------------------------- |
-| MyLevel    | Level do seu homunculus, sempre atualize |
-| LifCanHeal | LIF pode usar curar?                     |
+| Variável                             | Descrição                                |
+| ------------------------------------ | ---------------------------------------- |
+| `MyLevel`                            | Level do seu homunculus, sempre atualize |
+| `LifCanHeal`                         | LIF pode usar curar?                     |
+| `shouldPreventHomunculusDuplication` | Prevenir o bug de duplicação?            |
 
 ### Exemplo
 
@@ -78,18 +75,23 @@ ou `Freya/Millianor (AB)`, mandando zenys ou semente da vida.
   - [x] Filir
 - [ ] Homunculus S
   - [ ] Bayeri
-  - [ ] Dieter
+  - [x] Dieter
   - [x] Eira
   - [ ] Sera
-  - [ ] Eleanor
+  - [x] Eleanor
 - [ ] PVP
 - [ ] WOE
 - [x] PVM
 - [x] Detect MVP
 - [x] Avoid Plant
 - [x] Skill and Cooldown
+- [x] Prevention of Homunculus Duplication Bug
 - [ ] User commands
 
 ## Projetos Alternativos
+
+> [!CAUTION]
+> Usuários do AzzyAI, desativem qualquer autobuff ou qualquer
+> outra função que faça com que o homunculus cause este bug de duplicação.
 
 - [AzzyAI](https://github.com/SpenceKonde/AzzyAI)

@@ -182,21 +182,120 @@ function IsInAttackSight(id1, id2)
   end
 end
 
-function GetOwnerEnemy(myid)
+---@param myEnemy number
+---@return boolean
+function IsWaterMonster(myEnemy)
+  local waterMonsters = require('AI.USER_AI.MONSTER_DATA.water')
+  local id = GetV(V_HOMUNTYPE, myEnemy)
+  return waterMonsters[id]
+end
+
+---@param myEnemy number
+---@return boolean
+function IsWindMonster(myEnemy)
+  local windMonsters = require('AI.USER_AI.MONSTER_DATA.wind')
+  local id = GetV(V_HOMUNTYPE, myEnemy)
+  return windMonsters[id]
+end
+
+---@param myEnemy number
+---@return boolean
+function IsMVP(myEnemy)
+  local mvpMonsters = require('AI.USER_AI.MONSTER_DATA.mvp')
+  local id = GetV(V_HOMUNTYPE, myEnemy)
+  return mvpMonsters[id]
+end
+
+---@param myEnemy number
+---@return boolean
+function IsBoss(myEnemy)
+  local bosses = require('AI.USER_AI.MONSTER_DATA.boss')
+  local id = GetV(V_HOMUNTYPE, myEnemy)
+  return bosses[id]
+end
+
+---@param myEnemy number
+---@return boolean
+function IsPoisonMonster(myEnemy)
+  local poisonMonsters = require('AI.USER_AI.MONSTER_DATA.poison')
+  local id = GetV(V_HOMUNTYPE, myEnemy)
+  return poisonMonsters[id]
+end
+
+---@param myEnemy number
+---@return boolean
+function IsIllusionalMonster(myEnemy)
+  local illusionalMonsters = require('AI.USER_AI.MONSTER_DATA.illusion')
+  local id = GetV(V_HOMUNTYPE, myEnemy)
+  return illusionalMonsters[id]
+end
+
+---@param myEnemy number
+---@return boolean
+function IsInstanceMonster(myEnemy)
+  local instanceMonsters = require('AI.USER_AI.MONSTER_DATA.instance')
+  local id = GetV(V_HOMUNTYPE, myEnemy)
+  return instanceMonsters[id]
+end
+
+---@param myEnemy number
+---@return boolean
+function IsBioLabMonsters(myEnemy)
+  local biolabMonsters = require('AI.USER_AI.MONSTER_DATA.bio')
+  local id = GetV(V_HOMUNTYPE, myEnemy)
+  return biolabMonsters[id]
+end
+
+---@param myEnemy number
+---@return boolean
+function MustAvoidMonster(myEnemy)
+  local monstersToAvoid = require('AI.USER_AI.MONSTER_DATA.avoid')
+  local id = GetV(V_HOMUNTYPE, myEnemy)
+  return monstersToAvoid[id]
+end
+
+---@param myEnemy number
+---@return boolean
+function IsEnemyAllowed(myEnemy)
+  if MustAvoidMonster(myEnemy) then
+    return false
+  end
+  if ShouldPreventHomunculusDuplication then
+    return IsIllusionalMonster(myEnemy) or IsBioLabMonsters(myEnemy) or IsInstanceMonster(myEnemy) or IsBoss(myEnemy)
+  end
+  return true
+end
+
+---@param myId number
+---@return number
+function GetMyEnemy(myId)
+  local result = GetMyEnemyC(myId) -- MVP
+  if result == 0 or result == -1 then
+    result = GetMyEnemyA(myId) -- Defensive
+    if result == 0 or result == -1 then
+      result = GetOwnerEnemy(myId)
+    end
+    if result == 0 or result == -1 then
+      result = GetMyEnemyB(myId) -- Aggressive
+    end
+  end
+  return result
+end
+
+---@param myId number
+---@return number
+function GetOwnerEnemy(myId)
   local result = 0
-  local owner = GetV(V_OWNER, myid)
+  local owner = GetV(V_OWNER, myId)
   local actors = GetActors()
   local enemys = {}
   local index = 1
   for _, v in ipairs(actors) do
-    if v ~= owner and v ~= myid then
+    if v ~= owner and v ~= myId then
       local owner_target = GetV(V_TARGET, owner)
-      local target = GetV(V_TARGET, v)
-      if owner_target == v or target == owner then
-        if IsMonster(v) == 1 then
-          enemys[index] = v
-          index = index + 1
-        end
+      if owner_target == v then
+        enemys[index] = v
+        index = index + 1
       end
     end
   end
@@ -204,7 +303,7 @@ function GetOwnerEnemy(myid)
   local min_dis = 100
   local dis
   for _, v in ipairs(enemys) do
-    dis = GetDistance2(myid, v)
+    dis = GetDistance2(myId, v)
     if dis < min_dis then
       result = v
       min_dis = dis
@@ -214,38 +313,26 @@ function GetOwnerEnemy(myid)
   return result
 end
 
-function GetMyEnemy(myid)
-  local result = GetMyEnemyC(myid) -- MVP
-  if result == 0 or result == -1 then
-    result = GetMyEnemyA(myid) -- Defensive
-    -- disabled, because of ROLATAM BUG
-    -- if result == 0 or result == -1 then
-    --   result = GetMyEnemyB(myid) -- Aggressive
-    -- end
-  end
-  return result
-end
-
 -------------------------------------------
 --  GetMyEnemy - Defensive
 -------------------------------------------
-function GetMyEnemyA(myid)
+---@param myId number
+---@return number
+function GetMyEnemyA(myId)
   local result = 0
-  local owner = GetV(V_OWNER, myid)
+  local owner = GetV(V_OWNER, myId)
   local actors = GetActors()
   local enemys = {}
   local index = 1
   for _, v in ipairs(actors) do
-    if v ~= owner and v ~= myid then
-      -- local target = GetV(V_TARGET, v)
-      local actorId = GetV(V_HOMUNTYPE, v)
-      local owner_target = GetV(V_TARGET, owner)
-      if not MyAvoid[actorId] then
-        -- if target == myid or target == owner or owner_target == v then -- disabled because ROLATAM BUG
-        if owner_target == v then
-          enemys[index] = v
-          index = index + 1
-        end
+    if v ~= owner and v ~= myId then
+      local target = GetV(V_TARGET, v)
+      if (target == myId or target == owner) and IsMonster(v) == 1 and IsEnemyAllowed(v) then
+        enemys[index] = v
+        index = index + 1
+      elseif (target == myId or target == owner) and IsMonster(v) ~= 1 then -- pvp
+        enemys[index] = v
+        index = index + 1
       end
     end
   end
@@ -253,7 +340,7 @@ function GetMyEnemyA(myid)
   local min_dis = 100
   local dis
   for _, v in ipairs(enemys) do
-    dis = GetDistance2(myid, v)
+    dis = GetDistance2(myId, v)
     if dis < min_dis then
       result = v
       min_dis = dis
@@ -273,9 +360,8 @@ function GetMyEnemyB(myid)
   local enemys = {}
   local index = 1
   for _, v in ipairs(actors) do
-    local actorId = GetV(V_HOMUNTYPE, v)
     if v ~= owner and v ~= myid then
-      if 1 == IsMonster(v) and not MyAvoid[actorId] then
+      if 1 == IsMonster(v) and IsEnemyAllowed(v) then
         enemys[index] = v
         index = index + 1
       end
@@ -296,7 +382,7 @@ function GetMyEnemyB(myid)
 end
 
 -------------------------------------------
---  GetMyEnemy - MVP
+--  GetMyEnemy - MVP/BOSS
 -------------------------------------------
 function GetMyEnemyC(myid)
   local result = 0
@@ -305,9 +391,11 @@ function GetMyEnemyC(myid)
   local enemys = {}
   local index = 1
   for _, v in ipairs(actors) do
-    local actorId = GetV(V_HOMUNTYPE, v)
     if v ~= owner and v ~= myid then
-      if 1 == IsMonster(v) and MVP[actorId] then
+      if 1 == IsMonster(v) and IsMVP(v) then
+        enemys[index] = v
+        index = index + 1
+      elseif 1 == IsMonster(v) and IsBoss(v) then
         enemys[index] = v
         index = index + 1
       end
@@ -398,33 +486,4 @@ end
 function HasEnoughSp(sp)
   local enoughSp = GetSp(MyID) > sp
   return enoughSp
-end
-
----@param myEnemy number
----@return boolean
-function IsWaterMonster(myEnemy)
-  local id = GetV(V_HOMUNTYPE, myEnemy)
-  return WATER_MONSTERS[id]
-end
-
----@param myEnemy number
----@return boolean
-function IsWindMonster(myEnemy)
-  local id = GetV(V_HOMUNTYPE, myEnemy)
-  TraceAI('IS_WIND_MONSTER -> ' .. id)
-  return WIND_MONSTERS[id]
-end
-
----@param myEnemy number
----@return boolean
-function IsMVP(myEnemy)
-  local id = GetV(V_HOMUNTYPE, myEnemy)
-  return MVP[id]
-end
-
----@param myEnemy number
----@return boolean
-function IsPoisonMonster(myEnemy)
-  local id = GetV(V_HOMUNTYPE, myEnemy)
-  return POISON_MONSTERS[id]
 end
