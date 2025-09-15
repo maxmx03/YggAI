@@ -215,9 +215,12 @@ function GetOwnerEnemy(myid)
 end
 
 function GetMyEnemy(myid)
-  local result = GetMyEnemyA(myid)
-  if result == 0 then
-    result = GetMyEnemyB(myid)
+  local result = GetMyEnemyC(myid) -- MVP
+  if result == 0 or result == -1 then
+    result = GetMyEnemyA(myid) -- Defensive
+    if result == 0 or result == -1 then
+      result = GetMyEnemyB(myid) -- Aggressive
+    end
   end
   return result
 end
@@ -235,10 +238,13 @@ function GetMyEnemyA(myid)
   for _, v in ipairs(actors) do
     if v ~= owner and v ~= myid then
       target = GetV(V_TARGET, v)
+      local actorId = GetV(V_HOMUNTYPE, v)
       local owner_target = GetV(V_TARGET, owner)
-      if target == myid or target == owner or owner_target == v then
-        enemys[index] = v
-        index = index + 1
+      if not MyAvoid[actorId] then
+        if target == myid or target == owner or owner_target == v then
+          enemys[index] = v
+          index = index + 1
+        end
       end
     end
   end
@@ -266,8 +272,41 @@ function GetMyEnemyB(myid)
   local enemys = {}
   local index = 1
   for _, v in ipairs(actors) do
+    local actorId = GetV(V_HOMUNTYPE, v)
     if v ~= owner and v ~= myid then
-      if 1 == IsMonster(v) then
+      if 1 == IsMonster(v) and not MyAvoid[actorId] then
+        enemys[index] = v
+        index = index + 1
+      end
+    end
+  end
+
+  local min_dis = 100
+  local dis
+  for _, v in ipairs(enemys) do
+    dis = GetDistance2(myid, v)
+    if dis < min_dis then
+      result = v
+      min_dis = dis
+    end
+  end
+
+  return result
+end
+
+-------------------------------------------
+--  GetMyEnemy - MVP
+-------------------------------------------
+function GetMyEnemyC(myid)
+  local result = 0
+  local owner = GetV(V_OWNER, myid)
+  local actors = GetActors()
+  local enemys = {}
+  local index = 1
+  for _, v in ipairs(actors) do
+    local actorId = GetV(V_HOMUNTYPE, v)
+    if v ~= owner and v ~= myid then
+      if 1 == IsMonster(v) and MVP[actorId] then
         enemys[index] = v
         index = index + 1
       end
@@ -353,7 +392,38 @@ function CastSkillGround(myid, position, sk)
   end
 end
 
+---@param sp number
+---@return boolean
 function HasEnoughSp(sp)
   local enoughSp = GetSp(MyID) > sp
   return enoughSp
+end
+
+---@param myEnemy number
+---@return boolean
+function IsWaterMonster(myEnemy)
+  local id = GetV(V_HOMUNTYPE, myEnemy)
+  return WATER_MONSTERS[id]
+end
+
+---@param myEnemy number
+---@return boolean
+function IsWindMonster(myEnemy)
+  local id = GetV(V_HOMUNTYPE, myEnemy)
+  TraceAI('IS_WIND_MONSTER -> ' .. id)
+  return WIND_MONSTERS[id]
+end
+
+---@param myEnemy number
+---@return boolean
+function IsMVP(myEnemy)
+  local id = GetV(V_HOMUNTYPE, myEnemy)
+  return MVP[id]
+end
+
+---@param myEnemy number
+---@return boolean
+function IsPoisonMonster(myEnemy)
+  local id = GetV(V_HOMUNTYPE, myEnemy)
+  return POISON_MONSTERS[id]
 end

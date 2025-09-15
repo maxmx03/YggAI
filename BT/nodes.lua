@@ -1,7 +1,7 @@
 ---@return Status
 function CheckIfHasEnemy()
   MyEnemy = GetMyEnemy(MyID)
-  if MyEnemy ~= 0 then
+  if MyEnemy ~= 0 and MyEnemy ~= -1 then
     return STATUS.SUCCESS
   end
   MyEnemy = 0
@@ -60,20 +60,12 @@ end
 
 ---@return Status
 function ChaseEnemyNode()
-  if MyEnemy == 0 then
-    TraceAI('ChaseEnemyNode -> FAILURE')
-    return STATUS.FAILURE
-  end
   if not IsInAttackSight(MyID, MyEnemy) then
     local enemyX, enemyY = GetV(V_POSITION, MyEnemy)
     Move(MyID, enemyX, enemyY)
-    TraceAI('ChaseEnemyNode -> RUNNING')
     return STATUS.RUNNING
-  elseif IsInAttackSight(MyID, MyEnemy) then
-    TraceAI('ChaseEnemyNode -> SUCCESS')
-    return STATUS.SUCCESS
   end
-  return STATUS.FAILURE
+  return STATUS.SUCCESS
 end
 
 ---@return Status
@@ -88,7 +80,7 @@ function BasicAttackNode()
 end
 
 function PatrolNode()
-  local cooldown = math.random(10) -- x seconds
+  local cooldown = math.random(10)
   if (CurrentTime - LastTimePatrol) > cooldown then
     local destX, destY = GetV(V_POSITION, MyOwner)
     local randomX = math.random(-10, 10)
@@ -137,9 +129,114 @@ function CheckOwnerIsDying()
   return STATUS.FAILURE
 end
 
+---@return Status
 function CheckOwnerIsDead()
   local ownerDead = GetV(V_MOTION, MyOwner) == MOTION_DEAD
   if ownerDead then
+    return STATUS.SUCCESS
+  end
+  return STATUS.FAILURE
+end
+
+---@return Status
+function CheckIsDieter()
+  if IsDieter(MyID) then
+    return STATUS.SUCCESS
+  end
+  return STATUS.FAILURE
+end
+
+---@return Status
+function CheckIsEleanor()
+  if IsEleanor(MyID) then
+    return STATUS.SUCCESS
+  end
+  return STATUS.FAILURE
+end
+
+---@return Status
+function CheckIsVanilmirth()
+  if IsVanilmirth(MyID) then
+    return STATUS.SUCCESS
+  end
+  return STATUS.FAILURE
+end
+
+---@return Status
+function CheckIsAmistr()
+  if IsAmistr(MyID) then
+    return STATUS.SUCCESS
+  end
+  return STATUS.FAILURE
+end
+
+---@return Status
+function CheckIsLif()
+  if IsLif(MyID) then
+    return STATUS.SUCCESS
+  end
+  return STATUS.FAILURE
+end
+
+---@return Status
+function CheckIsFilir()
+  if IsFilir(MyID) then
+    return STATUS.SUCCESS
+  end
+  return STATUS.FAILURE
+end
+
+---@return Status
+function CheckIsEira()
+  if IsEira(MyID) then
+    return STATUS.SUCCESS
+  end
+  return STATUS.FAILURE
+end
+
+---@return Status
+function CheckIsBayeri()
+  if IsBayeri(MyID) then
+    return STATUS.SUCCESS
+  end
+  return STATUS.FAILURE
+end
+
+---@return Status
+function CheckIsSera()
+  if IsSera(MyID) then
+    return STATUS.SUCCESS
+  end
+  return STATUS.FAILURE
+end
+
+---@return Status
+function CheckIsWaterMonster()
+  if IsWaterMonster(MyEnemy) then
+    return STATUS.SUCCESS
+  end
+  return STATUS.FAILURE
+end
+
+---@return Status
+function CheckIsWindMonster()
+  if IsWindMonster(MyEnemy) then
+    return STATUS.SUCCESS
+  end
+  return STATUS.FAILURE
+end
+
+---@return Status
+function CheckIsMVP()
+  if IsMVP(MyEnemy) then
+    return STATUS.SUCCESS
+  end
+  return STATUS.FAILURE
+end
+
+---@return Status
+function CheckIsPoisonMonster()
+  if IsPoisonMonster(MyEnemy) then
     return STATUS.SUCCESS
   end
   return STATUS.FAILURE

@@ -13,7 +13,10 @@ local MyCooldown = {
 MySkills = {
   ---@type Skill
   [MH_STYLE_CHANGE] = {
-    cooldown = function(_)
+    cooldown = function(_, previousCooldown)
+      if previousCooldown == 0 then
+        return previousCooldown
+      end
       return 1
     end,
     sp = function(_)
@@ -28,7 +31,10 @@ MySkills = {
     sp = function(level)
       return math.max(1, 15 + level * 5)
     end,
-    cooldown = function(_)
+    cooldown = function(_, previousCooldown)
+      if previousCooldown == 0 then
+        return previousCooldown
+      end
       return 0.5
     end,
     level_requirement = 100,
@@ -40,7 +46,10 @@ MySkills = {
     sp = function(level)
       return math.max(1, 15 + level * 2)
     end,
-    cooldown = function(_)
+    cooldown = function(_, previousCooldown)
+      if previousCooldown == 0 then
+        return previousCooldown
+      end
       return 1.5
     end,
     level_requirement = 114,
@@ -52,7 +61,10 @@ MySkills = {
     sp = function(level)
       return math.max(1, 15 + level * 3)
     end,
-    cooldown = function(_)
+    cooldown = function(_, previousCooldown)
+      if previousCooldown == 0 then
+        return previousCooldown
+      end
       return 1.5
     end,
     level_requirement = 128,
@@ -64,7 +76,10 @@ MySkills = {
     sp = function(level)
       return math.max(1, 15 + level * 5)
     end,
-    cooldown = function(_)
+    cooldown = function(_, previousCooldown)
+      if previousCooldown == 0 then
+        return previousCooldown
+      end
       return 0.5
     end,
     level_requirement = 100,
@@ -76,7 +91,10 @@ MySkills = {
     sp = function(level)
       return math.max(1, 10 + level * 50)
     end,
-    cooldown = function()
+    cooldown = function(_, previousCooldown)
+      if previousCooldown == 0 then
+        return previousCooldown
+      end
       return 0.3
     end,
     level_requirement = 112,
@@ -88,7 +106,10 @@ MySkills = {
     sp = function(level)
       return math.max(1, 20 + level * 4)
     end,
-    cooldown = function()
+    cooldown = function(_, previousCooldown)
+      if previousCooldown == 0 then
+        return previousCooldown
+      end
       return 0.3
     end,
     level_requirement = 133,
@@ -97,20 +118,22 @@ MySkills = {
   },
 }
 
-BATTLE_FAILED = false
+---@enum BattleMode
+BATTLE_MODE = {
+  BATTLE = 1,
+  CLAW = 2,
+  CURRENT = 1,
+}
 
 ---@param mySkill number
+---@return Status
 local check = function(mySkill)
   MySkill = mySkill
   ---@type Skill
   local s = MySkills[MySkill]
   local sp = s.sp(s.level)
-  local cd = s.cooldown(s.level)
   local lastTime = MyCooldown[MySkill]
-  if s.sphere_cost > MySpheres then
-    MySkill = 0
-    return STATUS.FAILURE
-  end
+  local cd = s.cooldown(s.level, lastTime)
   if s.level_requirement > MyLevel then
     MySkill = 0
     return STATUS.FAILURE
@@ -125,18 +148,24 @@ local cast = function(mySkill, target)
   MySkill = mySkill
   ---@type Skill
   local s = MySkills[MySkill]
-  local cd = s.cooldown(s.level)
   local lastTime = MyCooldown[MySkill]
+  local cd = s.cooldown(s.level, lastTime)
   local sk = { level = s.level, id = MySkill, cooldown = cd, lastTime = lastTime, currentTime = CurrentTime }
   local casted = CastSkill(MyID, target, sk)
   if casted then
     local spAfterCast = GetSp(MyID)
-    if spAfterCast == spBeforeCast then
-      BATTLE_FAILED = true
+    if spAfterCast == spBeforeCast and spBeforeCast > 0 then
+      if BATTLE_MODE.CURRENT == BATTLE_MODE.BATTLE then
+        BATTLE_MODE.CURRENT = BATTLE_MODE.CLAW
+      else
+        BATTLE_MODE.CURRENT = BATTLE_MODE.BATTLE
+      end
       return STATUS.FAILURE
     end
     MyCooldown[MySkill] = CurrentTime
-    BATTLE_FAILED = false
+    if MySpheres > 0 then
+      MySpheres = MySpheres - s.sphere_cost
+    end
     return STATUS.RUNNING
   end
   MySkill = 0
@@ -145,17 +174,14 @@ end
 
 local function BasicAttack()
   local status = BasicAttackNode()
+  local sonicStatus = check(MH_SONIC_CRAW, BATTLE_MODE.BATTLE)
+  local silverStatus = check(MH_TINDER_BREAKER, BATTLE_MODE.CLAW)
   local maxSpheres = 5
-  if status == STATUS.RUNNING then
-    if MySpheres < maxSpheres then
-      if math.random(2) == 1 then
-        MySpheres = MySpheres + 1
-      end
+  if MySpheres < maxSpheres then
+    if math.random(3) == 1 then
+      MySpheres = MySpheres + 1
     end
-  end
-  if MySpheres == maxSpheres then
-    local sonicStatus = check(MH_SONIC_CRAW)
-    local silverStatus = check(MH_TINDER_BREAKER)
+  else
     if sonicStatus == STATUS.SUCCESS and silverStatus == STATUS.SUCCESS then
       return STATUS.FAILURE
     end
@@ -165,17 +191,20 @@ end
 
 local switch = {}
 function switch.checkCanCastSkill()
-  return check(MH_STYLE_CHANGE)
+  return check(MH_STYLE_CHANGE, BATTLE_MODE.CURRENT, true)
 end
 function switch.castSkill()
-  if math.random(4) ~= 1 then
-    return STATUS.FAILURE
+  if math.random(8) == 1 then
+    return cast(MH_STYLE_CHANGE, MyID)
   end
-  return cast(MH_STYLE_CHANGE, MyEnemy)
+  return STATUS.FAILURE
 end
 
 local sonic = {}
 function sonic.checkCanCastSkill()
+  if BATTLE_MODE.CURRENT ~= BATTLE_MODE.BATTLE then
+    return STATUS.FAILURE
+  end
   return check(MH_SONIC_CRAW)
 end
 function sonic.castSkill()
@@ -184,6 +213,9 @@ end
 
 local silver = {}
 function silver.checkCanCastSkill()
+  if BATTLE_MODE.CURRENT ~= BATTLE_MODE.BATTLE then
+    return STATUS.FAILURE
+  end
   return check(MH_SILVERVEIN_RUSH)
 end
 function silver.castSkill()
@@ -192,6 +224,9 @@ end
 
 local midnight = {}
 function midnight.checkCanCastSkill()
+  if BATTLE_MODE.CURRENT ~= BATTLE_MODE.BATTLE then
+    return STATUS.FAILURE
+  end
   return check(MH_MIDNIGHT_FRENZY)
 end
 function midnight.castSkill()
@@ -200,6 +235,10 @@ end
 
 local tinder = {}
 function tinder.checkCanCastSkill()
+  if BATTLE_MODE.CURRENT ~= BATTLE_MODE.CLAW then
+    return STATUS.FAILURE
+  end
+
   return check(MH_TINDER_BREAKER)
 end
 function tinder.castSkill()
@@ -208,7 +247,10 @@ end
 
 local cbc = {}
 function cbc.checkCanCastSkill()
-  return check(MH_CBC)
+  if BATTLE_MODE.CURRENT ~= BATTLE_MODE.CLAW then
+    return STATUS.FAILURE
+  end
+  return check(MH_CBC, BATTLE_MODE)
 end
 function cbc.castSkill()
   return cast(MH_CBC, MyEnemy)
@@ -216,7 +258,10 @@ end
 
 local eqc = {}
 function eqc.checkCanCastSkill()
-  return check(MH_EQC)
+  if BATTLE_MODE.CURRENT ~= BATTLE_MODE.CLAW then
+    return STATUS.FAILURE
+  end
+  return check(MH_EQC, BATTLE_MODE)
 end
 function eqc.castSkill()
   return cast(MH_EQC, MyEnemy)
@@ -261,21 +306,28 @@ local SkillAttackSequence = Selector({
 
 return Selector({
   Sequence({
+    CheckOwnerToofar,
     CheckIfHasEnemy,
     Selector({
-      Parallel({
-        CheckOwnerToofar,
-        ChaseEnemyNode,
-        SkillAttackSequence,
+      Sequence({
         CheckEnemyIsAlive,
-        CheckEnemyIsOutOfSight,
+        Parallel({
+          CheckOwnerToofar,
+          ChaseEnemyNode,
+          SkillAttackSequence,
+          CheckEnemyIsAlive,
+          CheckEnemyIsOutOfSight,
+        }),
       }),
-      Parallel({
-        CheckOwnerToofar,
-        ChaseEnemyNode,
-        BasicAttack,
+      Sequence({
         CheckEnemyIsAlive,
-        CheckEnemyIsOutOfSight,
+        Parallel({
+          CheckOwnerToofar,
+          ChaseEnemyNode,
+          BasicAttack,
+          CheckEnemyIsAlive,
+          CheckEnemyIsOutOfSight,
+        }),
       }),
     }),
   }),

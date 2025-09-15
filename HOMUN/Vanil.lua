@@ -11,7 +11,10 @@ local MySkills = {
     sp = function(level)
       return math.max(1, 20 + level * 2)
     end,
-    cooldown = function(level)
+    cooldown = function(level, previousCooldown)
+      if previousCooldown == 0 then
+        return previousCooldown
+      end
       return math.max(1, 2 + level * 0.2)
     end,
     level_requirement = 15,
@@ -22,7 +25,10 @@ local MySkills = {
     sp = function(_)
       return 40
     end,
-    cooldown = function(_)
+    cooldown = function(_, previousCooldown)
+      if previousCooldown == 0 then
+        return previousCooldown
+      end
       return 3
     end,
     level_requirement = 40,
@@ -36,8 +42,8 @@ local check = function(mySkill)
   ---@type Skill
   local s = MySkills[MySkill]
   local sp = s.sp(s.level)
-  local cd = s.cooldown(s.level)
   local lastTime = MyCooldown[MySkill]
+  local cd = s.cooldown(s.level, lastTime)
   if s.level_requirement > MyLevel then
     MySkill = 0
     return STATUS.FAILURE
@@ -51,8 +57,8 @@ local cast = function(mySkill, target)
   MySkill = mySkill
   ---@type Skill
   local s = MySkills[MySkill]
-  local cd = s.cooldown(s.level)
   local lastTime = MyCooldown[MySkill]
+  local cd = s.cooldown(s.level, lastTime)
   local sk = { level = s.level, id = MySkill, cooldown = cd, lastTime = lastTime, currentTime = CurrentTime }
   local casted = CastSkill(MyID, target, sk)
   if casted then
@@ -99,16 +105,30 @@ return Selector({
         CheckOwnerToofar,
         caprice.CheckCanCastSkill,
         Parallel({
-          ChaseEnemyNode,
-          caprice.CastSkill,
-          CheckEnemyIsAlive,
-          CheckEnemyIsOutOfSight,
+          CheckOwnerToofar,
+          Condition(ChaseEnemyNode, function()
+            if CheckEnemyIsAlive() == STATUS.SUCCESS and CheckEnemyIsOutOfSight() == STATUS.SUCCESS then
+              return true
+            end
+            return false
+          end),
+          Condition(caprice.CastSkill, function()
+            if caprice.CheckCanCastSkill() == STATUS.SUCCESS then
+              return true
+            end
+            return false
+          end),
         }),
       }),
       Parallel({
         CheckOwnerToofar,
         ChaseEnemyNode,
-        BasicAttackNode,
+        Condition(BasicAttackNode, function()
+          if caprice.CheckCanCastSkill() == STATUS.SUCCESS then
+            return false
+          end
+          return true
+        end),
         CheckEnemyIsAlive,
         CheckEnemyIsOutOfSight,
       }),

@@ -10,7 +10,6 @@ local lif = require('AI.USER_AI.HOMUN.Lif')
 local filir = require('AI.USER_AI.HOMUN.Filir')
 local dieter = require('AI.USER_AI.HOMUN.Dieter')
 local eira = require('AI.USER_AI.HOMUN.Eira')
-
 local root = nil
 local idle = Selector({
   Sequence({
@@ -19,66 +18,68 @@ local idle = Selector({
     FollowNode,
   }),
   Sequence({
+    Reverse(CheckIfHasEnemy),
     CheckOwnerToofar,
     CheckOwnerIsSitting,
     PatrolNode,
   }),
 })
-local defaultCombatNode = Sequence({
-  CheckIfHasEnemy,
-  Parallel({
-    ChaseEnemyNode,
-    BasicAttackNode,
-    CheckEnemyIsOutOfSight,
-    CheckEnemyIsAlive,
-    CheckOwnerToofar,
+root = Selector({
+  Sequence({
+    CheckIsDieter,
+    Selector({
+      dieter,
+      idle,
+    }),
+  }),
+  Sequence({
+    CheckIsEira,
+    Selector({
+      eira,
+      idle,
+    }),
+  }),
+  Sequence({
+    CheckIsEleanor,
+    Selector({
+      eleanor,
+      idle,
+    }),
+  }),
+  Sequence({
+    CheckIsVanilmirth,
+    Selector({
+      vanilmirth,
+      idle,
+    }),
+  }),
+  Sequence({
+    CheckIsAmistr,
+    Selector({
+      amistr,
+      idle,
+    }),
+  }),
+  Sequence({
+    CheckIsLif,
+    Selector({
+      lif,
+      idle,
+    }),
+  }),
+  Sequence({
+    CheckIsFilir,
+    Selector({
+      filir,
+      idle,
+    }),
   }),
 })
 
 function AI(myid)
   CurrentTime = GetTick() / 1000
+  math.randomseed(CurrentTime)
   MyID = myid
   MyOwner = GetV(V_OWNER, myid)
-  if IsDieter(myid) then
-    root = Selector({
-      dieter,
-      idle,
-    })
-  elseif IsEira(myid) then
-    root = Selector({
-      eira,
-      idle,
-    })
-  elseif IsEleanor(myid) then
-    root = Selector({
-      eleanor,
-      idle,
-    })
-  elseif IsVanilmirth(myid) then
-    root = Selector({
-      vanilmirth,
-      idle,
-    })
-  elseif IsAmistr(myid) then
-    root = Selector({
-      amistr,
-      idle,
-    })
-  elseif IsLif(myid) then
-    root = Selector({
-      lif,
-      idle,
-    })
-  elseif IsFilir(myid) then
-    root = Selector({
-      filir,
-      idle,
-    })
-  else
-    root = Selector({
-      defaultCombatNode,
-      idle,
-    })
-  end
   root()
 end

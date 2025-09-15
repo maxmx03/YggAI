@@ -78,7 +78,7 @@ end
 
 ---@class Skill
 ---@field sp fun(level: number): number
----@field cooldown fun(level: number): number
+---@field cooldown fun(level: number, previousCooldown: number): number
 ---@field level_requirement number
 ---@field level number
 ---@field sphere_cost? number

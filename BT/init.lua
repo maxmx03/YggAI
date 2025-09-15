@@ -77,3 +77,70 @@ function Parallel(nodes)
     end
   end
 end
+
+---@param node fun():Status
+---@param delay number
+function Delay(node, delay)
+  local lastExec = 0
+  return function()
+    local now = GetTick() / 1000
+    if now - lastExec >= delay then
+      lastExec = now
+      return node()
+    else
+      return STATUS.RUNNING
+    end
+  end
+end
+
+---@param node fun():Status
+function Reverse(node)
+  return function()
+    local status = node()
+    if status == STATUS.SUCCESS then
+      return STATUS.FAILURE
+    elseif status == STATUS.FAILURE then
+      return STATUS.SUCCESS
+    else
+      return status
+    end
+  end
+end
+
+---@param node fun():Status
+---@param condition fun():boolean
+function Condition(node, condition)
+  return function()
+    if condition() then
+      return node()
+    else
+      return STATUS.FAILURE
+    end
+  end
+end
+
+---@param nodes table<integer, fun():Status>
+function Random(nodes)
+  return function()
+    if #nodes == 0 then
+      return STATUS.FAILURE
+    end
+    local index = math.random(1, #nodes)
+    local status = nodes[index]()
+    if status == STATUS.SUCCESS then
+      return STATUS.SUCCESS
+    elseif status == STATUS.RUNNING then
+      return STATUS.RUNNING
+    else
+      for i = 1, #nodes do
+        if i ~= index then
+          local s = nodes[i]()
+          if s == STATUS.SUCCESS or s == STATUS.RUNNING then
+            return s
+          end
+        end
+      end
+      return STATUS.FAILURE
+    end
+  end
+end

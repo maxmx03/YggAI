@@ -14,8 +14,11 @@ local MySkills = {
     sp = function(level)
       return math.max(1, 55 + level * 5)
     end,
-    cooldown = function(_)
-      return 13
+    cooldown = function(level, previousCooldown)
+      if previousCooldown == 0 then
+        return previousCooldown
+      end
+      return math.max(1, (10 + (level * 2)) / 3)
     end,
     level_requirement = 102,
     level = 5,
@@ -25,8 +28,11 @@ local MySkills = {
     sp = function(level)
       return math.max(1, 35 + level * 5)
     end,
-    cooldown = function(_)
-      return 5
+    cooldown = function(level, previousCooldown)
+      if previousCooldown == 0 then
+        return previousCooldown
+      end
+      return 5 + level
     end,
     level_requirement = 109,
     level = 10,
@@ -35,7 +41,10 @@ local MySkills = {
     sp = function(level)
       return math.max(1, 50 + level * 4)
     end,
-    cooldown = function(_)
+    cooldown = function(_, previousCooldown)
+      if previousCooldown == 0 then
+        return previousCooldown
+      end
       return 60
     end,
     level_requirement = 116,
@@ -45,7 +54,10 @@ local MySkills = {
     sp = function(level)
       return math.max(1, 30 + level * 4)
     end,
-    cooldown = function(level)
+    cooldown = function(level, previousCooldown)
+      if previousCooldown == 0 then
+        return previousCooldown
+      end
       return math.max(1, 15 + level * 5)
     end,
     level_requirement = 122,
@@ -55,7 +67,10 @@ local MySkills = {
     sp = function(level)
       return math.max(1, 12 * level * 8)
     end,
-    cooldown = function(level)
+    cooldown = function(level, previousCooldown)
+      if previousCooldown == 0 then
+        return previousCooldown
+      end
       return math.max(1, 300 + level * 30)
     end,
     level_requirement = 131,
@@ -69,8 +84,8 @@ local check = function(mySkill)
   ---@type Skill
   local s = MySkills[MySkill]
   local sp = s.sp(s.level)
-  local cd = s.cooldown(s.level)
   local lastTime = MyCooldown[MySkill]
+  local cd = s.cooldown(s.level, lastTime)
   if s.level_requirement > MyLevel then
     MySkill = 0
     return STATUS.FAILURE
@@ -84,8 +99,8 @@ local cast = function(mySkill, target)
   MySkill = mySkill
   ---@type Skill
   local s = MySkills[MySkill]
-  local cd = s.cooldown(s.level)
   local lastTime = MyCooldown[MySkill]
+  local cd = s.cooldown(s.level, lastTime)
   local sk = { level = s.level, id = MySkill, cooldown = cd, lastTime = lastTime, currentTime = CurrentTime }
   local casted = CastSkill(MyID, target, sk)
   if casted then
@@ -101,8 +116,8 @@ local castGround = function(mySkill)
   MySkill = mySkill
   ---@type Skill
   local s = MySkills[MySkill]
-  local cd = s.cooldown(s.level)
   local lastTime = MyCooldown[MySkill]
+  local cd = s.cooldown(s.level, lastTime)
   local sk = { level = s.level, id = MySkill, cooldown = cd, lastTime = lastTime, currentTime = CurrentTime }
   local x, y = GetV(V_POSITION, MyEnemy)
   local casted = CastSkillGround(MyID, { x = x, y = y }, sk)
@@ -119,14 +134,7 @@ function volcanic.CheckCanCastSkill()
   return check(MH_VOLCANIC_ASH)
 end
 function volcanic.CastSkill()
-  local target = GetV(V_TARGET, MyEnemy)
-  local mySkill = MH_VOLCANIC_ASH
-  if target == MyID then
-    return castGround(mySkill, MyID)
-  elseif target ~= MyOwner then
-    return castGround(mySkill, MyOwner)
-  end
-  return castGround(mySkill, MyEnemy)
+  return castGround(MH_VOLCANIC_ASH, MyEnemy)
 end
 
 local lava = {}
@@ -134,14 +142,7 @@ function lava.CheckCanCastSkill()
   return check(MH_LAVA_SLIDE)
 end
 function lava.CastSkill()
-  local target = GetV(V_TARGET, MyEnemy)
-  local mySkill = MH_LAVA_SLIDE
-  if target == MyID then
-    return castGround(mySkill, MyID)
-  elseif target ~= MyOwner then
-    return castGround(mySkill, MyOwner)
-  end
-  return castGround(mySkill, MyEnemy)
+  return castGround(MH_LAVA_SLIDE, MyEnemy)
 end
 
 local granitic = {}
@@ -168,20 +169,17 @@ function pyroclastic.CastSkill()
   return cast(MH_PYROCLASTIC, MyID)
 end
 
-local function basicAttack()
-  local status = BasicAttackNode()
-  if check(MH_LAVA_SLIDE) == STATUS.SUCCESS or check(MH_VOLCANIC_ASH) == STATUS.SUCCESS then
-    return STATUS.FAILURE
-  end
-  return status
-end
-
 local combatNode = Parallel({
-  CheckOwnerToofar,
   ChaseEnemyNode,
   CheckEnemyIsAlive,
   CheckEnemyIsOutOfSight,
-  basicAttack,
+  Condition(BasicAttackNode, function()
+    if check(MH_LAVA_SLIDE) == STATUS.SUCCESS then
+      return false
+    end
+    return true
+  end),
+  CheckOwnerToofar,
 })
 
 return Selector({
@@ -191,8 +189,30 @@ return Selector({
     granitic.CastSkill,
   }),
   Sequence({
+    CheckOwnerToofar,
     CheckIfHasEnemy,
     Selector({
+      Sequence({
+        CheckOwnerToofar,
+        lava.CheckCanCastSkill,
+        Parallel({
+          CheckEnemyIsAlive,
+          CheckEnemyIsOutOfSight,
+          ChaseEnemyNode,
+          lava.CastSkill,
+        }),
+      }),
+      Sequence({
+        CheckOwnerToofar,
+        Reverse(lava.CheckCanCastSkill),
+        volcanic.CheckCanCastSkill,
+        Parallel({
+          CheckEnemyIsAlive,
+          CheckEnemyIsOutOfSight,
+          ChaseEnemyNode,
+          volcanic.CastSkill,
+        }),
+      }),
       combatNode,
       Sequence({
         magma.CheckCanCastSkill,
@@ -201,27 +221,6 @@ return Selector({
       Sequence({
         pyroclastic.CheckCanCastSkill,
         pyroclastic.CastSkill,
-      }),
-      Sequence({
-        CheckEnemyIsAlive,
-        lava.CheckCanCastSkill,
-        Parallel({
-          CheckOwnerToofar,
-          ChaseEnemyNode,
-          lava.CastSkill,
-          CheckEnemyIsAlive,
-          CheckEnemyIsOutOfSight,
-        }),
-      }),
-      Sequence({
-        CheckEnemyIsAlive,
-        volcanic.CheckCanCastSkill,
-        Parallel({
-          ChaseEnemyNode,
-          volcanic.CastSkill,
-          CheckEnemyIsAlive,
-          CheckEnemyIsOutOfSight,
-        }),
       }),
     }),
   }),

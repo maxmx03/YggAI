@@ -14,8 +14,9 @@ controlados pela AI.
 
 ### Arquivo zip
 
-Click em Code > Download ZIP e extraia o arquivo zip para a pasta `C:\\Gravity\\Ragnarok\\AI`,
-deverá ficar assim: `C:\\Gravity\\Ragnarok\\AI\\USER_AI`.
+Click em Code > Download ZIP e extraia o arquivo zip, copie o contéudo da pasta de YggAI para a pasta `C:\\Gravity\\Ragnarok\\AI\\USER_AI`.
+Depois entre no jogo e digite `/hoai` para ativar o YggAI, para voltar pro script original basta digitar novamente o
+mesmo comando.
 
 ### Ferramenta de versionamento
 
@@ -68,14 +69,15 @@ ou `Freya/Millianor (AB)`, mandando zenys ou semente da vida.
   - [x] Filir
 - [ ] Homunculus S
   - [ ] Bayeri
-  - [x] Dieter
+  - [ ] Dieter
   - [x] Eira
   - [ ] Sera
-  - [x] Eleanor
+  - [ ] Eleanor
 - [ ] PVP
 - [ ] WOE
 - [x] PVM
-- [ ] Detect MVP
+- [x] Detect MVP
+- [x] Avoid Plant
 - [x] Skill and Cooldown
 - [ ] User commands
 

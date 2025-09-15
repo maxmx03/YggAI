@@ -14,7 +14,10 @@ local MySkills = {
     sp = function(level)
       return math.max(1, 20 + level * 5)
     end,
-    cooldown = function(_)
+    cooldown = function(_, previousCooldown)
+      if previousCooldown == 0 then
+        return previousCooldown
+      end
       return 0.3
     end,
     level_requirement = 106,
@@ -25,7 +28,10 @@ local MySkills = {
     sp = function(level)
       return math.max(1, 50 + level * 20)
     end,
-    cooldown = function(level)
+    cooldown = function(level, previousCooldown)
+      if previousCooldown == 0 then
+        return previousCooldown
+      end
       return math.max(1, 15 + level * 5)
     end,
     level_requirement = 114,
@@ -35,7 +41,10 @@ local MySkills = {
     sp = function(level)
       return math.max(1, 80 + level * 10)
     end,
-    cooldown = function(_)
+    cooldown = function(_, previousCooldown)
+      if previousCooldown == 0 then
+        return previousCooldown
+      end
       return 0.3
     end,
     level_requirement = 121,
@@ -45,7 +54,10 @@ local MySkills = {
     sp = function()
       return 40
     end,
-    cooldown = function(level)
+    cooldown = function(level, previousCooldown)
+      if previousCooldown == 0 then
+        return previousCooldown
+      end
       return math.max(1, 300 + level * 60)
     end,
     level_requirement = 128,
@@ -55,7 +67,10 @@ local MySkills = {
     sp = function(level)
       return math.max(1, 36 * level * 9)
     end,
-    cooldown = function()
+    cooldown = function(_, previousCooldown)
+      if previousCooldown == 0 then
+        return previousCooldown
+      end
       return 1.5
     end,
     level_requirement = 137,
@@ -69,8 +84,8 @@ local check = function(mySkill)
   ---@type Skill
   local s = MySkills[MySkill]
   local sp = s.sp(s.level)
-  local cd = s.cooldown(s.level)
   local lastTime = MyCooldown[MySkill]
+  local cd = s.cooldown(s.level, lastTime)
   if s.level_requirement > MyLevel then
     MySkill = 0
     return STATUS.FAILURE
@@ -84,8 +99,8 @@ local cast = function(mySkill, target)
   MySkill = mySkill
   ---@type Skill
   local s = MySkills[MySkill]
-  local cd = s.cooldown(s.level)
   local lastTime = MyCooldown[MySkill]
+  local cd = s.cooldown(s.level, lastTime)
   local sk = { level = s.level, id = MySkill, cooldown = cd, lastTime = lastTime, currentTime = CurrentTime }
   local casted = CastSkill(MyID, target, sk)
   if casted then
@@ -101,8 +116,8 @@ local castGround = function(mySkill)
   MySkill = mySkill
   ---@type Skill
   local s = MySkills[MySkill]
-  local cd = s.cooldown(s.level)
   local lastTime = MyCooldown[MySkill]
+  local cd = s.cooldown(s.level, lastTime)
   local sk = { level = s.level, id = MySkill, cooldown = cd, lastTime = lastTime, currentTime = CurrentTime }
   local x, y = GetV(V_POSITION, MyEnemy)
   local casted = CastSkillGround(MyID, { x = x, y = y }, sk)
@@ -122,27 +137,20 @@ function cutter.CastSkill()
   return cast(MH_ERASER_CUTTER, MyEnemy)
 end
 
--- local overed = {}
--- function overed.CheckCanCastSkill()
---   return check(MH_OVERED_BOOST)
--- end
--- function overed.CastSkill()
---   return cast(MH_OVERED_BOOST, MyID)
--- end
+local overed = {}
+function overed.CheckCanCastSkill()
+  return check(MH_OVERED_BOOST)
+end
+function overed.CastSkill()
+  return cast(MH_OVERED_BOOST, MyID)
+end
 
 local xeno = {}
 function xeno.CheckCanCastSkill()
   return check(MH_XENO_SLASHER)
 end
 function xeno.CastSkill()
-  local target = GetV(V_TARGET, MyEnemy)
-  local mySkill = MH_XENO_SLASHER
-  if target == MyID then
-    return castGround(mySkill, MyID)
-  elseif target ~= MyOwner then
-    return castGround(mySkill, MyOwner)
-  end
-  return castGround(mySkill, MyEnemy)
+  return castGround(MH_XENO_SLASHER, MyEnemy)
 end
 
 local light = {}
@@ -153,52 +161,62 @@ function light.CastSkill()
   return cast(MH_LIGHT_OF_REGENE, MyOwner)
 end
 
-local function basicAttack()
-  local status = BasicAttackNode()
-  if check(MH_XENO_SLASHER) == STATUS.SUCCESS or check(MH_ERASER_CUTTER) == STATUS.SUCCESS then
-    return STATUS.FAILURE
-  end
-  return status
-end
-
-local combatNode = Parallel({
+local BasicCombatNode = Parallel({
   CheckOwnerToofar,
   ChaseEnemyNode,
+  Condition(BasicAttackNode, function()
+    if xeno.CheckCanCastSkill() == STATUS.SUCCESS or cutter.CheckCanCastSkill() == STATUS.SUCCESS then
+      return false
+    end
+    return true
+  end),
   CheckEnemyIsAlive,
   CheckEnemyIsOutOfSight,
-  basicAttack,
+})
+
+local xenoNode = Sequence({
+  Reverse(CheckIsWindMonster),
+  xeno.CheckCanCastSkill,
+  xeno.CastSkill,
+})
+local lightNode = Sequence({
+  light.CheckCanCastSkill,
+  light.CastSkill,
+})
+local cutterNode = Sequence({
+  Reverse(CheckIsWaterMonster),
+  Reverse(CheckIsPoisonMonster),
+  cutter.CheckCanCastSkill,
+  cutter.CastSkill,
 })
 
 return Selector({
   Sequence({
     CheckOwnerIsDead,
-    light.CheckCanCastSkill,
-    light.CastSkill,
+    lightNode,
   }),
   Sequence({
     CheckIfHasEnemy,
     Selector({
-      combatNode,
       Sequence({
-        CheckEnemyIsAlive,
-        xeno.CheckCanCastSkill,
-        Parallel({
-          ChaseEnemyNode,
-          xeno.CastSkill,
-          CheckEnemyIsAlive,
-          CheckEnemyIsOutOfSight,
-        }),
+        CheckIsMVP,
+        overed.CheckCanCastSkill,
+        overed.CastSkill,
       }),
-      Sequence({
+      BasicCombatNode,
+      Parallel({
+        CheckOwnerToofar,
+        ChaseEnemyNode,
+        xenoNode,
         CheckEnemyIsAlive,
-        cutter.CheckCanCastSkill,
-        Parallel({
-          CheckOwnerToofar,
-          ChaseEnemyNode,
-          cutter.CastSkill,
-          CheckEnemyIsAlive,
-          CheckEnemyIsOutOfSight,
-        }),
+        CheckEnemyIsOutOfSight,
+      }),
+      Parallel({
+        CheckOwnerToofar,
+        ChaseEnemyNode,
+        cutterNode,
+        CheckEnemyIsAlive,
+        CheckEnemyIsOutOfSight,
       }),
     }),
   }),
