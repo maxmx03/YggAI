@@ -119,5 +119,11 @@ local M = {
   [3089] = true, -- Frenzied Kasa
   [3092] = true, -- Muspellskoll
   [3096] = true, -- Demigod
+  -- Horror Toy Factory
+  [2995] = true, -- Abandoned Teddy Bear
+  [2994] = true, -- Dancing Marionette
+  [2993] = true, -- Malicious Baby Ghost
+  [2991] = true, -- Evil Dwelling Box
+  [2989] = true, -- Vicious Cookie
 }
 return M
