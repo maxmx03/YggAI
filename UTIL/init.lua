@@ -47,16 +47,6 @@ function List.clear(list)
   for i, v in ipairs(list) do
     list[i] = nil
   end
-  --[[
-	if List.size(list) == 0 then
-		return
-	end
-	local first = list.first
-	local last  = list.last
-	for i=first, last do
-		list[i] = nil
-	end
---]]
   list.first = 0
   list.last = -1
 end
@@ -260,10 +250,10 @@ function IsEnemyAllowed(myEnemy)
   if MustAvoidMonster(myEnemy) then
     return false
   end
-  if ShouldPreventHomunculusDuplication then
-    return IsIllusionalMonster(myEnemy) or IsBioLabMonsters(myEnemy) or IsInstanceMonster(myEnemy) or IsBoss(myEnemy)
+  if not ShouldPreventHomunculusDuplication then
+    return true
   end
-  return true
+  return IsIllusionalMonster(myEnemy) or IsBioLabMonsters(myEnemy) or IsInstanceMonster(myEnemy) or IsBoss(myEnemy)
 end
 
 ---@param myId number

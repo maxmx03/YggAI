@@ -125,22 +125,35 @@ MOTION_ATTACK = 2 -- Attack
 MOTION_DEAD = 3 -- Dead
 MOTION_BENDDOWN = 5 -- Pick up item, set trap
 MOTION_SIT = 6 -- Sitting down
+MOTION_SKILL = 7 -- Used a skill
+MOTION_CASTING = 8 -- Casting a skill
 MOTION_ATTACK2 = 9 -- Attack
+MOTION_TOSS = 12 -- Toss something (spear boomerang / aid potion)
+MOTION_COUNTER = 13 -- Counter-attack
+MOTION_PERFORM = 17 -- Performance
+MOTION_JUMP_UP = 19 -- TaeKwon Kid Leap -- rising
+MOTION_JUMP_FALL = 20 -- TaeKwon Kid Leap -- falling
+MOTION_SOULLINK = 23 -- Soul linker using a link skill
+MOTION_TUMBLE = 25 -- Tumbling / TK Kid Leap Landing
+MOTION_BIGTOSS = 28 -- A heavier toss (slim potions / acid demonstration)
+MOTION_DESPERADO = 38 -- Desperado
+MOTION_XXXXXX = 39 -- ??(????????/????)
+MOTION_FULLBLAST = 42 -- Full Blast
 --------------------------
 
 --------------------------
 -- command
 --------------------------
-NONE_CMD = 0
-MOVE_CMD = 1
-STOP_CMD = 2
-ATTACK_OBJECT_CMD = 3
-ATTACK_AREA_CMD = 4
-PATROL_CMD = 5
-HOLD_CMD = 6
-SKILL_OBJECT_CMD = 7
-SKILL_AREA_CMD = 8
-FOLLOW_CMD = 9
+NONE_CMD = 0 -- No command
+MOVE_CMD = 1 -- Move
+STOP_CMD = 2 -- Stop, {x, y} positions
+ATTACK_OBJECT_CMD = 3 -- Attack
+ATTACK_AREA_CMD = 4 -- Area Attack  {x, y} positions
+PATROL_CMD = 5 -- Patrol {x, y} position
+HOLD_CMD = 6 -- Mark
+SKILL_OBJECT_CMD = 7 -- Attack with Skill {level, type, target}
+SKILL_AREA_CMD = 8 -- Skill in Area, {level, type, x coordinate, y coordinate}
+FOLLOW_CMD = 9 -- Follow Owner
 --------------------------
 
 --------------------------
@@ -209,6 +222,7 @@ LastTimePatrol = 0
 ------------------------------------------
 -- HOMUNCULUS
 ------------------------------------------
+MyState = IDLE_ST
 MyEnemy = 0 -- Enemy’s ID
 MyDestX = 0 -- x coordinate of a destination
 MyDestY = 0 -- y coordinate of a destination

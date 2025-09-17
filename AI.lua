@@ -10,7 +10,7 @@ local lif = require('AI.USER_AI.HOMUN.Lif')
 local filir = require('AI.USER_AI.HOMUN.Filir')
 local dieter = require('AI.USER_AI.HOMUN.Dieter')
 local eira = require('AI.USER_AI.HOMUN.Eira')
-local root = nil
+local userCommands = require('AI.USER_AI.cmd')
 local idle = Selector({
   Sequence({
     CheckOwnerDistance,
@@ -24,7 +24,7 @@ local idle = Selector({
     PatrolNode,
   }),
 })
-root = Selector({
+local root = Selector({
   Sequence({
     CheckIsDieter,
     Selector({
@@ -81,5 +81,5 @@ function AI(myid)
   math.randomseed(CurrentTime)
   MyID = myid
   MyOwner = GetV(V_OWNER, myid)
-  root()
+  userCommands(root)
 end

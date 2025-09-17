@@ -86,7 +86,7 @@ ou `Freya/Millianor (AB)`, mandando zenys ou semente da vida.
 - [x] Avoid Plant
 - [x] Skill and Cooldown
 - [x] Prevention of Homunculus Duplication Bug
-- [ ] User commands
+- [x] User commands (Gravity Implementation)
 
 ## Projetos Alternativos
 

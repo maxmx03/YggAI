@@ -9,12 +9,12 @@ Caso queira aprender Lua visite meu site: [Max's site](https://maxmx03.github.io
 
 We developed the Homunculus AI System to enable RO gamers to customize
 Homunculus behaviors by creating their own, unique AI files that they can
-share with the RO community.  Homunculus AI scripts are written in the LUA
+share with the RO community. Homunculus AI scripts are written in the LUA
 programming language and processed by a program embedded in the RO client.
 For more information on the LUA language,
 please visit [http://www.lua.org](http://www.lua.org/),
 Homunculus action is controlled by the AI.lua and Util.lua files inside the
-AI folder in the Ragnarok Client program folder.  We plan to add more functions
+AI folder in the Ragnarok Client program folder. We plan to add more functions
 to the Homunculus AI scripts to enhance Homunculus behavior customization.
 For users who are unfamiliar with scripting or computer programming, we will
 provide official AI scripts that all players can employ as a reference.
@@ -36,23 +36,23 @@ noting the location of the error will be displayed and the program will halt.
 ### Const.lua
 
 This file contains constant variables used in Homunculus scripting and operation,
-and it refers to both AI.lua and Util.lua. 
+and it refers to both AI.lua and Util.lua.
 The RO client doesn’t require this file for Homunculus operation,
 but const.lua is necessary for enabling Homunculus behaviors of greater complexity.
 
 ### Util.lua
 
 This file contains the data structure for the Homunculus AI, which we will
-call a List, and a few basic computation functions. 
+call a List, and a few basic computation functions.
 The RO client doesn’t require this file for Homunculus operation,
 but Util.lua is necessary to enable the Homunculus AI to queue commands and to
 store lists of information for Homunculus operation, such as specific enemy
 monsters or characters.
 Each time before a Homunculus spawns, the RO client automatically processes the
-AI.lua and Util.lua files.  If there are any errors in AI.lua or Util.lua files,
+AI.lua and Util.lua files. If there are any errors in AI.lua or Util.lua files,
 the RO client will halt and display an error message detailing the location of
-the error.  Otherwise, the RO client will execute the AI(id) functions that
-are scripted in the AI.lua file, activating the Homunculus AI. 
+the error. Otherwise, the RO client will execute the AI(id) functions that
+are scripted in the AI.lua file, activating the Homunculus AI.
 A Homunculus spawns when the following situations occur.
 
 1. Creating a Homunculus
@@ -64,9 +64,9 @@ A Homunculus spawns when the following situations occur.
 7. Ragnarok Client Built-In Functions
 
 The AI(id) functions are already built into the RO client and include
-fundamental actions such as movement, attacking, eating and skill usage. 
+fundamental actions such as movement, attacking, eating and skill usage.
 These functions use id numbers to identify in-game objects such as specific
-Homunculi, monsters or characters.  The following is a reference list of basic
+Homunculi, monsters or characters. The following is a reference list of basic
 functions that Homunculi can perform.
 
 ### MoveToOwner (id)
@@ -254,7 +254,7 @@ such as [Visual Studio Code](https://code.visualstudio.com/).
 The script’s file name extension must be “.lua” for it to be
 recognized as a LUA format file.
 Before experimenting with Homunculus AI or implementing a new AI script, you
-should save a copy of the official AI script in another folder for backup purposes. 
+should save a copy of the official AI script in another folder for backup purposes.
 But first we need to understand Homunculus states and actions before we can begin
 scripting actual Homunculus functions.
 
@@ -262,7 +262,7 @@ scripting actual Homunculus functions.
 
 The Homunculus AI System is based on the Finite State Machine a.k.a. FSM
 theory, a model of behavior defined by states, transitions between states, and
-actions.  For the purposes of Homunculus AI, we will be using four very basic states.
+actions. For the purposes of Homunculus AI, we will be using four very basic states.
 
 #### IDLE
 
@@ -320,7 +320,7 @@ stateDiagram-v2
 ### Basic Scritpt Util.lua
 
 Before creating the actual AI script, let’s create a `Util.lua` file that will
-contain additional functions for the Homunculus.  If you wish to create your own
+contain additional functions for the Homunculus. If you wish to create your own
 `Util.lua` from scratch, simply create a text file, rename it as `Util.lua`
 and then add the following text.
 
@@ -382,8 +382,8 @@ end
 ```
 
 This simple script is the minimum requirement for the Homunculus AI to execute
-without any errors.  However, no behaviors have yet been coded and therefore,
-your Homunculus is only capable of standing still.  For the Homunculus to
+without any errors. However, no behaviors have yet been coded and therefore,
+your Homunculus is only capable of standing still. For the Homunculus to
 exhibit actual behaviors, we will need to define the Homunculus states that we
 have planned earlier: `IDLE`, `FOLLOW`, `CHASE`, and `ATTACK`.
 
@@ -430,9 +430,9 @@ the IDLE status.
 
 In the following script, the Homunculus will check if any monsters are attacking
 the owner. The Homunculus defines a monster that targets its owner for an
-attack as the owner’s enemy.  It will then define the owner’s enemy as its own
+attack as the owner’s enemy. It will then define the owner’s enemy as its own
 enemy, transition to the CHASE state and chase the monster until is further
-than 3 cells away from its owner.  After reaching a distance of three cells,
+than 3 cells away from its owner. After reaching a distance of three cells,
 the Homunculus will transition to the FOLLOW state and return to its owner’s location.
 
 ```lua
@@ -476,7 +476,7 @@ attack its owner and define them as its own enemies.
 
 function GetOwnerEnemy(myid) -- Find the owner’s enemy.
   local result = 0
-  local owner  = GetV(V_OWNER, myid) -- The owner
+  local owner  = GetV(V_OWNER, myid) -- The owner
   local actors = GetActors()       -- Objects within the owner’s sight
   local enemys = {}                --A table that records the owner’s enemies
   local index = 1
@@ -526,10 +526,10 @@ end
 
 --[[
 A Homunculus can define specific monsters or characters as enemies, record
-them into a list, and then determine if they are present.  Users can then script
+them into a list, and then determine if they are present.  Users can then script
 the AI so that a Homunculus can take action on a predefined enemy before the enemy
-attacks.  The previous scripts are suitable for a passive Homunculus that will
-only battle after it is attacked.  For an aggressive Homunculus AI, you can
+attacks.  The previous scripts are suitable for a passive Homunculus that will
+only battle after it is attacked.  For an aggressive Homunculus AI, you can
 create a script in which your Homunculus will define monsters as enemies so
 long as they are on the screen.
 --]]
@@ -619,7 +619,7 @@ end
 
 A Homunculus’s owner directly issues commands to the Homunculus, via the Mouse
 or Shortcut keys or RO client interface, that are sent to the Homunculi AI
-script as message strings.  The following lines must be added under the AI(myid)
+script as message strings. The following lines must be added under the AI(myid)
 function in the AI.lua file for the Homunculi AI to receive and interpret message
 strings from the RO client so that the Homunculus can perform direct commands
 from its owner.
