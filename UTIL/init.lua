@@ -244,6 +244,17 @@ function MustAvoidMonster(myEnemy)
   return monstersToAvoid[id]
 end
 
+---@return boolean
+function OwnerInDanger()
+  local ownerHp = GetHp(MyOwner)
+  local ownerMaxHp = GetMaxHp(MyOwner)
+  local ownerDying = ownerHp <= ownerMaxHp * 0.3
+  if ownerDying then
+    return true
+  end
+  return false
+end
+
 ---@param myEnemy number
 ---@return boolean
 function IsEnemyAllowed(myEnemy)
@@ -253,7 +264,7 @@ function IsEnemyAllowed(myEnemy)
   if not ShouldPreventHomunculusDuplication then
     return true
   end
-  return IsIllusionalMonster(myEnemy) or IsBioLabMonsters(myEnemy) or IsInstanceMonster(myEnemy)
+  return IsIllusionalMonster(myEnemy) or IsBioLabMonsters(myEnemy) or IsInstanceMonster(myEnemy) or OwnerInDanger()
 end
 
 ---@param myId number

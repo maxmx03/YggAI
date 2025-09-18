@@ -41,7 +41,7 @@ local MySkills = {
     end,
     level_requirement = 100,
     level = 5,
-    sphere_cost = 0,
+    sphere_cost = 1,
   },
   ---@type Skill
   [MH_SILVERVEIN_RUSH] = {
@@ -86,7 +86,7 @@ local MySkills = {
     end,
     level_requirement = 100,
     level = 5,
-    sphere_cost = 0,
+    sphere_cost = 1,
   },
   ---@type Skill
   [MH_CBC] = {
@@ -351,11 +351,14 @@ local skillAttackSequence = Selector({
 
 local basicAttack = Parallel({
   Condition(ChaseEnemyNode, condition.enemyIsNotOutOfSight),
-  Condition(Condition(BasicAttackNode, condition.skillsInCooldown), condition.enemyIsAlive),
+  Condition(
+    Condition(Condition(BasicAttackNode, condition.skillsInCooldown), condition.enemyIsAlive),
+    condition.ownerIsNotTooFar
+  ),
 })
 
 local battleNode = Selector({
-  Condition(skillAttackSequence, condition.ownerIsNotTooFar),
+  Condition(Condition(skillAttackSequence, condition.enemyIsAlive), condition.ownerIsNotTooFar),
   Condition(basicAttack, condition.ownerIsNotTooFar),
 })
 

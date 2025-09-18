@@ -31,7 +31,7 @@ end
 
 ---@return boolean
 function M.ownerMoving()
-  if GetDistanceFromOwner(MyID) > 3 and GetV(V_MOTION, MyOwner) == MOTION_MOVE then
+  if GetDistanceFromOwner(MyID) > 3 then
     return true
   end
   return false
@@ -39,7 +39,7 @@ end
 
 ---@return boolean
 function M.ownerIsNotTooFar()
-  if GetDistanceFromOwner(MyID) > 10 and GetV(V_MOTION, MyOwner) == MOTION_MOVE then
+  if GetDistanceFromOwner(MyID) > 7 and GetV(V_MOTION, MyOwner) == MOTION_MOVE then
     return false
   end
   return true
