@@ -3,72 +3,46 @@ local condition = require('AI.USER_AI.BT.conditions')
 
 ---@class Cooldown
 local MyCooldown = {
-  [MH_VOLCANIC_ASH] = 0,
-  [MH_LAVA_SLIDE] = 0,
-  [MH_GRANITIC_ARMOR] = 0,
-  [MH_MAGMA_FLOW] = 0,
-  [MH_PYROCLASTIC] = 0,
+  [MH_NEEDLE_OF_PARALYZE] = 0,
+  [MH_POISON_MIST] = 0,
+  [MH_PAIN_KILLER] = 0,
+  [MH_SUMMON_LEGION] = 0,
 }
 
 ---@class Skills
 local MySkills = {
   ---@type Skill
-  [MH_VOLCANIC_ASH] = {
+  [MH_NEEDLE_OF_PARALYZE] = {
     sp = function(level)
-      return math.max(1, 55 + level * 5)
-    end,
-    cooldown = function(level, previousCooldown)
-      if previousCooldown == 0 then
-        return previousCooldown
-      end
-      return math.max(1, (10 + (level * 2)) / 3)
-    end,
-    level_requirement = 102,
-    level = 5,
-  },
-  ---@type Skill
-  [MH_LAVA_SLIDE] = {
-    sp = function(level)
-      return math.max(1, 35 + level * 5)
-    end,
-    cooldown = function(level, previousCooldown)
-      if previousCooldown == 0 then
-        return previousCooldown
-      end
-      return 5 + level
-    end,
-    level_requirement = 109,
-    level = 10,
-  },
-  [MH_GRANITIC_ARMOR] = {
-    sp = function(level)
-      return math.max(1, 50 + level * 4)
+      return math.max(1, 36 + level * 6)
     end,
     cooldown = function(_, previousCooldown)
       if previousCooldown == 0 then
         return previousCooldown
       end
-      return 60
+      return 10
+    end,
+    level_requirement = 105,
+    level = 10,
+  },
+  ---@type Skill
+  [MH_POISON_MIST] = {
+    sp = function(level)
+      return math.max(1, 55 + level * 10)
+    end,
+    cooldown = function(_, previousCooldown)
+      if previousCooldown == 0 then
+        return previousCooldown
+      end
+      return 15
     end,
     level_requirement = 116,
     level = 5,
   },
-  [MH_MAGMA_FLOW] = {
+  ---@type Skill
+  [MH_PAIN_KILLER] = {
     sp = function(level)
-      return math.max(1, 30 + level * 4)
-    end,
-    cooldown = function(level, previousCooldown)
-      if previousCooldown == 0 then
-        return previousCooldown
-      end
-      return math.max(1, 15 + level * 5)
-    end,
-    level_requirement = 122,
-    level = 5,
-  },
-  [MH_PYROCLASTIC] = {
-    sp = function(level)
-      return math.max(1, 12 * level * 8)
+      return math.max(1, 44 + level * 4)
     end,
     cooldown = function(level, previousCooldown)
       if previousCooldown == 0 then
@@ -76,8 +50,27 @@ local MySkills = {
       end
       return math.max(1, 300 + level * 30)
     end,
-    level_requirement = 131,
+    level_requirement = 123,
     level = 10,
+  },
+  ---@type Skill
+  [MH_SUMMON_LEGION] = {
+    sp = function(level)
+      return math.max(1, 10 + level * 10)
+    end,
+    cooldown = function(_, previousCooldown)
+      if previousCooldown == 0 then
+        return previousCooldown
+      end
+      if MyEnemy ~= 0 and IsMVP(MyEnemy) then
+        return 15
+      elseif MyEnemy ~= 0 and IsBoss(MyEnemy) then
+        return 30
+      end
+      return 60
+    end,
+    level_requirement = 132,
+    level = 5,
   },
 }
 
@@ -134,49 +127,46 @@ local castGround = function(mySkill, target)
   return STATUS.FAILURE
 end
 
-local volcanic = {}
-function volcanic.CheckCanCastSkill()
-  return check(MH_VOLCANIC_ASH)
+local paralyse = {}
+function paralyse.CheckCanCastSkill()
+  return check(MH_NEEDLE_OF_PARALYZE)
 end
-function volcanic.CastSkill()
-  return castGround(MH_VOLCANIC_ASH, MyEnemy)
-end
-
-local lava = {}
-function lava.CheckCanCastSkill()
-  return check(MH_LAVA_SLIDE)
-end
-function lava.CastSkill()
-  return castGround(MH_LAVA_SLIDE, MyEnemy)
+function paralyse.CastSkill()
+  return cast(MH_NEEDLE_OF_PARALYZE, MyOwner)
 end
 
-local granitic = {}
-function granitic.CheckCanCastSkill()
-  return check(MH_GRANITIC_ARMOR)
+local poisonMist = {}
+function poisonMist.CheckCanCastSkill()
+  return check(MH_POISON_MIST)
 end
-function granitic.CastSkill()
-  return cast(MH_GRANITIC_ARMOR, MyID)
-end
-
-local magma = {}
-function magma.CheckCanCastSkill()
-  return check(MH_MAGMA_FLOW)
-end
-function magma.CastSkill()
-  return cast(MH_MAGMA_FLOW, MyID)
+function poisonMist.CastSkill()
+  return castGround(MH_POISON_MIST, MyEnemy)
 end
 
-local pyroclastic = {}
-function pyroclastic.CheckCanCastSkill()
-  return check(MH_PYROCLASTIC)
+local painKiller = {}
+function painKiller.CheckCanCastSkill()
+  return check(MH_PAIN_KILLER)
 end
-function pyroclastic.CastSkill()
-  return cast(MH_PYROCLASTIC, MyID)
+function painKiller.CastSkill()
+  return cast(MH_PAIN_KILLER, MyID)
+end
+
+local summonLegion = {}
+function summonLegion.CheckCanCastSkill()
+  return check(MH_SUMMON_LEGION)
+end
+function summonLegion.CastSkill()
+  return cast(MH_SUMMON_LEGION, MyEnemy)
 end
 
 ---@return boolean
 function condition.skillsInCooldown()
-  if lava.CheckCanCastSkill() == STATUS.SUCCESS or volcanic.CheckCanCastSkill() == STATUS.SUCCESS then
+  if
+    poisonMist.CheckCanCastSkill() == STATUS.SUCCESS
+    or painKiller.CheckCanCastSkill() == STATUS.SUCCESS
+    or summonLegion.CheckCanCastSkill() == STATUS.SUCCESS
+    or paralyse.CheckCanCastSkill() == STATUS.SUCCESS
+  then
     return false
   end
   return true
@@ -186,49 +176,53 @@ local basicAttack = Parallel({
   Condition(ChaseEnemyNode, condition.enemyIsNotOutOfSight),
   Condition(Condition(BasicAttackNode, condition.skillsInCooldown), condition.enemyIsAlive),
 })
-local lavaSequence = Sequence({
-  lava.CheckCanCastSkill,
-  lava.CastSkill,
+local poisonMistSequence = Sequence({
+  poisonMist.CheckCanCastSkill,
+  poisonMist.CastSkill,
 })
-local lavaParallel = Parallel({
-  Condition(lavaSequence, condition.enemyIsAlive),
+local painKillerSequence = Sequence({
+  painKiller.CheckCanCastSkill,
+  painKiller.CastSkill,
+})
+local paralyseSequence = Sequence({
+  paralyse.CheckCanCastSkill,
+  paralyse.CastSkill,
+})
+local summonLegionSequence = Sequence({
+  summonLegion.CheckCanCastSkill,
+  summonLegion.CastSkill,
+})
+local summonLegionParallel = Parallel({
+  Condition(summonLegionSequence, condition.enemyIsAlive),
   Condition(ChaseEnemyNode, condition.enemyIsNotOutOfSight),
 })
-local volcanicSequence = Sequence({
-  volcanic.CheckCanCastSkill,
-  volcanic.CastSkill,
-})
-local volcanicParallel = Parallel({
-  Condition(volcanicSequence, condition.enemyIsAlive),
+local poisonMistParallel = Parallel({
+  Condition(poisonMistSequence, condition.enemyIsAlive),
   Condition(ChaseEnemyNode, condition.enemyIsNotOutOfSight),
 })
-local magmaSequence = Sequence({
-  magma.CheckCanCastSkill,
-  magma.CastSkill,
+local paralyseParallel = Parallel({
+  Condition(paralyseSequence, condition.enemyIsAlive),
+  Condition(ChaseEnemyNode, condition.enemyIsNotOutOfSight),
 })
-local pyroclasticSequence = Sequence({
-  pyroclastic.CheckCanCastSkill,
-  pyroclastic.CastSkill,
-})
-local graniticSequence = Sequence({
-  granitic.CheckCanCastSkill,
-  granitic.CastSkill,
+local mvpSelector = Selector({
+  Condition(painKillerSequence, condition.ownerIsNotTooFar),
+  Condition(summonLegionParallel, condition.ownerIsNotTooFar),
+  Condition(paralyseParallel, condition.ownerIsNotTooFar),
+  Condition(poisonMistParallel, condition.ownerIsNotTooFar),
 })
 local battleNode = Selector({
-  Condition(magmaSequence, condition.enemyIsAlive),
-  Condition(pyroclasticSequence, condition.enemyIsAlive),
-  Condition(lavaParallel, condition.enemyIsAlive),
-  Condition(volcanicParallel, condition.enemyIsAlive),
+  Condition(mvpSelector, condition.isMVP),
+  Condition(poisonMistParallel, condition.ownerIsNotTooFar),
+  Condition(painKillerSequence, condition.ownerIsNotTooFar),
   Condition(basicAttack, condition.ownerIsNotTooFar),
 })
 local patrolNodeSequence = Sequence({
   Reverse(CheckIfHasEnemy),
   PatrolNode,
 })
-local dieter = Selector({
+local sera = Selector({
   Condition(FollowNode, condition.ownerMoving),
   Condition(patrolNodeSequence, condition.ownerIsSitting),
-  Condition(graniticSequence, condition.ownerIsDying),
   Condition(battleNode, condition.hasEnemy),
 })
-return Condition(dieter, IsDieter)
+return Condition(sera, IsSera)

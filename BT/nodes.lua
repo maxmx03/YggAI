@@ -27,32 +27,8 @@ function CheckEnemyIsAlive()
 end
 
 ---@return Status
-function CheckOwnerDistance()
-  if GetDistanceFromOwner(MyID) > 3 then
-    return STATUS.SUCCESS
-  end
-  return STATUS.FAILURE
-end
-
----@return Status
 function CheckOwnerToofar()
   if GetDistanceFromOwner(MyID) > 10 and GetV(V_MOTION, MyOwner) == MOTION_MOVE then
-    return STATUS.FAILURE
-  end
-  return STATUS.SUCCESS
-end
-
----@return Status
-function CheckOwnerIsSitting()
-  if GetV(V_MOTION, MyOwner) ~= MOTION_SIT then
-    return STATUS.FAILURE
-  end
-  return STATUS.SUCCESS
-end
-
----@return Status
-function CheckOwnerOutOfSight()
-  if IsOutOfSight(MyID, MyOwner) then
     return STATUS.FAILURE
   end
   return STATUS.SUCCESS
@@ -130,87 +106,6 @@ function CheckOwnerIsDying()
 end
 
 ---@return Status
-function CheckOwnerIsDead()
-  local ownerDead = GetV(V_MOTION, MyOwner) == MOTION_DEAD
-  if ownerDead then
-    return STATUS.SUCCESS
-  end
-  return STATUS.FAILURE
-end
-
----@return Status
-function CheckIsDieter()
-  if IsDieter(MyID) then
-    return STATUS.SUCCESS
-  end
-  return STATUS.FAILURE
-end
-
----@return Status
-function CheckIsEleanor()
-  if IsEleanor(MyID) then
-    return STATUS.SUCCESS
-  end
-  return STATUS.FAILURE
-end
-
----@return Status
-function CheckIsVanilmirth()
-  if IsVanilmirth(MyID) then
-    return STATUS.SUCCESS
-  end
-  return STATUS.FAILURE
-end
-
----@return Status
-function CheckIsAmistr()
-  if IsAmistr(MyID) then
-    return STATUS.SUCCESS
-  end
-  return STATUS.FAILURE
-end
-
----@return Status
-function CheckIsLif()
-  if IsLif(MyID) then
-    return STATUS.SUCCESS
-  end
-  return STATUS.FAILURE
-end
-
----@return Status
-function CheckIsFilir()
-  if IsFilir(MyID) then
-    return STATUS.SUCCESS
-  end
-  return STATUS.FAILURE
-end
-
----@return Status
-function CheckIsEira()
-  if IsEira(MyID) then
-    return STATUS.SUCCESS
-  end
-  return STATUS.FAILURE
-end
-
----@return Status
-function CheckIsBayeri()
-  if IsBayeri(MyID) then
-    return STATUS.SUCCESS
-  end
-  return STATUS.FAILURE
-end
-
----@return Status
-function CheckIsSera()
-  if IsSera(MyID) then
-    return STATUS.SUCCESS
-  end
-  return STATUS.FAILURE
-end
-
----@return Status
 function CheckIsWaterMonster()
   if IsWaterMonster(MyEnemy) then
     return STATUS.SUCCESS
@@ -221,14 +116,6 @@ end
 ---@return Status
 function CheckIsWindMonster()
   if IsWindMonster(MyEnemy) then
-    return STATUS.SUCCESS
-  end
-  return STATUS.FAILURE
-end
-
----@return Status
-function CheckIsMVP()
-  if IsMVP(MyEnemy) then
     return STATUS.SUCCESS
   end
   return STATUS.FAILURE

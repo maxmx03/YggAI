@@ -3,79 +3,27 @@ require('AI.USER_AI.UTIL.Const')
 require('AI.USER_AI.UTIL')
 require('AI.USER_AI.BT')
 require('AI.USER_AI.BT.nodes')
-local vanilmirth = require('AI.USER_AI.HOMUN.Vanil')
-local amistr = require('AI.USER_AI.HOMUN.Amistr')
-local eleanor = require('AI.USER_AI.HOMUN.Eleanor')
-local lif = require('AI.USER_AI.HOMUN.Lif')
-local filir = require('AI.USER_AI.HOMUN.Filir')
-local dieter = require('AI.USER_AI.HOMUN.Dieter')
-local eira = require('AI.USER_AI.HOMUN.Eira')
 local userCommands = require('AI.USER_AI.cmd')
-local idle = Selector({
-  Sequence({
-    CheckOwnerDistance,
-    CheckOwnerOutOfSight,
-    FollowNode,
-  }),
-  Sequence({
-    Reverse(CheckIfHasEnemy),
-    CheckOwnerToofar,
-    CheckOwnerIsSitting,
-    PatrolNode,
-  }),
-})
+local lif = require('AI.USER_AI.HOMUN.Lif')
+local sera = require('AI.USER_AI.HOMUN.Sera')
+local dieter = require('AI.USER_AI.HOMUN.Dieter')
+local filir = require('AI.USER_AI.HOMUN.Filir')
+local amistr = require('AI.USER_AI.HOMUN.Amistr')
+local eira = require('AI.USER_AI.HOMUN.Eira')
+local vanil = require('AI.USER_AI.HOMUN.Vanil')
+local bayeri = require('AI.USER_AI.HOMUN.Bayeri')
+local eleanor = require('AI.USER_AI.HOMUN.Eleanor')
 local root = Selector({
-  Sequence({
-    CheckIsDieter,
-    Selector({
-      dieter,
-      idle,
-    }),
-  }),
-  Sequence({
-    CheckIsEira,
-    Selector({
-      eira,
-      idle,
-    }),
-  }),
-  Sequence({
-    CheckIsEleanor,
-    Selector({
-      eleanor,
-      idle,
-    }),
-  }),
-  Sequence({
-    CheckIsVanilmirth,
-    Selector({
-      vanilmirth,
-      idle,
-    }),
-  }),
-  Sequence({
-    CheckIsAmistr,
-    Selector({
-      amistr,
-      idle,
-    }),
-  }),
-  Sequence({
-    CheckIsLif,
-    Selector({
-      lif,
-      idle,
-    }),
-  }),
-  Sequence({
-    CheckIsFilir,
-    Selector({
-      filir,
-      idle,
-    }),
-  }),
+  sera,
+  dieter,
+  eira,
+  eleanor,
+  bayeri,
+  vanil,
+  amistr,
+  lif,
+  filir,
 })
-
 function AI(myid)
   CurrentTime = GetTick() / 1000
   math.randomseed(CurrentTime)

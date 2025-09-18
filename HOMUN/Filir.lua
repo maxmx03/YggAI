@@ -1,3 +1,6 @@
+---@type Condition
+local condition = require('AI.USER_AI.BT.conditions')
+
 ---@class Cooldown
 local MyCooldown = {
   [HFLI_MOON] = 0,
@@ -84,17 +87,14 @@ local cast = function(mySkill, target)
 end
 
 local moon = {}
-
 function moon.CheckCanCastSkill()
   return check(HFLI_MOON)
 end
-
 function moon.CastSkill()
   return cast(HFLI_MOON, MyEnemy)
 end
 
 local fleet = {}
-
 function fleet.CheckCanCastSkill()
   return check(HFLI_FLEET)
 end
@@ -104,46 +104,55 @@ function fleet.CastSkill()
 end
 
 local speed = {}
-
 function speed.CheckCanCastSkill()
   return check(HFLI_SPEED)
 end
-
 function speed.CastSkill()
   return cast(HFLI_SPEED, MyID)
 end
 
-local combatNode = Parallel({
-  CheckOwnerToofar,
-  ChaseEnemyNode,
-  BasicAttackNode,
-  CheckEnemyIsAlive,
-  CheckEnemyIsOutOfSight,
-})
+---@return boolean
+function condition.skillsInCooldown()
+  if moon.CheckCanCastSkill() == STATUS.SUCCESS then
+    return false
+  end
+  return true
+end
 
-return Selector({
-  Sequence({
-    CheckIfHasEnemy,
-    Selector({
-      Sequence({
-        fleet.CheckCanCastSkill,
-        fleet.CastSkill,
-      }),
-      Sequence({
-        speed.CheckCanCastSkill,
-        speed.CastSkill,
-      }),
-      Sequence({
-        moon.CheckCanCastSkill,
-        Parallel({
-          CheckOwnerToofar,
-          ChaseEnemyNode,
-          moon.CastSkill,
-          CheckEnemyIsAlive,
-          CheckEnemyIsOutOfSight,
-        }),
-      }),
-      combatNode,
-    }),
-  }),
+local moonSequence = Sequence({
+  moon.CheckCanCastSkill,
+  moon.CastSkill,
 })
+local moonParallel = Parallel({
+  Condition(moonSequence, condition.enemyIsAlive),
+  Condition(ChaseEnemyNode, condition.enemyIsNotOutOfSight),
+})
+local fleetSequence = Sequence({
+  fleet.CheckCanCastSkill,
+  fleet.CastSkill,
+})
+local speedSequence = Sequence({
+  speed.CheckCanCastSkill,
+  speed.CastSkill,
+})
+local basicAttack = Parallel({
+  Condition(ChaseEnemyNode, condition.enemyIsNotOutOfSight),
+  Condition(Condition(BasicAttackNode, condition.skillsInCooldown), condition.enemyIsAlive),
+})
+local battleNode = Selector({
+  Condition(speedSequence, condition.enemyIsAlive),
+  Condition(fleetSequence, condition.enemyIsAlive),
+  Condition(moonParallel, condition.enemyIsAlive),
+  Condition(basicAttack, condition.ownerIsNotTooFar),
+})
+local patrolNodeSequence = Sequence({
+  Reverse(CheckIfHasEnemy),
+  PatrolNode,
+})
+local filir = Selector({
+  Condition(FollowNode, condition.ownerMoving),
+  Condition(patrolNodeSequence, condition.ownerIsSitting),
+  Condition(fleetSequence, condition.ownerIsDying),
+  Condition(battleNode, condition.hasEnemy),
+})
+return Condition(filir, IsFilir)

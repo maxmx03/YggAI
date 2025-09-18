@@ -1,3 +1,6 @@
+---@type Condition
+local condition = require('AI.USER_AI.BT.conditions')
+
 ---@class Cooldown
 local MyCooldown = {
   [MH_ERASER_CUTTER] = 0,
@@ -161,63 +164,60 @@ function light.CastSkill()
   return cast(MH_LIGHT_OF_REGENE, MyOwner)
 end
 
-local BasicCombatNode = Parallel({
-  CheckOwnerToofar,
-  ChaseEnemyNode,
-  Condition(BasicAttackNode, function()
-    if xeno.CheckCanCastSkill() == STATUS.SUCCESS or cutter.CheckCanCastSkill() == STATUS.SUCCESS then
-      return false
-    end
-    return true
-  end),
-  CheckEnemyIsAlive,
-  CheckEnemyIsOutOfSight,
-})
+---@return boolean
+function condition.skillsInCooldown()
+  if cutter.CheckCanCastSkill() == STATUS.SUCCESS or xeno.CheckCanCastSkill() == STATUS.SUCCESS then
+    return false
+  end
+  return true
+end
 
-local xenoNode = Sequence({
-  Reverse(CheckIsWindMonster),
-  xeno.CheckCanCastSkill,
-  xeno.CastSkill,
+local basicAttack = Parallel({
+  Condition(ChaseEnemyNode, condition.enemyIsNotOutOfSight),
+  Condition(Condition(BasicAttackNode, condition.skillsInCooldown), condition.enemyIsAlive),
 })
-local lightNode = Sequence({
-  light.CheckCanCastSkill,
-  light.CastSkill,
-})
-local cutterNode = Sequence({
-  Reverse(CheckIsWaterMonster),
-  Reverse(CheckIsPoisonMonster),
+local cutterSequence = Sequence({
   cutter.CheckCanCastSkill,
   cutter.CastSkill,
 })
-
-return Selector({
-  Sequence({
-    CheckOwnerIsDead,
-    lightNode,
-  }),
-  Sequence({
-    CheckIfHasEnemy,
-    Selector({
-      Sequence({
-        CheckIsMVP,
-        overed.CheckCanCastSkill,
-        overed.CastSkill,
-      }),
-      BasicCombatNode,
-      Parallel({
-        CheckOwnerToofar,
-        ChaseEnemyNode,
-        xenoNode,
-        CheckEnemyIsAlive,
-        CheckEnemyIsOutOfSight,
-      }),
-      Parallel({
-        CheckOwnerToofar,
-        ChaseEnemyNode,
-        cutterNode,
-        CheckEnemyIsAlive,
-        CheckEnemyIsOutOfSight,
-      }),
-    }),
-  }),
+local overedSequence = Sequence({
+  overed.CheckCanCastSkill,
+  overed.CastSkill,
 })
+local xenoSequence = Sequence({
+  xeno.CheckCanCastSkill,
+  xeno.CastSkill,
+})
+local lightSequence = Sequence({
+  light.CheckCanCastSkill,
+  light.CastSkill,
+})
+local cutterParallel = Parallel({
+  Condition(cutterSequence, condition.enemyIsAlive),
+  Condition(ChaseEnemyNode, condition.enemyIsNotOutOfSight),
+})
+local xenoParallel = Parallel({
+  Condition(xenoSequence, condition.enemyIsAlive),
+  Condition(ChaseEnemyNode, condition.enemyIsNotOutOfSight),
+})
+local battleNode = Selector({
+  Condition(overedSequence, condition.isMVP),
+  Condition(Condition(xenoParallel, Inversion(condition.isWindMonster)), condition.ownerIsNotTooFar),
+  Condition(Condition(xenoParallel, condition.isWaterMonster), condition.ownerIsNotTooFar),
+  Condition(Condition(xenoParallel, condition.isPoisonMonster), condition.ownerIsNotTooFar),
+  Condition(Condition(cutterParallel, Inversion(condition.isPoisonMonster)), condition.ownerIsNotTooFar),
+  Condition(Condition(cutterParallel, Inversion(condition.isWaterMonster)), condition.ownerIsNotTooFar),
+  Condition(Condition(cutterParallel, condition.isWindMonster), condition.ownerIsNotTooFar),
+  Condition(basicAttack, condition.ownerIsNotTooFar),
+})
+local patrolNodeSequence = Sequence({
+  Reverse(CheckIfHasEnemy),
+  PatrolNode,
+})
+local eira = Selector({
+  Condition(FollowNode, condition.ownerMoving),
+  Condition(patrolNodeSequence, condition.ownerIsSitting),
+  Condition(lightSequence, condition.ownerIsDead),
+  Condition(battleNode, condition.hasEnemy),
+})
+return Condition(eira, IsEira)

@@ -83,7 +83,7 @@ end
 function Delay(node, delay)
   local lastExec = 0
   return function()
-    local now = GetTick() / 1000
+    local now = CurrentTime
     if now - lastExec >= delay then
       lastExec = now
       return node()
@@ -115,6 +115,18 @@ function Condition(node, condition)
       return node()
     else
       return STATUS.FAILURE
+    end
+  end
+end
+
+---@param condition fun():boolean
+---@return fun():boolean
+function Inversion(condition)
+  return function()
+    if condition() then
+      return false
+    else
+      return true
     end
   end
 end

@@ -57,57 +57,57 @@ function List.size(list)
 end
 
 -------------------------------------------------
----@param id number
-function IsAmistr(id)
-  local humntype = GetV(V_HOMUNTYPE, id)
+---@return boolean
+function IsAmistr()
+  local humntype = GetV(V_HOMUNTYPE, MyID)
   return humntype == AMISTR or humntype == AMISTR_H or humntype == AMISTR2 or humntype == AMISTR_H2
 end
 
----@param id number
-function IsFilir(id)
-  local humntype = GetV(V_HOMUNTYPE, id)
+---@return boolean
+function IsFilir()
+  local humntype = GetV(V_HOMUNTYPE, MyID)
   return humntype == FILIR or humntype == FILIR_H or humntype == FILIR2 or humntype == FILIR_H2
 end
 
----@param id number
-function IsVanilmirth(id)
-  local humntype = GetV(V_HOMUNTYPE, id)
+---@return boolean
+function IsVanilmirth()
+  local humntype = GetV(V_HOMUNTYPE, MyID)
   return humntype == VANILMIRTH or humntype == VANILMIRTH_H or humntype == VANILMIRTH2 or humntype == VANILMIRTH_H2
 end
 
----@param id number
-function IsLif(id)
-  local humntype = GetV(V_HOMUNTYPE, id)
+---@return boolean
+function IsLif()
+  local humntype = GetV(V_HOMUNTYPE, MyID)
   return humntype == LIF or humntype == LIF_H or humntype == LIF2 or type == LIF_H2
 end
 
----@param id number
-function IsEira(id)
-  local humntype = GetV(V_HOMUNTYPE, id)
+---@return boolean
+function IsEira()
+  local humntype = GetV(V_HOMUNTYPE, MyID)
   return humntype == EIRA
 end
 
----@param id number
-function IsBayeri(id)
-  local humntype = GetV(V_HOMUNTYPE, id)
+---@return boolean
+function IsBayeri()
+  local humntype = GetV(V_HOMUNTYPE, MyID)
   return humntype == BAYERI
 end
 
----@param id number
-function IsSera(id)
-  local humntype = GetV(V_HOMUNTYPE, id)
+---@return boolean
+function IsSera()
+  local humntype = GetV(V_HOMUNTYPE, MyID)
   return humntype == SERA
 end
 
----@param id number
-function IsDieter(id)
-  local humntype = GetV(V_HOMUNTYPE, id)
+---@return boolean
+function IsDieter()
+  local humntype = GetV(V_HOMUNTYPE, MyID)
   return humntype == DIETER
 end
 
----@param id number
-function IsEleanor(id)
-  local humntype = GetV(V_HOMUNTYPE, id)
+---@return boolean
+function IsEleanor()
+  local humntype = GetV(V_HOMUNTYPE, MyID)
   return humntype == ELEANOR
 end
 
@@ -253,7 +253,7 @@ function IsEnemyAllowed(myEnemy)
   if not ShouldPreventHomunculusDuplication then
     return true
   end
-  return IsIllusionalMonster(myEnemy) or IsBioLabMonsters(myEnemy) or IsInstanceMonster(myEnemy) or IsBoss(myEnemy)
+  return IsIllusionalMonster(myEnemy) or IsBioLabMonsters(myEnemy) or IsInstanceMonster(myEnemy)
 end
 
 ---@param myId number

@@ -1,5 +1,8 @@
 # Ragnarok Online - YggAI
 
+- [English](https://github.com/maxmx03/YggAI/blob/main/README_EN.md)
+- [Español](https://github.com/maxmx03/YggAI/blob/main/README_ESP.md)
+
 > [!CAUTION]
 > O ROLATAM apresenta um bug que duplica o homunculus quando o dono passa pelo portal.
 > Isso ocorre porque o homunculus ataca um monstro no momento em que o dono tenta atravessar o portal.
@@ -73,11 +76,11 @@ ou `Freya/Millianor (AB)`, mandando zenys ou semente da vida.
   - [x] Vanilmirth
   - [x] Amistr
   - [x] Filir
-- [ ] Homunculus S
-  - [ ] Bayeri
+- [x] Homunculus S
+  - [x] Bayeri
   - [x] Dieter
   - [x] Eira
-  - [ ] Sera
+  - [x] Sera
   - [x] Eleanor
 - [ ] PVP
 - [ ] WOE

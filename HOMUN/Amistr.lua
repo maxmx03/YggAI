@@ -1,3 +1,6 @@
+---@type Condition
+local condition = require('AI.USER_AI.BT.conditions')
+
 ---@class Cooldown
 local MyCooldown = {
   [HAMI_CASTLE] = 0,
@@ -82,14 +85,14 @@ local cast = function(mySkill)
   return STATUS.FAILURE
 end
 
--- local castle = {}
--- function castle.CheckCanCastSkill()
---   return check(HAMI_CASTLE)
--- end
---
--- function castle.CastSkill()
---   return cast(HAMI_CASTLE)
--- end
+local castle = {}
+function castle.CheckCanCastSkill()
+  return check(HAMI_CASTLE)
+end
+
+function castle.CastSkill()
+  return cast(HAMI_CASTLE)
+end
 
 local defense = {}
 function defense.CheckCanCastSkill()
@@ -110,29 +113,35 @@ function bloodlust.CastSkill()
   return cast(HAMI_BLOODLUST)
 end
 
-local combatNode = Parallel({
-  CheckOwnerToofar,
-  ChaseEnemyNode,
-  BasicAttackNode,
-  CheckEnemyIsAlive,
-  CheckEnemyIsOutOfSight,
+local basicAttack = Parallel({
+  Condition(ChaseEnemyNode, condition.enemyIsNotOutOfSight),
+  Condition(BasicAttackNode, condition.enemyIsAlive),
 })
-
-return Selector({
-  Sequence({
-    CheckIfHasEnemy,
-    Selector({
-      Sequence({
-        defense.CheckCanCastSkill,
-        defense.CastSkill,
-        combatNode,
-      }),
-      Sequence({
-        bloodlust.CheckCanCastSkill,
-        bloodlust.CastSkill,
-        combatNode,
-      }),
-      combatNode,
-    }),
-  }),
+local castleSequence = Sequence({
+  castle.CheckCanCastSkill,
+  castle.CastSkill,
 })
+local defenseSequence = Sequence({
+  defense.CheckCanCastSkill,
+  defense.CastSkill,
+})
+local bloodlustSequence = Sequence({
+  bloodlust.CheckCanCastSkill,
+  bloodlust.CastSkill,
+})
+local battleNode = Selector({
+  Condition(defenseSequence, condition.enemyIsAlive),
+  Condition(bloodlustSequence, condition.enemyIsAlive),
+  Condition(Inversion(basicAttack, condition.ownerIsDying), condition.ownerIsNotTooFar),
+})
+local patrolNodeSequence = Sequence({
+  Reverse(CheckIfHasEnemy),
+  PatrolNode,
+})
+local amistr = Selector({
+  Condition(FollowNode, condition.ownerMoving),
+  Condition(patrolNodeSequence, condition.ownerIsSitting),
+  Condition(castleSequence, condition.ownerIsDying),
+  Condition(battleNode, condition.hasEnemy),
+})
+return Condition(amistr, IsAmistr)

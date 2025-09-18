@@ -1,3 +1,6 @@
+---@type Condition
+local condition = require('AI.USER_AI.BT.conditions')
+
 ---@class Cooldown
 local MyCooldown = {
   [HLIF_HEAL] = 0,
@@ -30,7 +33,7 @@ local MySkills = {
       if previousCooldown == 0 then
         return previousCooldown
       end
-      return math.max(1, 45 - level * 5)
+      return math.max(0.1, 45 - level * 5)
     end,
     level_requirement = 40,
     level = 5,
@@ -43,7 +46,7 @@ local MySkills = {
       if previousCooldown == 0 then
         return previousCooldown
       end
-      return math.max(1, 60 - level * 120)
+      return math.max(0.1, 60 - level * 120)
     end,
     level_requirement = 70,
     level = 3,
@@ -110,34 +113,35 @@ function change.CastSkill()
   return cast(HLIF_CHANGE, MyID)
 end
 
-local combatNode = Parallel({
-  ChaseEnemyNode,
-  BasicAttackNode,
-  CheckEnemyIsAlive,
-  CheckEnemyIsOutOfSight,
+local basicAttack = Parallel({
+  Condition(ChaseEnemyNode, condition.enemyIsNotOutOfSight),
+  Condition(BasicAttackNode, condition.enemyIsAlive),
 })
-
-return Selector({
-  Sequence({
-    heal.CheckCanCastSkill,
-    CheckOwnerIsDying,
-    heal.CastSkill,
-  }),
-  Sequence({
-    CheckIfHasEnemy,
-    CheckOwnerToofar,
-    Selector({
-      Sequence({
-        avoid.CheckCanCastSkill,
-        avoid.CastSkill,
-        combatNode,
-      }),
-      Sequence({
-        change.CheckCanCastSkill,
-        change.CastSkill,
-        combatNode,
-      }),
-      combatNode,
-    }),
-  }),
+local healSequence = Sequence({
+  heal.CheckCanCastSkill,
+  heal.CastSkill,
 })
+local avoidSequence = Sequence({
+  avoid.CheckCanCastSkill,
+  avoid.CastSkill,
+})
+local changeSequence = Sequence({
+  change.CheckCanCastSkill,
+  change.CastSkill,
+})
+local battleNode = Selector({
+  Condition(avoidSequence, condition.enemyIsAlive),
+  Condition(changeSequence, condition.enemyIsAlive),
+  Condition(basicAttack, condition.ownerIsNotTooFar),
+})
+local patrolNodeSequence = Sequence({
+  Reverse(CheckIfHasEnemy),
+  PatrolNode,
+})
+local lif = Selector({
+  Condition(FollowNode, condition.ownerMoving),
+  Condition(patrolNodeSequence, condition.ownerIsSitting),
+  Condition(healSequence, condition.ownerIsDying),
+  Condition(battleNode, condition.hasEnemy),
+})
+return Condition(lif, IsLif)

@@ -1,3 +1,6 @@
+---@type Condition
+local condition = require('AI.USER_AI.BT.conditions')
+
 ---@class Cooldown
 local MyCooldown = {
   [HVAN_CAPRICE] = 0,
@@ -74,7 +77,6 @@ local caprice = {}
 function caprice.CheckCanCastSkill()
   return check(HVAN_CAPRICE)
 end
-
 function caprice.CastSkill()
   return cast(HVAN_CAPRICE, MyEnemy)
 end
@@ -87,51 +89,46 @@ function chaotic.CastSkill()
   return cast(HVAN_CHAOTIC, MyOwner)
 end
 
-return Selector({
-  Sequence({
-    CheckOwnerIsDying,
-    Sequence({
-      chaotic.CheckCanCastSkill,
-      Parallel({
-        CheckOwnerIsDying,
-        chaotic.CastSkill,
-      }),
-    }),
-  }),
-  Sequence({
-    CheckIfHasEnemy,
-    Selector({
-      Sequence({
-        CheckOwnerToofar,
-        caprice.CheckCanCastSkill,
-        Parallel({
-          CheckOwnerToofar,
-          Condition(ChaseEnemyNode, function()
-            if CheckEnemyIsAlive() == STATUS.SUCCESS and CheckEnemyIsOutOfSight() == STATUS.SUCCESS then
-              return true
-            end
-            return false
-          end),
-          Condition(caprice.CastSkill, function()
-            if caprice.CheckCanCastSkill() == STATUS.SUCCESS then
-              return true
-            end
-            return false
-          end),
-        }),
-      }),
-      Parallel({
-        CheckOwnerToofar,
-        ChaseEnemyNode,
-        Condition(BasicAttackNode, function()
-          if caprice.CheckCanCastSkill() == STATUS.SUCCESS then
-            return false
-          end
-          return true
-        end),
-        CheckEnemyIsAlive,
-        CheckEnemyIsOutOfSight,
-      }),
-    }),
-  }),
+---@return boolean
+function condition.skillsInCooldown()
+  if caprice.CheckCanCastSkill() == STATUS.SUCCESS then
+    return false
+  end
+  return true
+end
+
+local basicAttack = Parallel({
+  Condition(ChaseEnemyNode, condition.enemyIsNotOutOfSight),
+  Condition(Condition(BasicAttackNode, condition.skillsInCooldown), condition.enemyIsAlive),
 })
+local capriceSequence = Sequence({
+  caprice.CheckCanCastSkill,
+  caprice.CastSkill,
+})
+local chaoticSequence = Sequence({
+  chaotic.CheckCanCastSkill,
+  chaotic.CastSkill,
+})
+local capriceParallel = Parallel({
+  Condition(capriceSequence, condition.enemyIsAlive),
+  Condition(ChaseEnemyNode, condition.enemyIsNotOutOfSight),
+})
+local chaoticParallel = Parallel({
+  Condition(chaoticSequence, condition.enemyIsAlive),
+  Condition(ChaseEnemyNode, condition.enemyIsNotOutOfSight),
+})
+local battleNode = Selector({
+  Condition(capriceParallel, condition.ownerIsNotTooFar),
+  Condition(basicAttack, condition.ownerIsNotTooFar),
+})
+local patrolNodeSequence = Sequence({
+  Reverse(CheckIfHasEnemy),
+  PatrolNode,
+})
+local vanil = Selector({
+  Condition(FollowNode, condition.ownerMoving),
+  Condition(Condition(chaoticParallel, condition.ownerIsDying), Inversion(condition.hasEnemy)),
+  Condition(patrolNodeSequence, condition.ownerIsSitting),
+  Condition(battleNode, condition.hasEnemy),
+})
+return Condition(vanil, IsVanilmirth)

@@ -69,11 +69,11 @@ If you want to contribute in another way, send a Rodex in-game to `Freya/Pelunia
   - [x] Vanilmirth
   - [x] Amistr
   - [x] Filir
-- [ ] Homunculus S
-  - [ ] Bayeri
+- [x] Homunculus S
+  - [x] Bayeri
   - [x] Dieter
   - [x] Eira
-  - [ ] Sera
+  - [x] Sera
   - [x] Eleanor
 - [ ] PVP
 - [ ] WOE
@@ -82,7 +82,7 @@ If you want to contribute in another way, send a Rodex in-game to `Freya/Pelunia
 - [x] Avoid Plant
 - [x] Skill and Cooldown
 - [x] Prevention of Homunculus Duplication Bug
-- [ ] User commands
+- [x] User commands
 
 ### Alternative Projects
 

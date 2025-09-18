@@ -1,4 +1,6 @@
----@class Cooldown
+---@type Condition
+local condition = require('AI.USER_AI.BT.conditions')
+
 local MyCooldown = {
   [MH_STYLE_CHANGE] = 0,
   [MH_SONIC_CRAW] = 0,
@@ -10,7 +12,7 @@ local MyCooldown = {
 }
 
 ---@class Skills
-MySkills = {
+local MySkills = {
   ---@type Skill
   [MH_STYLE_CHANGE] = {
     cooldown = function(_, previousCooldown)
@@ -172,163 +174,200 @@ local cast = function(mySkill, target)
   return STATUS.FAILURE
 end
 
-local function BasicAttack()
-  local status = BasicAttackNode()
-  local sonicStatus = check(MH_SONIC_CRAW, BATTLE_MODE.BATTLE)
-  local silverStatus = check(MH_TINDER_BREAKER, BATTLE_MODE.CLAW)
-  local maxSpheres = 5
-  if MySpheres < maxSpheres then
-    if math.random(3) == 1 then
-      MySpheres = MySpheres + 1
-    end
-  else
-    if sonicStatus == STATUS.SUCCESS and silverStatus == STATUS.SUCCESS then
-      return STATUS.FAILURE
-    end
-  end
-  return status
-end
-
 local switch = {}
-function switch.checkCanCastSkill()
-  return check(MH_STYLE_CHANGE, BATTLE_MODE.CURRENT, true)
+function switch.CheckCanCastSkill()
+  return check(MH_STYLE_CHANGE)
 end
-function switch.castSkill()
-  if math.random(8) == 1 then
+function switch.CastSkill()
+  if math.random(4) == 1 then
     return cast(MH_STYLE_CHANGE, MyID)
   end
   return STATUS.FAILURE
 end
 
 local sonic = {}
-function sonic.checkCanCastSkill()
+function sonic.CheckCanCastSkill()
   if BATTLE_MODE.CURRENT ~= BATTLE_MODE.BATTLE then
     return STATUS.FAILURE
   end
   return check(MH_SONIC_CRAW)
 end
-function sonic.castSkill()
+function sonic.CastSkill()
   return cast(MH_SONIC_CRAW, MyEnemy)
 end
 
 local silver = {}
-function silver.checkCanCastSkill()
+function silver.CheckCanCastSkill()
   if BATTLE_MODE.CURRENT ~= BATTLE_MODE.BATTLE then
     return STATUS.FAILURE
   end
   return check(MH_SILVERVEIN_RUSH)
 end
-function silver.castSkill()
+function silver.CastSkill()
   return cast(MH_SILVERVEIN_RUSH, MyEnemy)
 end
 
 local midnight = {}
-function midnight.checkCanCastSkill()
+function midnight.CheckCanCastSkill()
   if BATTLE_MODE.CURRENT ~= BATTLE_MODE.BATTLE then
     return STATUS.FAILURE
   end
   return check(MH_MIDNIGHT_FRENZY)
 end
-function midnight.castSkill()
+function midnight.CastSkill()
   return cast(MH_MIDNIGHT_FRENZY, MyEnemy)
 end
 
 local tinder = {}
-function tinder.checkCanCastSkill()
+function tinder.CheckCanCastSkill()
   if BATTLE_MODE.CURRENT ~= BATTLE_MODE.CLAW then
     return STATUS.FAILURE
   end
-
   return check(MH_TINDER_BREAKER)
 end
-function tinder.castSkill()
+function tinder.CastSkill()
   return cast(MH_TINDER_BREAKER, MyEnemy)
 end
 
 local cbc = {}
-function cbc.checkCanCastSkill()
+function cbc.CheckCanCastSkill()
   if BATTLE_MODE.CURRENT ~= BATTLE_MODE.CLAW then
     return STATUS.FAILURE
   end
-  return check(MH_CBC, BATTLE_MODE)
+  return check(MH_CBC)
 end
-function cbc.castSkill()
+function cbc.CastSkill()
   return cast(MH_CBC, MyEnemy)
 end
 
 local eqc = {}
-function eqc.checkCanCastSkill()
+function eqc.CheckCanCastSkill()
   if BATTLE_MODE.CURRENT ~= BATTLE_MODE.CLAW then
     return STATUS.FAILURE
   end
-  return check(MH_EQC, BATTLE_MODE)
+  return check(MH_EQC)
 end
-function eqc.castSkill()
+function eqc.CastSkill()
   return cast(MH_EQC, MyEnemy)
 end
 
-local BattleModeSequence = Sequence({
-  sonic.checkCanCastSkill,
-  sonic.castSkill,
+---@return boolean
+function condition.skillsInCooldown()
+  local maxSpheres = 5
+  if MySpheres < maxSpheres then
+    if math.random(2) == 1 then
+      MySpheres = MySpheres + 1
+    end
+  else
+    local sonicStatus = sonic.CheckCanCastSkill()
+    local tinderStatus = tinder.CheckCanCastSkill()
+    if sonicStatus == STATUS.SUCCESS and tinderStatus == STATUS.SUCCESS then
+      return false
+    end
+  end
+  return true
+end
+
+local switchSequence = Sequence({
+  switch.CheckCanCastSkill,
+  switch.CastSkill,
+})
+
+local sonicSequence = Sequence({
+  sonic.CheckCanCastSkill,
+  sonic.CastSkill,
+})
+
+local silverSequence = Sequence({
+  silver.CheckCanCastSkill,
+  silver.CastSkill,
+})
+
+local midnightSequence = Sequence({
+  midnight.CheckCanCastSkill,
+  midnight.CastSkill,
+})
+
+local tinderSequence = Sequence({
+  tinder.CheckCanCastSkill,
+  tinder.CastSkill,
+})
+
+local cbcSequence = Sequence({
+  cbc.CheckCanCastSkill,
+  cbc.CastSkill,
+})
+
+local eqcSequence = Sequence({
+  eqc.CheckCanCastSkill,
+  eqc.CastSkill,
+})
+
+local battleComboSequence = Sequence({
+  sonic.CheckCanCastSkill,
+  sonic.CastSkill,
   Sequence({
-    silver.checkCanCastSkill,
-    silver.castSkill,
+    silver.CheckCanCastSkill,
+    silver.CastSkill,
     Sequence({
-      midnight.checkCanCastSkill,
-      midnight.castSkill,
+      midnight.CheckCanCastSkill,
+      midnight.CastSkill,
     }),
   }),
 })
 
-local ClawModeSequence = Sequence({
-  tinder.checkCanCastSkill,
-  tinder.castSkill,
+local clawComboSequence = Sequence({
+  tinder.CheckCanCastSkill,
+  tinder.CastSkill,
   Sequence({
-    cbc.checkCanCastSkill,
-    cbc.castSkill,
+    cbc.CheckCanCastSkill,
+    cbc.CastSkill,
     Sequence({
-      eqc.checkCanCastSkill,
-      eqc.castSkill,
+      eqc.CheckCanCastSkill,
+      eqc.CastSkill,
     }),
   }),
 })
 
-local SwitchBattleMode = Sequence({
-  switch.checkCanCastSkill,
-  switch.castSkill,
+local battleModeSequence = Selector({
+  battleComboSequence,
+  sonicSequence,
+  silverSequence,
+  midnightSequence,
 })
 
-local SkillAttackSequence = Selector({
-  BattleModeSequence,
-  ClawModeSequence,
-  SwitchBattleMode,
+local clawModeSequence = Selector({
+  clawComboSequence,
+  tinderSequence,
+  cbcSequence,
+  eqcSequence,
 })
 
-return Selector({
-  Sequence({
-    CheckOwnerToofar,
-    CheckIfHasEnemy,
-    Selector({
-      Sequence({
-        CheckEnemyIsAlive,
-        Parallel({
-          CheckOwnerToofar,
-          ChaseEnemyNode,
-          SkillAttackSequence,
-          CheckEnemyIsAlive,
-          CheckEnemyIsOutOfSight,
-        }),
-      }),
-      Sequence({
-        CheckEnemyIsAlive,
-        Parallel({
-          CheckOwnerToofar,
-          ChaseEnemyNode,
-          BasicAttack,
-          CheckEnemyIsAlive,
-          CheckEnemyIsOutOfSight,
-        }),
-      }),
-    }),
-  }),
+local skillAttackSequence = Selector({
+  battleModeSequence,
+  clawModeSequence,
+  switchSequence,
 })
+
+local basicAttack = Parallel({
+  Condition(ChaseEnemyNode, condition.enemyIsNotOutOfSight),
+  Condition(Condition(BasicAttackNode, condition.skillsInCooldown), condition.enemyIsAlive),
+})
+
+local battleNode = Selector({
+  Condition(skillAttackSequence, condition.ownerIsNotTooFar),
+  Condition(basicAttack, condition.ownerIsNotTooFar),
+})
+
+local patrolNodeSequence = Sequence({
+  Reverse(CheckIfHasEnemy),
+  PatrolNode,
+})
+
+local eleanor = Selector({
+  Condition(FollowNode, condition.ownerMoving),
+  Condition(patrolNodeSequence, condition.ownerIsSitting),
+  Condition(battleNode, condition.hasEnemy),
+})
+
+return Condition(eleanor, IsEleanor)

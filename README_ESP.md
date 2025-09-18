@@ -69,11 +69,11 @@ Si quieres contribuir de otra forma, envía un Rodex en el juego a `Freya/Peluni
   - [x] Vanilmirth
   - [x] Amistr
   - [x] Filir
-- [ ] Homúnculo S
-  - [ ] Bayeri
+- [x] Homúnculo S
+  - [x] Bayeri
   - [x] Dieter
   - [x] Eira
-  - [ ] Sera
+  - [x] Sera
   - [x] Eleanor
 - [ ] PVP
 - [ ] WOE
@@ -82,7 +82,7 @@ Si quieres contribuir de otra forma, envía un Rodex en el juego a `Freya/Peluni
 - [x] Evitar Plant
 - [x] Habilidades y Cooldown
 - [x] Prevención del Bug de Duplicación de Homúnculo
-- [ ] Comandos de usuario
+- [x] Comandos de usuario
 
 ### Proyectos Alternativos
 
