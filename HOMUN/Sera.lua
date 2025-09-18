@@ -62,12 +62,7 @@ local MySkills = {
       if previousCooldown == 0 then
         return previousCooldown
       end
-      if MyEnemy ~= 0 and IsMVP(MyEnemy) then
-        return 15
-      elseif MyEnemy ~= 0 and IsBoss(MyEnemy) then
-        return 30
-      end
-      return 60
+      return 30
     end,
     level_requirement = 132,
     level = 5,
@@ -161,12 +156,7 @@ end
 
 ---@return boolean
 function condition.skillsInCooldown()
-  if
-    poisonMist.CheckCanCastSkill() == STATUS.SUCCESS
-    or painKiller.CheckCanCastSkill() == STATUS.SUCCESS
-    or summonLegion.CheckCanCastSkill() == STATUS.SUCCESS
-    or paralyse.CheckCanCastSkill() == STATUS.SUCCESS
-  then
+  if poisonMist.CheckCanCastSkill() == STATUS.SUCCESS or painKiller.CheckCanCastSkill() == STATUS.SUCCESS then
     return false
   end
   return true
@@ -216,13 +206,9 @@ local battleNode = Selector({
   Condition(painKillerSequence, condition.ownerIsNotTooFar),
   Condition(basicAttack, condition.ownerIsNotTooFar),
 })
-local patrolNodeSequence = Sequence({
-  Reverse(CheckIfHasEnemy),
-  PatrolNode,
-})
 local sera = Selector({
   Condition(FollowNode, condition.ownerMoving),
-  Condition(patrolNodeSequence, condition.ownerIsSitting),
+  Condition(Condition(PatrolNode, condition.ownerIsSitting), Inversion(condition.hasEnemy)),
   Condition(battleNode, condition.hasEnemy),
 })
 return Condition(sera, IsSera)

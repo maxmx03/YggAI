@@ -221,13 +221,10 @@ local battleNode = Selector({
   Condition(volcanicParallel, condition.enemyIsAlive),
   Condition(basicAttack, condition.ownerIsNotTooFar),
 })
-local patrolNodeSequence = Sequence({
-  Reverse(CheckIfHasEnemy),
-  PatrolNode,
-})
+
 local dieter = Selector({
   Condition(FollowNode, condition.ownerMoving),
-  Condition(patrolNodeSequence, condition.ownerIsSitting),
+  Condition(Condition(PatrolNode, condition.ownerIsSitting), Inversion(condition.hasEnemy)),
   Condition(graniticSequence, condition.ownerIsDying),
   Condition(battleNode, condition.hasEnemy),
 })

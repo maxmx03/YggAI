@@ -134,13 +134,9 @@ local battleNode = Selector({
   Condition(changeSequence, condition.enemyIsAlive),
   Condition(basicAttack, condition.ownerIsNotTooFar),
 })
-local patrolNodeSequence = Sequence({
-  Reverse(CheckIfHasEnemy),
-  PatrolNode,
-})
 local lif = Selector({
   Condition(FollowNode, condition.ownerMoving),
-  Condition(patrolNodeSequence, condition.ownerIsSitting),
+  Condition(Condition(PatrolNode, condition.ownerIsSitting), Inversion(condition.hasEnemy)),
   Condition(healSequence, condition.ownerIsDying),
   Condition(battleNode, condition.hasEnemy),
 })

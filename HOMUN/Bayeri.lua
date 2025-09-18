@@ -61,7 +61,7 @@ local MySkills = {
       if previousCooldown == 0 then
         return previousCooldown
       end
-      return math.max(1, 2.2 - level * 0.2)
+      return math.max(1, 15 + level * 15)
     end,
     level_requirement = 130,
     level = 5,
@@ -75,7 +75,7 @@ local MySkills = {
       if previousCooldown == 0 then
         return previousCooldown
       end
-      return math.max(1, 2.2 - level * 0.2)
+      return math.max(1, 2.2 - (level * 0.2) + 1.5)
     end,
     level_requirement = 138,
     level = 10,
@@ -207,13 +207,10 @@ local battleNode = Selector({
   Condition(heilParallel, condition.ownerIsNotTooFar),
   Condition(basicAttack, condition.ownerIsNotTooFar),
 })
-local patrolNodeSequence = Sequence({
-  Reverse(CheckIfHasEnemy),
-  PatrolNode,
-})
+
 local bayeri = Selector({
   Condition(FollowNode, condition.ownerMoving),
-  Condition(patrolNodeSequence, condition.ownerIsSitting),
+  Condition(Condition(PatrolNode, condition.ownerIsSitting), Inversion(condition.hasEnemy)),
   Condition(steinSequence, condition.ownerIsDying),
   Condition(battleNode, condition.hasEnemy),
 })

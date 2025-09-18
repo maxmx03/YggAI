@@ -121,14 +121,10 @@ local battleNode = Selector({
   Condition(capriceParallel, condition.ownerIsNotTooFar),
   Condition(basicAttack, condition.ownerIsNotTooFar),
 })
-local patrolNodeSequence = Sequence({
-  Reverse(CheckIfHasEnemy),
-  PatrolNode,
-})
 local vanil = Selector({
   Condition(FollowNode, condition.ownerMoving),
+  Condition(Condition(PatrolNode, condition.ownerIsSitting), Inversion(condition.hasEnemy)),
   Condition(Condition(chaoticParallel, condition.ownerIsDying), Inversion(condition.hasEnemy)),
-  Condition(patrolNodeSequence, condition.ownerIsSitting),
   Condition(battleNode, condition.hasEnemy),
 })
 return Condition(vanil, IsVanilmirth)

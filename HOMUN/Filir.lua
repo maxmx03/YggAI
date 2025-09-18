@@ -145,13 +145,9 @@ local battleNode = Selector({
   Condition(moonParallel, condition.enemyIsAlive),
   Condition(basicAttack, condition.ownerIsNotTooFar),
 })
-local patrolNodeSequence = Sequence({
-  Reverse(CheckIfHasEnemy),
-  PatrolNode,
-})
 local filir = Selector({
   Condition(FollowNode, condition.ownerMoving),
-  Condition(patrolNodeSequence, condition.ownerIsSitting),
+  Condition(Condition(PatrolNode, condition.ownerIsSitting), Inversion(condition.hasEnemy)),
   Condition(fleetSequence, condition.ownerIsDying),
   Condition(battleNode, condition.hasEnemy),
 })

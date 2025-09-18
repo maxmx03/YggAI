@@ -210,13 +210,9 @@ local battleNode = Selector({
   Condition(Condition(cutterParallel, condition.isWindMonster), condition.ownerIsNotTooFar),
   Condition(basicAttack, condition.ownerIsNotTooFar),
 })
-local patrolNodeSequence = Sequence({
-  Reverse(CheckIfHasEnemy),
-  PatrolNode,
-})
 local eira = Selector({
   Condition(FollowNode, condition.ownerMoving),
-  Condition(patrolNodeSequence, condition.ownerIsSitting),
+  Condition(Condition(PatrolNode, condition.ownerIsSitting), Inversion(condition.hasEnemy)),
   Condition(lightSequence, condition.ownerIsDead),
   Condition(battleNode, condition.hasEnemy),
 })
