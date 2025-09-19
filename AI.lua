@@ -26,7 +26,6 @@ local root = Selector({
 })
 function AI(myid)
   CurrentTime = GetTick() / 1000
-  math.randomseed(CurrentTime)
   MyID = myid
   MyOwner = GetV(V_OWNER, myid)
   userCommands(root)

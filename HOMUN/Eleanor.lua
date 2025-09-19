@@ -52,7 +52,7 @@ local MySkills = {
       if previousCooldown == 0 then
         return previousCooldown
       end
-      return 1.5
+      return 3
     end,
     level_requirement = 114,
     level = 10,
@@ -67,10 +67,10 @@ local MySkills = {
       if previousCooldown == 0 then
         return previousCooldown
       end
-      return 1.5
+      return 3
     end,
     level_requirement = 128,
-    level = 4,
+    level = 10,
     sphere_cost = 1,
   },
   ---@type Skill
@@ -145,18 +145,22 @@ end
 
 ---@param mySkill number
 ---@param target number
-local cast = function(mySkill, target)
+---@param continuous boolean?
+local cast = function(mySkill, target, continuous)
   MySkill = mySkill
   ---@type Skill
   local s = MySkills[MySkill]
   local lastTime = MyCooldown[MySkill]
   local cd = s.cooldown(s.level, lastTime)
-  local sk = { level = s.level, id = MySkill, cooldown = cd, lastTime = lastTime, currentTime = CurrentTime }
+  local sk = { level = s.level, id = MySkill, cooldown = cd, lastTime = lastTime, currentTime = GetTick() / 1000 }
   local casted = CastSkill(MyID, target, sk)
   if casted then
-    MyCooldown[MySkill] = CurrentTime
+    MyCooldown[MySkill] = GetTick() / 1000
     if MySpheres > 0 then
       MySpheres = math.max(0, MySpheres - s.sphere_cost)
+    end
+    if continuous then
+      return STATUS.RUNNING
     end
     return STATUS.SUCCESS
   end
@@ -164,13 +168,6 @@ local cast = function(mySkill, target)
   return STATUS.FAILURE
 end
 
-local sonic = {}
-function sonic.CheckCanCastSkill()
-  return check(MH_SONIC_CRAW)
-end
-function sonic.CastSkill()
-  return cast(MH_SONIC_CRAW, MyEnemy)
-end
 local silver = {}
 function silver.CheckCanCastSkill()
   return check(MH_SILVERVEIN_RUSH)
@@ -185,14 +182,23 @@ end
 function midnight.CastSkill()
   return cast(MH_MIDNIGHT_FRENZY, MyEnemy)
 end
+local sonic = {}
+function sonic.CheckCanCastSkill()
+  return check(MH_SONIC_CRAW)
+end
+function sonic.CastSkill()
+  if silver.CheckCanCastSkill() == STATUS.FAILURE and midnight.CheckCanCastSkill() == STATUS.FAILURE then
+    return cast(MH_SONIC_CRAW, MyEnemy, true)
+  end
+  return cast(MH_SONIC_CRAW, MyEnemy)
+end
 
 ---@return boolean
 function condition.skillsInCooldown()
+  math.randomseed(GetTick())
   local maxSpheres = 5
   if MySpheres < maxSpheres then
-    if math.random(2) == 1 then
-      MySpheres = MySpheres + 1
-    end
+    MySpheres = MySpheres + 1
   else
     local sonicStatus = sonic.CheckCanCastSkill()
     if sonicStatus == STATUS.SUCCESS then
@@ -224,7 +230,7 @@ local battleComboSequence = Sequence({
 })
 
 local battleComboParallelSequence = Parallel({
-  Condition(battleComboSequence, condition.enemyIsAlive),
+  Condition(Condition(battleComboSequence, condition.enemyIsAlive), condition.ownerIsNotTooFar),
   Condition(ChaseEnemyNode, condition.enemyIsNotOutOfSight),
 })
 

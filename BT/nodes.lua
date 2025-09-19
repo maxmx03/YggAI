@@ -56,6 +56,7 @@ function BasicAttackNode()
 end
 
 function PatrolNode()
+  math.randomseed(GetTick())
   local cooldown = math.random(10)
   if (CurrentTime - LastTimePatrol) > cooldown then
     local destX, destY = GetV(V_POSITION, MyOwner)
