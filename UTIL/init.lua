@@ -458,11 +458,12 @@ end
 ---@return boolean
 function CastSkill(myid, target, sk)
   if CanUseSkill(sk.currentTime, sk.lastTime, sk.cooldown) then
-    SkillObject(myid, sk.level, sk.id, target)
-    return true
-  else
-    return false
+    local status = SkillObject(myid, sk.level, sk.id, target)
+    if status == nil or status == 1 then
+      return true
+    end
   end
+  return false
 end
 
 ---@class Position
@@ -475,11 +476,12 @@ end
 ---@return boolean
 function CastSkillGround(myid, position, sk)
   if CanUseSkill(sk.currentTime, sk.lastTime, sk.cooldown) then
-    SkillGround(myid, sk.level, sk.id, position.x, position.y)
-    return true
-  else
-    return false
+    local status = SkillGround(myid, sk.level, sk.id, position.x, position.y)
+    if status == nil or status == 1 then
+      return true
+    end
   end
+  return false
 end
 
 ---@param sp number

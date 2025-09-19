@@ -97,7 +97,7 @@ local MySkills = {
       if previousCooldown == 0 then
         return previousCooldown
       end
-      return 0.3
+      return 0.5
     end,
     level_requirement = 112,
     level = 5,
@@ -112,7 +112,7 @@ local MySkills = {
       if previousCooldown == 0 then
         return previousCooldown
       end
-      return 0.3
+      return 0
     end,
     level_requirement = 133,
     level = 5,
@@ -146,7 +146,6 @@ end
 ---@param mySkill number
 ---@param target number
 local cast = function(mySkill, target)
-  local spBeforeCast = GetSp(MyID)
   MySkill = mySkill
   ---@type Skill
   local s = MySkills[MySkill]
@@ -155,100 +154,59 @@ local cast = function(mySkill, target)
   local sk = { level = s.level, id = MySkill, cooldown = cd, lastTime = lastTime, currentTime = CurrentTime }
   local casted = CastSkill(MyID, target, sk)
   if casted then
-    local spAfterCast = GetSp(MyID)
-    if spAfterCast == spBeforeCast and spBeforeCast > 0 then
-      if BATTLE_MODE.CURRENT == BATTLE_MODE.BATTLE then
-        BATTLE_MODE.CURRENT = BATTLE_MODE.CLAW
-      else
-        BATTLE_MODE.CURRENT = BATTLE_MODE.BATTLE
-      end
-      return STATUS.FAILURE
-    end
     MyCooldown[MySkill] = CurrentTime
     if MySpheres > 0 then
-      MySpheres = MySpheres - s.sphere_cost
+      MySpheres = math.max(0, MySpheres - s.sphere_cost)
     end
-    return STATUS.RUNNING
+    return STATUS.SUCCESS
   end
   MySkill = 0
   return STATUS.FAILURE
 end
 
-local switch = {}
-function switch.CheckCanCastSkill()
-  return check(MH_STYLE_CHANGE)
-end
-function switch.CastSkill()
-  if math.random(4) == 1 then
-    return cast(MH_STYLE_CHANGE, MyID)
-  end
-  return STATUS.FAILURE
-end
+local ComboSCTimeout = 0
+local ComboSVTimeout = 0
 
 local sonic = {}
 function sonic.CheckCanCastSkill()
-  if BATTLE_MODE.CURRENT ~= BATTLE_MODE.BATTLE then
-    return STATUS.FAILURE
-  end
   return check(MH_SONIC_CRAW)
 end
 function sonic.CastSkill()
-  return cast(MH_SONIC_CRAW, MyEnemy)
+  if cast(MH_SONIC_CRAW, MyEnemy) == STATUS.SUCCESS then
+    ComboSCTimeout = CurrentTime + 2.0
+    ComboSVTimeout = 0
+    return STATUS.SUCCESS
+  end
+  return STATUS.FAILURE
 end
-
 local silver = {}
 function silver.CheckCanCastSkill()
-  if BATTLE_MODE.CURRENT ~= BATTLE_MODE.BATTLE then
+  if CurrentTime > ComboSCTimeout then
     return STATUS.FAILURE
   end
   return check(MH_SILVERVEIN_RUSH)
 end
 function silver.CastSkill()
-  return cast(MH_SILVERVEIN_RUSH, MyEnemy)
+  if cast(MH_SILVERVEIN_RUSH, MyEnemy) == STATUS.SUCCESS then
+    ComboSVTimeout = CurrentTime + 2.0
+    ComboSCTimeout = 0
+    return STATUS.SUCCESS
+  end
+  return STATUS.FAILURE
 end
-
 local midnight = {}
 function midnight.CheckCanCastSkill()
-  if BATTLE_MODE.CURRENT ~= BATTLE_MODE.BATTLE then
+  if CurrentTime > ComboSVTimeout then
     return STATUS.FAILURE
   end
   return check(MH_MIDNIGHT_FRENZY)
 end
 function midnight.CastSkill()
-  return cast(MH_MIDNIGHT_FRENZY, MyEnemy)
-end
-
-local tinder = {}
-function tinder.CheckCanCastSkill()
-  if BATTLE_MODE.CURRENT ~= BATTLE_MODE.CLAW then
-    return STATUS.FAILURE
+  if cast(MH_MIDNIGHT_FRENZY, MyEnemy) == STATUS.SUCCESS then
+    ComboSVTimeout = 0
+    return STATUS.SUCCESS
   end
-  return check(MH_TINDER_BREAKER)
-end
-function tinder.CastSkill()
-  return cast(MH_TINDER_BREAKER, MyEnemy)
-end
-
-local cbc = {}
-function cbc.CheckCanCastSkill()
-  if BATTLE_MODE.CURRENT ~= BATTLE_MODE.CLAW then
-    return STATUS.FAILURE
-  end
-  return check(MH_CBC)
-end
-function cbc.CastSkill()
-  return cast(MH_CBC, MyEnemy)
-end
-
-local eqc = {}
-function eqc.CheckCanCastSkill()
-  if BATTLE_MODE.CURRENT ~= BATTLE_MODE.CLAW then
-    return STATUS.FAILURE
-  end
-  return check(MH_EQC)
-end
-function eqc.CastSkill()
-  return cast(MH_EQC, MyEnemy)
+  return STATUS.FAILURE
 end
 
 ---@return boolean
@@ -260,18 +218,12 @@ function condition.skillsInCooldown()
     end
   else
     local sonicStatus = sonic.CheckCanCastSkill()
-    local tinderStatus = tinder.CheckCanCastSkill()
-    if sonicStatus == STATUS.SUCCESS and tinderStatus == STATUS.SUCCESS then
+    if sonicStatus == STATUS.SUCCESS then
       return false
     end
   end
   return true
 end
-
-local switchSequence = Sequence({
-  switch.CheckCanCastSkill,
-  switch.CastSkill,
-})
 
 local sonicSequence = Sequence({
   sonic.CheckCanCastSkill,
@@ -288,65 +240,15 @@ local midnightSequence = Sequence({
   midnight.CastSkill,
 })
 
-local tinderSequence = Sequence({
-  tinder.CheckCanCastSkill,
-  tinder.CastSkill,
-})
-
-local cbcSequence = Sequence({
-  cbc.CheckCanCastSkill,
-  cbc.CastSkill,
-})
-
-local eqcSequence = Sequence({
-  eqc.CheckCanCastSkill,
-  eqc.CastSkill,
-})
-
 local battleComboSequence = Sequence({
-  sonic.CheckCanCastSkill,
-  sonic.CastSkill,
-  Sequence({
-    silver.CheckCanCastSkill,
-    silver.CastSkill,
-    Sequence({
-      midnight.CheckCanCastSkill,
-      midnight.CastSkill,
-    }),
-  }),
-})
-
-local clawComboSequence = Sequence({
-  tinder.CheckCanCastSkill,
-  tinder.CastSkill,
-  Sequence({
-    cbc.CheckCanCastSkill,
-    cbc.CastSkill,
-    Sequence({
-      eqc.CheckCanCastSkill,
-      eqc.CastSkill,
-    }),
-  }),
-})
-
-local battleModeSequence = Selector({
-  battleComboSequence,
   sonicSequence,
   silverSequence,
   midnightSequence,
 })
 
-local clawModeSequence = Selector({
-  clawComboSequence,
-  tinderSequence,
-  cbcSequence,
-  eqcSequence,
-})
-
-local skillAttackSequence = Selector({
-  battleModeSequence,
-  clawModeSequence,
-  switchSequence,
+local battleComboParallelSequence = Parallel({
+  Condition(battleComboSequence, condition.enemyIsAlive),
+  Condition(ChaseEnemyNode, condition.enemyIsNotOutOfSight),
 })
 
 local basicAttack = Parallel({
@@ -358,7 +260,7 @@ local basicAttack = Parallel({
 })
 
 local battleNode = Selector({
-  Condition(Condition(skillAttackSequence, condition.enemyIsAlive), condition.ownerIsNotTooFar),
+  Condition(Condition(battleComboParallelSequence, condition.enemyIsAlive), condition.ownerIsNotTooFar),
   Condition(basicAttack, condition.ownerIsNotTooFar),
 })
 local eleanor = Selector({
