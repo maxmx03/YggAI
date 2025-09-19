@@ -83,7 +83,7 @@ end
 function Delay(node, delay)
   local lastExec = 0
   return function()
-    local now = CurrentTime
+    local now = GetTick() / 1000
     if now - lastExec >= delay then
       lastExec = now
       return node()

@@ -70,7 +70,7 @@ local MySkills = {
       return 1.5
     end,
     level_requirement = 128,
-    level = 10,
+    level = 4,
     sphere_cost = 1,
   },
   ---@type Skill
@@ -82,7 +82,7 @@ local MySkills = {
       if previousCooldown == 0 then
         return previousCooldown
       end
-      return 0.5
+      return 0
     end,
     level_requirement = 100,
     level = 5,
@@ -97,7 +97,7 @@ local MySkills = {
       if previousCooldown == 0 then
         return previousCooldown
       end
-      return 0.5
+      return 0
     end,
     level_requirement = 112,
     level = 5,
@@ -164,49 +164,26 @@ local cast = function(mySkill, target)
   return STATUS.FAILURE
 end
 
-local ComboSCTimeout = 0
-local ComboSVTimeout = 0
-
 local sonic = {}
 function sonic.CheckCanCastSkill()
   return check(MH_SONIC_CRAW)
 end
 function sonic.CastSkill()
-  if cast(MH_SONIC_CRAW, MyEnemy) == STATUS.SUCCESS then
-    ComboSCTimeout = CurrentTime + 2.0
-    ComboSVTimeout = 0
-    return STATUS.SUCCESS
-  end
-  return STATUS.FAILURE
+  return cast(MH_SONIC_CRAW, MyEnemy)
 end
 local silver = {}
 function silver.CheckCanCastSkill()
-  if CurrentTime > ComboSCTimeout then
-    return STATUS.FAILURE
-  end
   return check(MH_SILVERVEIN_RUSH)
 end
 function silver.CastSkill()
-  if cast(MH_SILVERVEIN_RUSH, MyEnemy) == STATUS.SUCCESS then
-    ComboSVTimeout = CurrentTime + 2.0
-    ComboSCTimeout = 0
-    return STATUS.SUCCESS
-  end
-  return STATUS.FAILURE
+  return cast(MH_SILVERVEIN_RUSH, MyEnemy)
 end
 local midnight = {}
 function midnight.CheckCanCastSkill()
-  if CurrentTime > ComboSVTimeout then
-    return STATUS.FAILURE
-  end
   return check(MH_MIDNIGHT_FRENZY)
 end
 function midnight.CastSkill()
-  if cast(MH_MIDNIGHT_FRENZY, MyEnemy) == STATUS.SUCCESS then
-    ComboSVTimeout = 0
-    return STATUS.SUCCESS
-  end
-  return STATUS.FAILURE
+  return cast(MH_MIDNIGHT_FRENZY, MyEnemy)
 end
 
 ---@return boolean
@@ -232,12 +209,12 @@ local sonicSequence = Sequence({
 
 local silverSequence = Sequence({
   silver.CheckCanCastSkill,
-  silver.CastSkill,
+  Delay(silver.CastSkill, 2.0),
 })
 
 local midnightSequence = Sequence({
   midnight.CheckCanCastSkill,
-  midnight.CastSkill,
+  Delay(midnight.CastSkill, 2.0),
 })
 
 local battleComboSequence = Sequence({
