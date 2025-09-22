@@ -1,0 +1,46 @@
+local M = {
+  [3254] = true, -- T W O
+  [3252] = true, -- DR815
+  [3251] = true, -- GC109
+  [3196] = true, -- Gigantes
+  [3195] = true, -- Gigantes
+  [3191] = true, -- Gigantes
+  [2993] = true, -- Poltergeist Sangrento
+  [2744] = true, -- eo0B
+  [2732] = true, -- Pesadelo Sombrio Feroz
+  [2318] = true, -- Bangungot
+  [2315] = true, -- Wakwak
+  [2311] = true, -- Manananggal
+  [2156] = true, -- Leak
+  [2023] = true, -- Sombra Obscura
+  [1974] = true, -- Banshee Master
+  [1918] = true, -- PooB
+  [1917] = true, -- PYoB
+  [1871] = true, -- Bispo Decadente
+  [1785] = true, -- Atroce
+  [1762] = true, -- pIkB
+  [1761] = true, -- o4kB
+  [1753] = true, -- Frus
+  [1738] = true, -- jIkB
+  [1720] = true, -- Hydrolancer
+  [1632] = true, -- Gremlin
+  [1584] = true, -- Tamruan
+  [1582] = true, -- Deviling
+  [1507] = true, -- Serial Killer
+  [1505] = true, -- Loli Ruri
+  [1492] = true, -- Samurai Encarnado
+  [1416] = true, -- Ninfa Perversa
+  [1404] = true, -- Boneco de Miyabi
+  [1292] = true, -- Diabinho
+  [1276] = true, -- Raydric Arqueiro
+  [1219] = true, -- Cavaleiro do Abismo
+  [1204] = true, -- Tirfing
+  [1177] = true, -- Zenorc
+  [1175] = true, -- Tarou
+  [1164] = true, -- Réquiem
+  [1054] = true, -- Besouro-Ladrão Macho
+  [1053] = true, -- Besouro-Ladrão Fêmea
+  [1048] = true, -- Ovo de Besouro-Ladrão
+}
+
+return M

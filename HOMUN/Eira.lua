@@ -1,3 +1,5 @@
+---@type Node
+local node = require('AI.USER_AI.BT.nodes')
 ---@type Condition
 local condition = require('AI.USER_AI.BT.conditions')
 
@@ -14,206 +16,142 @@ local MyCooldown = {
 local MySkills = {
   ---@type Skill
   [MH_ERASER_CUTTER] = {
-    sp = function(level)
-      return math.max(1, 20 + level * 5)
-    end,
-    cooldown = function(_, previousCooldown)
+    id = MH_ERASER_CUTTER,
+    sp = 70,
+    cooldown = function(previousCooldown)
       if previousCooldown == 0 then
         return previousCooldown
       end
       return 0.3
     end,
-    level_requirement = 106,
     level = 10,
   },
   ---@type Skill
   [MH_OVERED_BOOST] = {
-    sp = function(level)
-      return math.max(1, 50 + level * 20)
-    end,
-    cooldown = function(level, previousCooldown)
+    id = MH_OVERED_BOOST,
+    sp = 150,
+    cooldown = function(previousCooldown)
       if previousCooldown == 0 then
         return previousCooldown
       end
-      return math.max(1, 15 + level * 5)
+      return 30
     end,
-    level_requirement = 114,
     level = 5,
   },
+  ---@type Skill
   [MH_XENO_SLASHER] = {
-    sp = function(level)
-      return math.max(1, 80 + level * 10)
-    end,
-    cooldown = function(_, previousCooldown)
+    id = MH_XENO_SLASHER,
+    sp = 180,
+    cooldown = function(previousCooldown)
       if previousCooldown == 0 then
         return previousCooldown
       end
       return 0.3
     end,
-    level_requirement = 121,
     level = 10,
   },
+  ---@type Skill
   [MH_LIGHT_OF_REGENE] = {
-    sp = function()
-      return 40
-    end,
-    cooldown = function(level, previousCooldown)
+    id = MH_LIGHT_OF_REGENE,
+    sp = 40,
+    cooldown = function(previousCooldown)
       if previousCooldown == 0 then
         return previousCooldown
       end
-      return math.max(1, 300 + level * 60)
+      return 300
     end,
-    level_requirement = 128,
     level = 5,
   },
+  ---@type Skill
   [MH_SILENT_BREEZE] = {
-    sp = function(level)
-      return math.max(1, 36 * level * 9)
-    end,
-    cooldown = function(_, previousCooldown)
+    id = MH_SILENT_BREEZE,
+    sp = 160,
+    cooldown = function(previousCooldown)
       if previousCooldown == 0 then
         return previousCooldown
       end
       return 1.5
     end,
-    level_requirement = 137,
     level = 5,
   },
 }
 
----@param mySkill number
-local check = function(mySkill)
+local isSkillCastable = function(mySkill)
   MySkill = mySkill
-  ---@type Skill
-  local s = MySkills[MySkill]
-  local sp = s.sp(s.level)
-  local lastTime = MyCooldown[MySkill]
-  local cd = s.cooldown(s.level, lastTime)
-  if s.level_requirement > MyLevel then
+  local s = MySkills[mySkill]
+  local lastTime = MyCooldown[mySkill]
+  return condition.isSkillCastable(s, lastTime)
+end
+
+local cast = function(skill, target, opts)
+  local casted = node.castSkill(MySkills[skill], MyCooldown[skill], target, opts)
+  if casted == STATUS.RUNNING then
+    MyCooldown[skill] = GetTickInSeconds()
+    return STATUS.RUNNING
+  elseif casted == STATUS.SUCCESS then
+    MyCooldown[skill] = GetTickInSeconds()
     MySkill = 0
-    return STATUS.FAILURE
-  end
-  return CheckCanCastSkill(sp, lastTime, cd)
-end
-
----@param mySkill number
----@param target number
-local cast = function(mySkill, target)
-  MySkill = mySkill
-  ---@type Skill
-  local s = MySkills[MySkill]
-  local lastTime = MyCooldown[MySkill]
-  local cd = s.cooldown(s.level, lastTime)
-  local sk = { level = s.level, id = MySkill, cooldown = cd, lastTime = lastTime, currentTime = CurrentTime }
-  local casted = CastSkill(MyID, target, sk)
-  if casted then
-    MyCooldown[MySkill] = CurrentTime
-    return STATUS.RUNNING
-  end
-  MySkill = 0
-  return STATUS.FAILURE
-end
-
----@param mySkill number
-local castGround = function(mySkill)
-  MySkill = mySkill
-  ---@type Skill
-  local s = MySkills[MySkill]
-  local lastTime = MyCooldown[MySkill]
-  local cd = s.cooldown(s.level, lastTime)
-  local sk = { level = s.level, id = MySkill, cooldown = cd, lastTime = lastTime, currentTime = CurrentTime }
-  local x, y = GetV(V_POSITION, MyEnemy)
-  local casted = CastSkillGround(MyID, { x = x, y = y }, sk)
-  if casted then
-    MyCooldown[MySkill] = CurrentTime
-    return STATUS.RUNNING
+    return STATUS.SUCCESS
   end
   MySkill = 0
   return STATUS.FAILURE
 end
 
 local cutter = {}
-function cutter.CheckCanCastSkill()
-  return check(MH_ERASER_CUTTER)
+function cutter.condition()
+  return isSkillCastable(MH_ERASER_CUTTER)
 end
-function cutter.CastSkill()
-  return cast(MH_ERASER_CUTTER, MyEnemy)
+function cutter.cast()
+  return cast(MH_ERASER_CUTTER, MyEnemy, { targetType = 'target', keepRunning = true })
 end
 
 local overed = {}
-function overed.CheckCanCastSkill()
-  return check(MH_OVERED_BOOST)
+function overed.condition()
+  return isSkillCastable(MH_OVERED_BOOST)
 end
-function overed.CastSkill()
-  return cast(MH_OVERED_BOOST, MyID)
+function overed.cast()
+  return cast(MH_OVERED_BOOST, MyID, { targetType = 'target', keepRunning = false })
 end
 
 local xeno = {}
-function xeno.CheckCanCastSkill()
-  return check(MH_XENO_SLASHER)
+function xeno.condition()
+  return isSkillCastable(MH_XENO_SLASHER)
 end
-function xeno.CastSkill()
-  return castGround(MH_XENO_SLASHER, MyEnemy)
+function xeno.cast()
+  return cast(MH_XENO_SLASHER, MyEnemy, { targetType = 'ground', keepRunning = true })
 end
 
 local light = {}
-function light.CheckCanCastSkill()
-  return check(MH_LIGHT_OF_REGENE)
+function light.condition()
+  return isSkillCastable(MH_LIGHT_OF_REGENE)
 end
-function light.CastSkill()
-  return cast(MH_LIGHT_OF_REGENE, MyOwner)
+function light.cast()
+  return cast(MH_LIGHT_OF_REGENE, MyOwner, { targetType = 'target', keepRunning = false })
 end
-
----@return boolean
-function condition.skillsInCooldown()
-  if cutter.CheckCanCastSkill() == STATUS.SUCCESS or xeno.CheckCanCastSkill() == STATUS.SUCCESS then
-    return false
-  end
-  return true
-end
-
-local basicAttack = Parallel({
-  Condition(ChaseEnemyNode, condition.enemyIsNotOutOfSight),
-  Condition(Condition(BasicAttackNode, condition.skillsInCooldown), condition.enemyIsAlive),
+local AttackAndChase = Parallel({
+  Condition(node.basicAttack, condition.ownerIsNotTooFar, condition.enemyIsAlive, Inversion(cutter.condition)),
+  Condition(node.chaseEnemy, condition.enemyIsNotInAttackSight, condition.ownerIsNotTooFar, condition.enemyIsAlive),
 })
-local cutterSequence = Sequence({
-  cutter.CheckCanCastSkill,
-  cutter.CastSkill,
+local cutterAttack = Parallel({
+  Condition(cutter.cast, cutter.condition, condition.ownerIsNotTooFar, condition.enemyIsAlive),
+  Condition(node.chaseEnemy, condition.ownerIsNotTooFar, condition.enemyIsAlive),
 })
-local overedSequence = Sequence({
-  overed.CheckCanCastSkill,
-  overed.CastSkill,
+local xenoAttack = Parallel({
+  Condition(xeno.cast, xeno.condition, condition.ownerIsNotTooFar, condition.enemyIsAlive),
+  Condition(node.chaseEnemy, condition.ownerIsNotTooFar, condition.enemyIsAlive),
 })
-local xenoSequence = Sequence({
-  xeno.CheckCanCastSkill,
-  xeno.CastSkill,
-})
-local lightSequence = Sequence({
-  light.CheckCanCastSkill,
-  light.CastSkill,
-})
-local cutterParallel = Parallel({
-  Condition(cutterSequence, condition.enemyIsAlive),
-  Condition(ChaseEnemyNode, condition.enemyIsNotOutOfSight),
-})
-local xenoParallel = Parallel({
-  Condition(xenoSequence, condition.enemyIsAlive),
-  Condition(ChaseEnemyNode, condition.enemyIsNotOutOfSight),
-})
-local battleNode = Selector({
-  Condition(overedSequence, condition.isMVP),
-  Condition(Condition(xenoParallel, Inversion(condition.isWindMonster)), condition.ownerIsNotTooFar),
-  Condition(Condition(xenoParallel, condition.isWaterMonster), condition.ownerIsNotTooFar),
-  Condition(Condition(xenoParallel, condition.isPoisonMonster), condition.ownerIsNotTooFar),
-  Condition(Condition(cutterParallel, Inversion(condition.isPoisonMonster)), condition.ownerIsNotTooFar),
-  Condition(Condition(cutterParallel, Inversion(condition.isWaterMonster)), condition.ownerIsNotTooFar),
-  Condition(Condition(cutterParallel, condition.isWindMonster), condition.ownerIsNotTooFar),
-  Condition(basicAttack, condition.ownerIsNotTooFar),
+local combat = Selector({
+  Condition(overed.cast, condition.isMVP, overed.condition),
+  Condition(xenoAttack, condition.ownerIsNotTooFar, condition.enemyIsAlive, condition.isWaterMonster),
+  Condition(xenoAttack, condition.ownerIsNotTooFar, condition.enemyIsAlive, condition.isPoisonMonster),
+  Condition(xenoAttack, condition.ownerIsNotTooFar, condition.enemyIsAlive, Inversion(condition.isWindMonster)),
+  Condition(cutterAttack, condition.ownerIsNotTooFar, condition.enemyIsAlive),
+  Condition(AttackAndChase, condition.ownerIsNotTooFar, condition.enemyIsAlive, Inversion(cutter.condition)),
 })
 local eira = Selector({
-  Condition(FollowNode, condition.ownerMoving),
-  Condition(Condition(PatrolNode, condition.ownerIsSitting), Inversion(condition.hasEnemy)),
-  Condition(lightSequence, condition.ownerIsDead),
-  Condition(battleNode, condition.hasEnemy),
+  Condition(combat, condition.hasEnemyOrInList),
+  Condition(light.cast, condition.ownerIsDead, light.condition),
+  Condition(node.follow, condition.ownerMoving),
+  Condition(node.patrol, condition.ownerIsSitting, Inversion(condition.hasEnemyOrInList)),
 })
 return Condition(eira, IsEira)

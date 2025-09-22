@@ -1,6 +1,9 @@
+---@type Node
+local node = require('AI.USER_AI.BT.nodes')
 ---@type Condition
 local condition = require('AI.USER_AI.BT.conditions')
 
+---@class Cooldown
 local MyCooldown = {
   [MH_STYLE_CHANGE] = 0,
   [MH_SONIC_CRAW] = 0,
@@ -15,106 +18,92 @@ local MyCooldown = {
 local MySkills = {
   ---@type Skill
   [MH_STYLE_CHANGE] = {
-    cooldown = function(_, previousCooldown)
+    id = MH_STYLE_CHANGE,
+    cooldown = function(previousCooldown)
       if previousCooldown == 0 then
         return previousCooldown
       end
       return 1
     end,
-    sp = function(_)
-      return 35
-    end,
-    level_requirement = 100,
+    sp = 35,
     level = 5,
     sphere_cost = 0,
   },
   ---@type Skill
   [MH_SONIC_CRAW] = {
-    sp = function(level)
-      return math.max(1, 15 + level * 5)
-    end,
-    cooldown = function(_, previousCooldown)
+    id = MH_SONIC_CRAW,
+    sp = 40,
+    cooldown = function(previousCooldown)
       if previousCooldown == 0 then
         return previousCooldown
       end
       return 0.5
     end,
-    level_requirement = 100,
     level = 5,
     sphere_cost = 1,
   },
   ---@type Skill
   [MH_SILVERVEIN_RUSH] = {
-    sp = function(level)
-      return math.max(1, 15 + level * 2)
-    end,
-    cooldown = function(_, previousCooldown)
+    id = MH_SILVERVEIN_RUSH,
+    sp = 35,
+    cooldown = function(previousCooldown)
       if previousCooldown == 0 then
         return previousCooldown
       end
-      return 3
+      return 1.5
     end,
-    level_requirement = 114,
     level = 10,
     sphere_cost = 1,
   },
   ---@type Skill
   [MH_MIDNIGHT_FRENZY] = {
-    sp = function(level)
-      return math.max(1, 15 + level * 3)
-    end,
-    cooldown = function(_, previousCooldown)
+    id = MH_MIDNIGHT_FRENZY,
+    sp = 45,
+    cooldown = function(previousCooldown)
       if previousCooldown == 0 then
         return previousCooldown
       end
-      return 3
+      return 1.5
     end,
-    level_requirement = 128,
     level = 10,
     sphere_cost = 1,
   },
   ---@type Skill
   [MH_TINDER_BREAKER] = {
-    sp = function(level)
-      return math.max(1, 15 + level * 5)
-    end,
-    cooldown = function(_, previousCooldown)
+    id = MH_TINDER_BREAKER,
+    sp = 40,
+    cooldown = function(previousCooldown)
       if previousCooldown == 0 then
         return previousCooldown
       end
-      return 0
+      return 0.5
     end,
-    level_requirement = 100,
     level = 5,
     sphere_cost = 1,
   },
   ---@type Skill
   [MH_CBC] = {
-    sp = function(level)
-      return math.max(1, 10 + level * 50)
-    end,
-    cooldown = function(_, previousCooldown)
+    id = MH_CBC,
+    sp = 50,
+    cooldown = function(previousCooldown)
       if previousCooldown == 0 then
         return previousCooldown
       end
-      return 0
+      return 0.3
     end,
-    level_requirement = 112,
     level = 5,
     sphere_cost = 2,
   },
   ---@type Skill
   [MH_EQC] = {
-    sp = function(level)
-      return math.max(1, 20 + level * 4)
-    end,
-    cooldown = function(_, previousCooldown)
+    id = MH_EQC,
+    sp = 40,
+    cooldown = function(previousCooldown)
       if previousCooldown == 0 then
         return previousCooldown
       end
-      return 0
+      return 0.3
     end,
-    level_requirement = 133,
     level = 5,
     sphere_cost = 2,
   },
@@ -128,128 +117,86 @@ BATTLE_MODE = {
 }
 
 ---@param mySkill number
----@return Status
-local check = function(mySkill)
+local isSkillCastable = function(mySkill)
   MySkill = mySkill
   ---@type Skill
-  local s = MySkills[MySkill]
-  local sp = s.sp(s.level)
-  local lastTime = MyCooldown[MySkill]
-  local cd = s.cooldown(s.level, lastTime)
-  if s.level_requirement > MyLevel then
-    MySkill = 0
-    return STATUS.FAILURE
-  end
-  return CheckCanCastSkill(sp, lastTime, cd)
+  local skill = MySkills[MySkill]
+  local cooldown = MyCooldown[MySkill]
+  return condition.isSkillCastable(skill, cooldown)
 end
 
----@param mySkill number
+---@param skill number
 ---@param target number
----@param continuous boolean?
-local cast = function(mySkill, target, continuous)
-  MySkill = mySkill
-  ---@type Skill
-  local s = MySkills[MySkill]
-  local lastTime = MyCooldown[MySkill]
-  local cd = s.cooldown(s.level, lastTime)
-  local sk = { level = s.level, id = MySkill, cooldown = cd, lastTime = lastTime, currentTime = GetTick() / 1000 }
-  local casted = CastSkill(MyID, target, sk)
-  if casted then
-    MyCooldown[MySkill] = GetTick() / 1000
-    if MySpheres > 0 then
-      MySpheres = math.max(0, MySpheres - s.sphere_cost)
-    end
-    if continuous then
-      return STATUS.RUNNING
-    end
+---@param opts SkillOpts
+---@return Status
+local cast = function(skill, target, opts)
+  local casted = node.castSkill(MySkills[skill], MyCooldown[skill], target, opts)
+  if casted == STATUS.RUNNING then
+    MyCooldown[skill] = GetTickInSeconds()
+    return STATUS.RUNNING
+  elseif casted == STATUS.SUCCESS then
+    MyCooldown[skill] = GetTickInSeconds()
+    MySkill = 0
     return STATUS.SUCCESS
   end
-  MySkill = 0
   return STATUS.FAILURE
 end
 
 local silver = {}
-function silver.CheckCanCastSkill()
-  return check(MH_SILVERVEIN_RUSH)
+function silver.condition()
+  return isSkillCastable(MH_SILVERVEIN_RUSH)
 end
-function silver.CastSkill()
-  return cast(MH_SILVERVEIN_RUSH, MyEnemy)
+function silver.cast()
+  return cast(MH_SILVERVEIN_RUSH, MyEnemy, { targetType = 'target', keepRunning = false })
 end
 local midnight = {}
-function midnight.CheckCanCastSkill()
-  return check(MH_MIDNIGHT_FRENZY)
+function midnight.condition()
+  return isSkillCastable(MH_MIDNIGHT_FRENZY)
 end
-function midnight.CastSkill()
-  return cast(MH_MIDNIGHT_FRENZY, MyEnemy)
+function midnight.cast()
+  return cast(MH_MIDNIGHT_FRENZY, MyEnemy, { targetType = 'target', keepRunning = false })
 end
 local sonic = {}
-function sonic.CheckCanCastSkill()
-  return check(MH_SONIC_CRAW)
+function sonic.condition()
+  return isSkillCastable(MH_SONIC_CRAW, { targetType = 'target', keepRunning = false })
 end
-function sonic.CastSkill()
-  if silver.CheckCanCastSkill() == STATUS.FAILURE and midnight.CheckCanCastSkill() == STATUS.FAILURE then
-    return cast(MH_SONIC_CRAW, MyEnemy, true)
+function sonic.cast()
+  if not silver.condition() and not midnight.condition() then
+    return cast(MH_SONIC_CRAW, MyEnemy, { targetType = 'target', keepRunning = true })
   end
-  return cast(MH_SONIC_CRAW, MyEnemy)
+  return cast(MH_SONIC_CRAW, MyEnemy, { targetType = 'target', keepRunning = false })
 end
-
----@return boolean
-function condition.skillsInCooldown()
-  math.randomseed(GetTick())
-  local maxSpheres = 5
-  if MySpheres < maxSpheres then
-    MySpheres = MySpheres + 1
-  else
-    local sonicStatus = sonic.CheckCanCastSkill()
-    if sonicStatus == STATUS.SUCCESS then
-      return false
-    end
-  end
-  return true
-end
-
-local sonicSequence = Sequence({
-  sonic.CheckCanCastSkill,
-  sonic.CastSkill,
-})
-
-local silverSequence = Sequence({
-  silver.CheckCanCastSkill,
-  Delay(silver.CastSkill, 2.0),
-})
-
-local midnightSequence = Sequence({
-  midnight.CheckCanCastSkill,
-  Delay(midnight.CastSkill, 2.0),
-})
-
 local battleComboSequence = Sequence({
-  sonicSequence,
-  silverSequence,
-  midnightSequence,
+  Condition(sonic.cast, condition.ownerIsNotTooFar, sonic.condition),
+  Condition(Delay(silver.cast, 2.0), condition.ownerIsNotTooFar, silver.condition),
+  Condition(Delay(midnight.cast, 2.0), condition.ownerIsNotTooFar, midnight.condition),
 })
-
-local battleComboParallelSequence = Parallel({
+local battleComboMode = Parallel({
   Condition(Condition(battleComboSequence, condition.enemyIsAlive), condition.ownerIsNotTooFar),
-  Condition(ChaseEnemyNode, condition.enemyIsNotOutOfSight),
+  Condition(node.chaseEnemy, condition.enemyIsNotOutOfSight),
 })
-
-local basicAttack = Parallel({
-  Condition(ChaseEnemyNode, condition.enemyIsNotOutOfSight),
+local AttackAndChase = Parallel({
+  Condition(node.basicAttack, condition.ownerIsNotTooFar, condition.enemyIsAlive, Inversion(sonic.condition)),
+  Condition(node.chaseEnemy, condition.ownerIsNotTooFar, condition.enemyIsAlive),
+})
+local AttackAndChaseGainSpheres = Parallel({
   Condition(
-    Condition(Condition(BasicAttackNode, condition.skillsInCooldown), condition.enemyIsAlive),
-    condition.ownerIsNotTooFar
+    node.EleanorBasicAttack,
+    condition.ownerIsNotTooFar,
+    condition.enemyIsAlive,
+    Inversion(condition.hasAllSpheres)
   ),
+  Condition(node.chaseEnemy, condition.ownerIsNotTooFar, condition.enemyIsAlive),
 })
-
-local battleNode = Selector({
-  Condition(Condition(battleComboParallelSequence, condition.enemyIsAlive), condition.ownerIsNotTooFar),
-  Condition(basicAttack, condition.ownerIsNotTooFar),
+local combat = Selector({
+  Condition(Condition(battleComboMode, condition.enemyIsAlive), condition.ownerIsNotTooFar),
+  Condition(AttackAndChaseGainSpheres, condition.ownerIsNotTooFar, Inversion(condition.hasAllSpheres)),
+  Condition(AttackAndChase, condition.ownerIsNotTooFar, Inversion(sonic.condition)),
 })
 local eleanor = Selector({
-  Condition(FollowNode, condition.ownerMoving),
-  Condition(Condition(PatrolNode, condition.ownerIsSitting), Inversion(condition.hasEnemy)),
-  Condition(battleNode, condition.hasEnemy),
+  Condition(combat, condition.hasEnemyOrInList),
+  Condition(node.follow, condition.ownerMoving),
+  Condition(node.patrol, condition.ownerIsSitting, Inversion(condition.hasEnemyOrInList)),
 })
 
 return Condition(eleanor, IsEleanor)

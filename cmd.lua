@@ -1,5 +1,81 @@
 -- GRAVITY CODE, FINITE STATE MACHINE FOR USER COMMANDS
 
+-------------------------------------------
+--  GetMyEnemy - Merce, Owner being attacked
+-------------------------------------------
+local function GetMyEnemyA(myid)
+  local result = 0
+  local owner = GetV(V_OWNER, myid)
+  local actors = GetActors()
+  local enemys = {}
+  local index = 1
+  local target
+  for i, v in ipairs(actors) do
+    if v ~= owner and v ~= myid then
+      target = GetV(V_TARGET, v)
+      if target == myid or target == owner then
+        enemys[index] = v
+        index = index + 1
+      end
+    end
+  end
+
+  local min_dis = 100
+  local dis
+  for i, v in ipairs(enemys) do
+    dis = GetDistance2(myid, v)
+    if dis < min_dis then
+      result = v
+      min_dis = dis
+    end
+  end
+
+  return result
+end
+
+-------------------------------------------
+--  GetMyEnemy - Is a monster
+-------------------------------------------
+local function GetMyEnemyB(myid)
+  local result = 0
+  local owner = GetV(V_OWNER, myid)
+  local actors = GetActors()
+  local enemys = {}
+  local index = 1
+  for i, v in ipairs(actors) do
+    if v ~= owner and v ~= myid then
+      local target = GetV(V_TARGET, v)
+      if target == myid or target == owner or target == 0 then
+        if 1 == IsMonster(v) then
+          enemys[index] = v
+          index = index + 1
+        end
+      end
+    end
+  end
+
+  local min_dis = 100
+  local dis
+  for i, v in ipairs(enemys) do
+    dis = GetDistance2(myid, v)
+    if dis < min_dis then
+      result = v
+      min_dis = dis
+    end
+  end
+
+  return result
+end
+
+function GetMyEnemy(myid)
+  local result = 0
+  result = GetMyEnemyA(myid)
+  if result == 0 or result == -1 then
+    result = GetMyEnemyB(myid)
+  end
+  return result
+end
+
 ResCmdList = List.new()
 
 function OnMOVE_CMD(x, y)

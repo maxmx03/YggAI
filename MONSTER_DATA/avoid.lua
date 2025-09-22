@@ -21,5 +21,10 @@ local M = {
   [2166] = true, -- Gold Uni-horn Scaraba Egg
   [2014] = true, -- Draco Egg
   [1721] = true, -- Dragon Egg
+  [1789] = true, -- ICEICLE
+  [1961] = true, -- Thorn of Purification
+  [1960] = true, -- Thorn of Magic
+  [1959] = true, -- Thorn of Recovery
+  [1958] = true, -- Thorny Skeleton
 }
 return M

@@ -1,3 +1,5 @@
+---@type Node
+local node = require('AI.USER_AI.BT.nodes')
 ---@type Condition
 local condition = require('AI.USER_AI.BT.conditions')
 
@@ -12,143 +14,107 @@ local MyCooldown = {
 local MySkills = {
   ---@type Skill
   [HFLI_MOON] = {
-    sp = function(level)
-      return math.max(1, level * 4)
-    end,
-    cooldown = function(_, previousCooldown)
+    id = HFLI_MOON,
+    sp = 20,
+    cooldown = function(previousCooldown)
       if previousCooldown == 0 then
         return previousCooldown
       end
       return 2
     end,
-    level_requirement = 15,
     level = 5,
   },
   ---@type Skill
   [HFLI_FLEET] = {
-    sp = function(level)
-      return math.max(1, 20 + level * 10)
-    end,
-    cooldown = function(level, previousCooldown)
+    id = HFLI_FLEET,
+    sp = 70,
+    cooldown = function(previousCooldown)
       if previousCooldown == 0 then
         return previousCooldown
       end
-      return math.max(1, 65 + level * 5)
+      return 120
     end,
-    level_requirement = 40,
     level = 5,
   },
+  ---@type Skill
   [HFLI_SPEED] = {
-    sp = function(level)
-      return math.max(1, 20 + level * 10)
-    end,
-    cooldown = function(level, previousCooldown)
+    id = HFLI_SPEED,
+    sp = 70,
+    cooldown = function(previousCooldown)
       if previousCooldown == 0 then
         return previousCooldown
       end
-      return math.max(1, 65 + level * 5)
+      return 120
     end,
-    level_requirement = 70,
     level = 5,
   },
 }
 
 ---@param mySkill number
-local check = function(mySkill)
+local isSkillCastable = function(mySkill)
   MySkill = mySkill
   ---@type Skill
-  local s = MySkills[MySkill]
-  local sp = s.sp(s.level)
-  local lastTime = MyCooldown[MySkill]
-  local cd = s.cooldown(s.level, lastTime)
-  if s.level_requirement > MyLevel then
-    MySkill = 0
-    return STATUS.FAILURE
-  end
-  return CheckCanCastSkill(sp, lastTime, cd)
+  local skill = MySkills[MySkill]
+  local cooldown = MyCooldown[MySkill]
+  return condition.isSkillCastable(skill, cooldown)
 end
 
----@param mySkill number
+---@param skill number
 ---@param target number
-local cast = function(mySkill, target)
-  MySkill = mySkill
-  ---@type Skill
-  local s = MySkills[MySkill]
-  local lastTime = MyCooldown[MySkill]
-  local cd = s.cooldown(s.level, lastTime)
-  local sk = { level = s.level, id = MySkill, cooldown = cd, lastTime = lastTime, currentTime = CurrentTime }
-  local casted = CastSkill(MyID, target, sk)
-  if casted then
-    MyCooldown[MySkill] = CurrentTime
+---@param opts SkillOpts
+---@return Status
+local cast = function(skill, target, opts)
+  local casted = node.castSkill(MySkills[skill], MyCooldown[skill], target, opts)
+  if casted == STATUS.RUNNING then
+    MyCooldown[skill] = GetTickInSeconds()
     return STATUS.RUNNING
+  elseif casted == STATUS.SUCCESS then
+    MyCooldown[skill] = GetTickInSeconds()
+    MySkill = 0
+    return STATUS.SUCCESS
   end
-  MySkill = 0
   return STATUS.FAILURE
 end
 
 local moon = {}
-function moon.CheckCanCastSkill()
-  return check(HFLI_MOON)
+function moon.condition()
+  return isSkillCastable(HFLI_MOON)
 end
-function moon.CastSkill()
-  return cast(HFLI_MOON, MyEnemy)
+function moon.cast()
+  return cast(HFLI_MOON, MyEnemy, { targetType = 'target', keepRunning = false })
 end
-
 local fleet = {}
-function fleet.CheckCanCastSkill()
-  return check(HFLI_FLEET)
+function fleet.condition()
+  return isSkillCastable(HFLI_FLEET)
 end
-
-function fleet.CastSkill()
-  return cast(HFLI_FLEET, MyID)
+function fleet.cast()
+  return cast(HFLI_FLEET, MyID, { targetType = 'target', keepRunning = false })
 end
-
 local speed = {}
-function speed.CheckCanCastSkill()
-  return check(HFLI_SPEED)
+function speed.condition()
+  return isSkillCastable(HFLI_SPEED)
 end
-function speed.CastSkill()
-  return cast(HFLI_SPEED, MyID)
+function speed.cast()
+  return cast(HFLI_SPEED, MyID, { targetType = 'target', keepRunning = false })
 end
-
----@return boolean
-function condition.skillsInCooldown()
-  if moon.CheckCanCastSkill() == STATUS.SUCCESS then
-    return false
-  end
-  return true
-end
-
-local moonSequence = Sequence({
-  moon.CheckCanCastSkill,
-  moon.CastSkill,
+local AttackAndChase = Parallel({
+  Condition(node.basicAttack, condition.ownerIsNotTooFar, condition.enemyIsAlive, Inversion(moon.condition)),
+  Condition(node.chaseEnemy, condition.ownerIsNotTooFar, condition.enemyIsAlive),
 })
 local moonParallel = Parallel({
-  Condition(moonSequence, condition.enemyIsAlive),
-  Condition(ChaseEnemyNode, condition.enemyIsNotOutOfSight),
+  Condition(moon.cast, moon.condition, condition.enemyIsAlive),
+  Condition(node.chaseEnemy, condition.enemyIsNotOutOfSight),
 })
-local fleetSequence = Sequence({
-  fleet.CheckCanCastSkill,
-  fleet.CastSkill,
-})
-local speedSequence = Sequence({
-  speed.CheckCanCastSkill,
-  speed.CastSkill,
-})
-local basicAttack = Parallel({
-  Condition(ChaseEnemyNode, condition.enemyIsNotOutOfSight),
-  Condition(Condition(BasicAttackNode, condition.skillsInCooldown), condition.enemyIsAlive),
-})
-local battleNode = Selector({
-  Condition(speedSequence, condition.enemyIsAlive),
-  Condition(fleetSequence, condition.enemyIsAlive),
+local combat = Selector({
+  Condition(fleet.cast, fleet.condition, condition.ownerIsDying),
   Condition(moonParallel, condition.enemyIsAlive),
-  Condition(basicAttack, condition.ownerIsNotTooFar),
+  Condition(speed.cast, speed.condition, condition.enemyIsAlive),
+  Condition(fleet.cast, fleet.condition, condition.enemyIsAlive),
+  Condition(AttackAndChase, condition.ownerIsNotTooFar, condition.enemyIsAlive),
 })
 local filir = Selector({
-  Condition(FollowNode, condition.ownerMoving),
-  Condition(Condition(PatrolNode, condition.ownerIsSitting), Inversion(condition.hasEnemy)),
-  Condition(fleetSequence, condition.ownerIsDying),
-  Condition(battleNode, condition.hasEnemy),
+  Condition(combat, condition.hasEnemyOrInList),
+  Condition(node.follow, condition.ownerMoving),
+  Condition(node.patrol, condition.ownerIsSitting, Inversion(condition.hasEnemyOrInList)),
 })
 return Condition(filir, IsFilir)

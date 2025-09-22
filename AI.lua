@@ -10,7 +10,7 @@ local dieter = require('AI.USER_AI.HOMUN.Dieter')
 local filir = require('AI.USER_AI.HOMUN.Filir')
 local amistr = require('AI.USER_AI.HOMUN.Amistr')
 local eira = require('AI.USER_AI.HOMUN.Eira')
-local vanil = require('AI.USER_AI.HOMUN.Vanil')
+-- local vanil = require('AI.USER_AI.HOMUN.Vanil')
 local bayeri = require('AI.USER_AI.HOMUN.Bayeri')
 local eleanor = require('AI.USER_AI.HOMUN.Eleanor')
 local root = Selector({
@@ -19,13 +19,12 @@ local root = Selector({
   eira,
   eleanor,
   bayeri,
-  vanil,
+  -- vanil,
   amistr,
   lif,
   filir,
 })
 function AI(myid)
-  CurrentTime = GetTick() / 1000
   MyID = myid
   MyOwner = GetV(V_OWNER, myid)
   userCommands(root)

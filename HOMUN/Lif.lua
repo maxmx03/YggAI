@@ -1,3 +1,5 @@
+---@class Node
+local node = require('AI.USER_AI.BT.nodes')
 ---@type Condition
 local condition = require('AI.USER_AI.BT.conditions')
 
@@ -12,132 +14,104 @@ local MyCooldown = {
 local MySkills = {
   ---@type Skill
   [HLIF_HEAL] = {
-    sp = function(level)
-      return math.max(1, 10 + level * 3)
-    end,
-    cooldown = function(_, previousCooldown)
+    id = HLIF_HEAL,
+    sp = 25,
+    cooldown = function(previousCooldown)
       if previousCooldown == 0 then
         return previousCooldown
       end
       return 20
     end,
-    level_requirement = 15,
     level = 5,
   },
   ---@type Skill
   [HLIF_AVOID] = {
-    sp = function(level)
-      return math.max(1, 15 + level * 5)
-    end,
-    cooldown = function(level, previousCooldown)
+    id = HLIF_AVOID,
+    sp = 40,
+    cooldown = function(previousCooldown)
       if previousCooldown == 0 then
         return previousCooldown
       end
-      return math.max(0.1, 45 - level * 5)
+      return 35
     end,
-    level_requirement = 40,
     level = 5,
   },
   [HLIF_CHANGE] = {
-    sp = function()
-      return 100
-    end,
-    cooldown = function(level, previousCooldown)
+    id = HLIF_CHANGE,
+    sp = 100,
+    cooldown = function(previousCooldown)
       if previousCooldown == 0 then
         return previousCooldown
       end
-      return math.max(0.1, 60 - level * 120)
+      return 5 * 60
     end,
-    level_requirement = 70,
     level = 3,
   },
 }
 
 ---@param mySkill number
-local check = function(mySkill)
+local isSkillCastable = function(mySkill)
   MySkill = mySkill
   ---@type Skill
-  local s = MySkills[MySkill]
-  local sp = s.sp(s.level)
-  local lastTime = MyCooldown[MySkill]
-  local cd = s.cooldown(s.level, lastTime)
-  if s.level_requirement > MyLevel then
-    MySkill = 0
-    return STATUS.FAILURE
-  end
-  return CheckCanCastSkill(sp, lastTime, cd)
+  local skill = MySkills[MySkill]
+  local cooldown = MyCooldown[MySkill]
+  return condition.isSkillCastable(skill, cooldown)
 end
 
----@param mySkill number
+---@param skill number
 ---@param target number
-local cast = function(mySkill, target)
-  MySkill = mySkill
-  ---@type Skill
-  local s = MySkills[MySkill]
-  local lastTime = MyCooldown[MySkill]
-  local cd = s.cooldown(s.level, lastTime)
-  local sk = { level = s.level, id = MySkill, cooldown = cd, lastTime = lastTime, currentTime = CurrentTime }
-  local casted = CastSkill(MyID, target, sk)
-  if casted then
-    MyCooldown[MySkill] = CurrentTime
+---@param opts SkillOpts
+---@return Status
+local cast = function(skill, target, opts)
+  local casted = node.castSkill(MySkills[skill], MyCooldown[skill], target, opts)
+  if casted == STATUS.RUNNING then
+    MyCooldown[skill] = GetTickInSeconds()
     return STATUS.RUNNING
+  elseif casted == STATUS.SUCCESS then
+    MyCooldown[skill] = GetTickInSeconds()
+    MySkill = 0
+    return STATUS.SUCCESS
   end
-  MySkill = 0
   return STATUS.FAILURE
 end
 
 local heal = {}
-function heal.CheckCanCastSkill()
-  return check(HLIF_HEAL)
+function heal.condition()
+  return isSkillCastable(HLIF_HEAL)
 end
-function heal.CastSkill()
+function heal.cast()
   if LifCanHeal then
-    return cast(HLIF_HEAL, MyOwner)
+    return cast(HLIF_HEAL, MyOwner, { keepRunning = false, targetType = 'target' })
   end
   return STATUS.FAILURE
 end
-
 local avoid = {}
-function avoid.CheckCanCastSkill()
-  return check(HLIF_AVOID)
+function avoid.condition()
+  return isSkillCastable(HLIF_AVOID)
 end
-function avoid.CastSkill()
-  return cast(HLIF_AVOID, MyOwner)
+function avoid.cast()
+  return cast(HLIF_AVOID, MyOwner, { targetType = 'target', keepRunning = false })
 end
-
 local change = {}
-function change.CheckCanCastSkill()
-  return check(HLIF_CHANGE)
+function change.condition()
+  return isSkillCastable(HLIF_CHANGE)
 end
-function change.CastSkill()
-  return cast(HLIF_CHANGE, MyID)
+function change.cast()
+  return cast(HLIF_CHANGE, MyID, { keepRunning = false, targetType = 'target' })
 end
-
-local basicAttack = Parallel({
-  Condition(ChaseEnemyNode, condition.enemyIsNotOutOfSight),
-  Condition(BasicAttackNode, condition.enemyIsAlive),
+local AttackAndChase = Parallel({
+  Condition(node.basicAttack, condition.ownerIsNotTooFar, condition.enemyIsAlive),
+  Condition(node.chaseEnemy, condition.ownerIsNotTooFar, condition.enemyIsAlive),
 })
-local healSequence = Sequence({
-  heal.CheckCanCastSkill,
-  heal.CastSkill,
-})
-local avoidSequence = Sequence({
-  avoid.CheckCanCastSkill,
-  avoid.CastSkill,
-})
-local changeSequence = Sequence({
-  change.CheckCanCastSkill,
-  change.CastSkill,
-})
-local battleNode = Selector({
-  Condition(avoidSequence, condition.enemyIsAlive),
-  Condition(changeSequence, condition.enemyIsAlive),
-  Condition(basicAttack, condition.ownerIsNotTooFar),
+local combat = Selector({
+  Condition(heal.cast, heal.condition, condition.ownerIsDying),
+  Condition(avoid.cast, avoid.condition, condition.enemyIsAlive),
+  Condition(change.cast, change.condition, condition.enemyIsAlive),
+  AttackAndChase,
 })
 local lif = Selector({
-  Condition(FollowNode, condition.ownerMoving),
-  Condition(Condition(PatrolNode, condition.ownerIsSitting), Inversion(condition.hasEnemy)),
-  Condition(healSequence, condition.ownerIsDying),
-  Condition(battleNode, condition.hasEnemy),
+  Condition(combat, condition.hasEnemyOrInList),
+  Condition(node.follow, condition.ownerMoving),
+  Condition(node.patrol, condition.ownerIsSitting, Inversion(condition.hasEnemyOrInList)),
 })
 return Condition(lif, IsLif)

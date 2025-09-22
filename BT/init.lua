@@ -108,10 +108,19 @@ function Reverse(node)
 end
 
 ---@param node fun():Status
----@param condition fun():boolean
-function Condition(node, condition)
+---@param ... fun():boolean
+---@return fun():Status
+function Condition(node, ...)
+  local conditions = { ... }
   return function()
-    if condition() then
+    local allTrue = true
+    for _, condition in ipairs(conditions) do
+      if not condition() then
+        allTrue = false
+        break
+      end
+    end
+    if allTrue then
       return node()
     else
       return STATUS.FAILURE

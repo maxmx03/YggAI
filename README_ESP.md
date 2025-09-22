@@ -44,14 +44,12 @@ Puedes usar cualquier editor de texto disponible en tu sistema:
 
 | Variable                             | Descripción                                     |
 | ------------------------------------ | ----------------------------------------------- |
-| `MyLevel`                            | Nivel de tu homúnculo, actualízalo              |
 | `LifCanHeal`                         | ¿LIF puede curar?                               |
 | `ShouldPreventHomunculusDuplication` | ¿Debería prevenir la duplicación del homúnculo? |
 
 #### Ejemplo
 
 ```lua
-MyLevel = 50 -- nivel de tu homúnculo, actualízalo siempre
 LifCanHeal = true -- ¿LIF puede curar? true o false (requiere poción condensada)
 ```
 
@@ -61,32 +59,3 @@ Puedes contribuir reportando errores, sugiriendo nuevas funciones o corrigiendo 
 Para reportar un error, crea un nuevo tema en [Issues](https://github.com/maxmx03/USER_AI/issues).
 
 Si quieres contribuir de otra forma, envía un Rodex en el juego a `Freya/Pelunia (BIO)` o `Freya/Millianor (AB)`, enviando zenys o Semilla de la Vida.
-
-### TODO
-
-- [x] Homúnculo
-  - [x] Lif
-  - [x] Vanilmirth
-  - [x] Amistr
-  - [x] Filir
-- [x] Homúnculo S
-  - [x] Bayeri
-  - [x] Dieter
-  - [x] Eira
-  - [x] Sera
-  - [x] Eleanor
-- [ ] PVP
-- [ ] WOE
-- [x] PVM
-- [x] Detectar MVP
-- [x] Evitar Plant
-- [x] Habilidades y Cooldown
-- [x] Prevención del Bug de Duplicación de Homúnculo
-- [x] Comandos de usuario
-
-### Proyectos Alternativos
-
-> [!CAUTION]
-> Usuarios de AzzyAI: desactiven cualquier autobuff u otra función que pueda causar el error de duplicación.
-
-- [AzzyAI](https://github.com/SpenceKonde/AzzyAI)

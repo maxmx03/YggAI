@@ -122,6 +122,7 @@ SWORDMAN10 = 30
 MOTION_STAND = 0 -- Standing
 MOTION_MOVE = 1 -- Movement
 MOTION_ATTACK = 2 -- Attack
+MOTION_DAMAGE = 4 -- Taking damage
 MOTION_DEAD = 3 -- Dead
 MOTION_BENDDOWN = 5 -- Pick up item, set trap
 MOTION_SIT = 6 -- Sitting down
@@ -216,11 +217,20 @@ MH_LAVA_SLIDE = 8041
 MH_PYROCLASTIC = 8042
 MH_VOLCANIC_ASH = 8043
 
--- For cooldown, patrol
-CurrentTime = 0
-LastTimePatrol = 0
+---@enum Target
+TARGET = {
+  GROUND = 1,
+  OBJECT = 2,
+}
+
+---@enum ExitState
+SKILL_EXIT_STATE = {
+  SUCCESS = 1, -- cast once
+  RUNNING = 2, -- cast multiple times
+}
+
 ------------------------------------------
--- HOMUNCULUS
+-- HOMUNCULUS | BLACKBOARD
 ------------------------------------------
 MyState = IDLE_ST
 MyEnemy = 0 -- Enemy’s ID
@@ -231,6 +241,7 @@ MyPatrolY = 0 -- y coordinate of a scouting location
 MyID = 0 -- Homunculus ID
 MySkill = 0 -- Homunculus skills
 MySkillLevel = 0 -- Homunculus skill level
+MySkillTarget = TARGET.OBJECT -- Homunculus skill target
+MySkillState = SKILL_EXIT_STATE.SUCCESS -- Homunculus skill state
 MyOwner = 0 -- Homunculus owner
 MySpheres = 5 -- Eleanor only
-MySkillKey = 0

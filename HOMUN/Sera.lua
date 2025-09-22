@@ -1,3 +1,5 @@
+---@class Node
+local node = require('AI.USER_AI.BT.nodes')
 ---@type Condition
 local condition = require('AI.USER_AI.BT.conditions')
 
@@ -13,202 +15,137 @@ local MyCooldown = {
 local MySkills = {
   ---@type Skill
   [MH_NEEDLE_OF_PARALYZE] = {
-    sp = function(level)
-      return math.max(1, 36 + level * 6)
-    end,
-    cooldown = function(_, previousCooldown)
+    id = MH_NEEDLE_OF_PARALYZE,
+    sp = 96,
+    cooldown = function(previousCooldown)
       if previousCooldown == 0 then
         return previousCooldown
       end
-      return 10
+      return 0.2
     end,
-    level_requirement = 105,
     level = 10,
   },
   ---@type Skill
   [MH_POISON_MIST] = {
-    sp = function(level)
-      return math.max(1, 55 + level * 10)
-    end,
-    cooldown = function(_, previousCooldown)
+    id = MH_POISON_MIST,
+    sp = 105,
+    cooldown = function(previousCooldown)
       if previousCooldown == 0 then
         return previousCooldown
       end
       return 15
     end,
-    level_requirement = 116,
     level = 5,
   },
   ---@type Skill
   [MH_PAIN_KILLER] = {
-    sp = function(level)
-      return math.max(1, 44 + level * 4)
-    end,
-    cooldown = function(level, previousCooldown)
+    id = MH_PAIN_KILLER,
+    sp = 64,
+    cooldown = function(previousCooldown)
       if previousCooldown == 0 then
         return previousCooldown
       end
-      return math.max(1, 300 + level * 30)
+      return 600
     end,
-    level_requirement = 123,
     level = 10,
   },
   ---@type Skill
   [MH_SUMMON_LEGION] = {
-    sp = function(level)
-      return math.max(1, 10 + level * 10)
-    end,
-    cooldown = function(_, previousCooldown)
+    id = MH_SUMMON_LEGION,
+    sp = 140,
+    cooldown = function(previousCooldown)
       if previousCooldown == 0 then
         return previousCooldown
       end
       return 30
     end,
-    level_requirement = 132,
     level = 5,
   },
 }
 
 ---@param mySkill number
-local check = function(mySkill)
+local isSkillCastable = function(mySkill)
   MySkill = mySkill
   ---@type Skill
-  local s = MySkills[MySkill]
-  local sp = s.sp(s.level)
-  local lastTime = MyCooldown[MySkill]
-  local cd = s.cooldown(s.level, lastTime)
-  if s.level_requirement > MyLevel then
-    MySkill = 0
-    return STATUS.FAILURE
-  end
-  return CheckCanCastSkill(sp, lastTime, cd)
+  local skill = MySkills[MySkill]
+  local cooldown = MyCooldown[MySkill]
+  return condition.isSkillCastable(skill, cooldown)
 end
 
----@param mySkill number
+---@param skill number
 ---@param target number
-local cast = function(mySkill, target)
-  MySkill = mySkill
-  ---@type Skill
-  local s = MySkills[MySkill]
-  local lastTime = MyCooldown[MySkill]
-  local cd = s.cooldown(s.level, lastTime)
-  local sk = { level = s.level, id = MySkill, cooldown = cd, lastTime = lastTime, currentTime = CurrentTime }
-  local casted = CastSkill(MyID, target, sk)
-  if casted then
-    MyCooldown[MySkill] = CurrentTime
-    return STATUS.RUNNING
-  end
-  MySkill = 0
-  return STATUS.FAILURE
-end
-
----@param mySkill number
----@param target number
+---@param opts SkillOpts
 ---@return Status
-local castGround = function(mySkill, target)
-  MySkill = mySkill
-  ---@type Skill
-  local s = MySkills[MySkill]
-  local lastTime = MyCooldown[MySkill]
-  local cd = s.cooldown(s.level, lastTime)
-  local sk = { level = s.level, id = MySkill, cooldown = cd, lastTime = lastTime, currentTime = CurrentTime }
-  local x, y = GetV(V_POSITION, target)
-  local casted = CastSkillGround(MyID, { x = x, y = y }, sk)
-  if casted then
-    MyCooldown[MySkill] = CurrentTime
+local cast = function(skill, target, opts)
+  local casted = node.castSkill(MySkills[skill], MyCooldown[skill], target, opts)
+  if casted == STATUS.RUNNING then
+    MyCooldown[skill] = GetTickInSeconds()
     return STATUS.RUNNING
+  elseif casted == STATUS.SUCCESS then
+    MyCooldown[skill] = GetTickInSeconds()
+    MySkill = 0
+    return STATUS.SUCCESS
   end
-  MySkill = 0
   return STATUS.FAILURE
 end
 
 local paralyse = {}
-function paralyse.CheckCanCastSkill()
-  return check(MH_NEEDLE_OF_PARALYZE)
+function paralyse.condition()
+  return isSkillCastable(MH_NEEDLE_OF_PARALYZE)
 end
-function paralyse.CastSkill()
-  return cast(MH_NEEDLE_OF_PARALYZE, MyOwner)
+function paralyse.cast()
+  return cast(MH_NEEDLE_OF_PARALYZE, MyEnemy, { targetType = 'target', keepRunning = true })
 end
-
-local poisonMist = {}
-function poisonMist.CheckCanCastSkill()
-  return check(MH_POISON_MIST)
+local poison = {}
+function poison.condition()
+  return isSkillCastable(MH_POISON_MIST)
 end
-function poisonMist.CastSkill()
-  return castGround(MH_POISON_MIST, MyEnemy)
-end
-
-local painKiller = {}
-function painKiller.CheckCanCastSkill()
-  return check(MH_PAIN_KILLER)
-end
-function painKiller.CastSkill()
-  return cast(MH_PAIN_KILLER, MyID)
+function poison.cast()
+  return cast(MH_POISON_MIST, MyEnemy, { targetType = 'ground', keepRunning = false })
 end
 
-local summonLegion = {}
-function summonLegion.CheckCanCastSkill()
-  return check(MH_SUMMON_LEGION)
+local pain = {}
+function pain.condition()
+  return isSkillCastable(MH_PAIN_KILLER)
 end
-function summonLegion.CastSkill()
-  return cast(MH_SUMMON_LEGION, MyEnemy)
+function pain.cast()
+  return cast(MH_PAIN_KILLER, MyID, { targetType = 'target', keepRunning = false })
 end
-
----@return boolean
-function condition.skillsInCooldown()
-  if poisonMist.CheckCanCastSkill() == STATUS.SUCCESS or painKiller.CheckCanCastSkill() == STATUS.SUCCESS then
-    return false
-  end
-  return true
+local legion = {}
+function legion.condition()
+  return isSkillCastable(MH_SUMMON_LEGION)
 end
-
-local basicAttack = Parallel({
-  Condition(ChaseEnemyNode, condition.enemyIsNotOutOfSight),
-  Condition(Condition(BasicAttackNode, condition.skillsInCooldown), condition.enemyIsAlive),
+function legion.cast()
+  return cast(MH_SUMMON_LEGION, MyEnemy, { targetType = 'target', keepRunning = false })
+end
+local AttackAndChaseParalyze = Parallel({
+  Condition(node.basicAttack, condition.ownerIsNotTooFar, condition.enemyIsAlive, Inversion(paralyse.condition)),
+  Condition(node.chaseEnemy, condition.ownerIsNotTooFar, condition.enemyIsAlive),
 })
-local poisonMistSequence = Sequence({
-  poisonMist.CheckCanCastSkill,
-  poisonMist.CastSkill,
+local tryParaliseEnemy = Parallel({
+  Condition(paralyse.cast, paralyse.condition, condition.enemyIsAlive),
+  Condition(node.chaseEnemy, condition.enemyIsNotInAttackSight, condition.enemyIsNotOutOfSight),
 })
-local painKillerSequence = Sequence({
-  painKiller.CheckCanCastSkill,
-  painKiller.CastSkill,
+local invokeLegion = Parallel({
+  Condition(legion.cast, legion.condition, condition.enemyIsAlive, condition.ownerIsNotTooFar),
+  Condition(node.chaseEnemy, condition.ownerIsNotTooFar, condition.enemyIsAlive),
 })
-local paralyseSequence = Sequence({
-  paralyse.CheckCanCastSkill,
-  paralyse.CastSkill,
-})
-local summonLegionSequence = Sequence({
-  summonLegion.CheckCanCastSkill,
-  summonLegion.CastSkill,
-})
-local summonLegionParallel = Parallel({
-  Condition(summonLegionSequence, condition.enemyIsAlive),
-  Condition(ChaseEnemyNode, condition.enemyIsNotOutOfSight),
-})
-local poisonMistParallel = Parallel({
-  Condition(poisonMistSequence, condition.enemyIsAlive),
-  Condition(ChaseEnemyNode, condition.enemyIsNotOutOfSight),
-})
-local paralyseParallel = Parallel({
-  Condition(paralyseSequence, condition.enemyIsAlive),
-  Condition(ChaseEnemyNode, condition.enemyIsNotOutOfSight),
-})
-local mvpSelector = Selector({
-  Condition(painKillerSequence, condition.ownerIsNotTooFar),
-  Condition(summonLegionParallel, condition.ownerIsNotTooFar),
-  Condition(paralyseParallel, condition.ownerIsNotTooFar),
-  Condition(poisonMistParallel, condition.ownerIsNotTooFar),
-})
-local battleNode = Selector({
-  Condition(mvpSelector, condition.isMVP),
-  Condition(poisonMistParallel, condition.ownerIsNotTooFar),
-  Condition(painKillerSequence, condition.ownerIsNotTooFar),
-  Condition(basicAttack, condition.ownerIsNotTooFar),
+local combat = Selector({
+  Condition(invokeLegion, condition.isMVP),
+  Condition(
+    tryParaliseEnemy,
+    paralyse.condition,
+    condition.enemyIsAlive,
+    condition.ownerIsNotTooFar,
+    Inversion(poison.condition)
+  ),
+  Condition(poison.cast, poison.condition, condition.ownerIsNotTooFar, condition.enemyIsAlive),
+  Condition(pain.cast, pain.condition, condition.ownerIsNotTooFar, condition.enemyIsAlive),
+  Condition(AttackAndChaseParalyze, condition.ownerIsNotTooFar, Inversion(paralyse.condition), condition.enemyIsAlive),
 })
 local sera = Selector({
-  Condition(FollowNode, condition.ownerMoving),
-  Condition(Condition(PatrolNode, condition.ownerIsSitting), Inversion(condition.hasEnemy)),
-  Condition(battleNode, condition.hasEnemy),
+  Condition(combat, condition.hasEnemyOrInList),
+  Condition(node.follow, condition.ownerMoving),
+  Condition(node.patrol, condition.ownerIsSitting, Inversion(condition.hasEnemyOrInList)),
 })
 return Condition(sera, IsSera)

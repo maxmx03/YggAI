@@ -47,16 +47,14 @@ pode utilizar qualquer editor de texto disponível no seu sistema operacional.
 - [Notepad++](https://notepad-plus-plus.org)
 - [Vscode](https://code.visualstudio.com)
 
-| Variável                             | Descrição                                |
-| ------------------------------------ | ---------------------------------------- |
-| `MyLevel`                            | Level do seu homunculus, sempre atualize |
-| `LifCanHeal`                         | LIF pode usar curar?                     |
-| `shouldPreventHomunculusDuplication` | Prevenir o bug de duplicação?            |
+| Variável                             | Descrição                     |
+| ------------------------------------ | ----------------------------- |
+| `LifCanHeal`                         | LIF pode usar curar?          |
+| `shouldPreventHomunculusDuplication` | Prevenir o bug de duplicação? |
 
 ### Exemplo
 
 ```lua
-MyLevel = 50 -- level do seu homunculus, sempre atualize
 LifCanHeal = true -- LIF pode usar curar? true ou false (requer poção compacta)
 ```
 
@@ -68,33 +66,3 @@ Para reportar um bug, crie um novo tópico no [Issues](https://github.com/maxmx0
 
 Caso queira contribuir de outra forma mande um rodex no jogo para `Freya/Pelunia (BIO)`
 ou `Freya/Millianor (AB)`, mandando zenys ou semente da vida.
-
-## TODO
-
-- [x] Homunculus
-  - [x] Lif
-  - [x] Vanilmirth
-  - [x] Amistr
-  - [x] Filir
-- [x] Homunculus S
-  - [x] Bayeri
-  - [x] Dieter
-  - [x] Eira
-  - [x] Sera
-  - [x] Eleanor
-- [ ] PVP
-- [ ] WOE
-- [x] PVM
-- [x] Detect MVP
-- [x] Avoid Plant
-- [x] Skill and Cooldown
-- [x] Prevention of Homunculus Duplication Bug
-- [x] User commands (Gravity Implementation)
-
-## Projetos Alternativos
-
-> [!CAUTION]
-> Usuários do AzzyAI, desativem qualquer autobuff ou qualquer
-> outra função que faça com que o homunculus cause este bug de duplicação.
-
-- [AzzyAI](https://github.com/SpenceKonde/AzzyAI)

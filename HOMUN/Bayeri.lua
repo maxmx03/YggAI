@@ -1,6 +1,9 @@
+---@type Node
+local node = require('AI.USER_AI.BT.nodes')
 ---@type Condition
 local condition = require('AI.USER_AI.BT.conditions')
 
+---@class Cooldown
 local MyCooldown = {
   [MH_STAHL_HORN] = 0,
   [MH_GOLDENE_FERSE] = 0,
@@ -9,209 +12,160 @@ local MyCooldown = {
   [MH_HEILIGE_STANGE] = 0,
 }
 
+---@class Skills
 local MySkills = {
-  ---@type Skill
   [MH_STAHL_HORN] = {
-    sp = function(level)
-      return math.max(1, 40 + level * 3)
-    end,
-    cooldown = function(_, previousCooldown)
+    id = MH_STAHL_HORN,
+    sp = 70,
+    cooldown = function(previousCooldown)
       if previousCooldown == 0 then
         return previousCooldown
       end
       return 0.5
     end,
-    level_requirement = 105,
     level = 10,
   },
-  ---@type Skill
   [MH_GOLDENE_FERSE] = {
-    sp = function(level)
-      return math.max(1, 55 + level * 5)
-    end,
-    cooldown = function(level, previousCooldown)
+    id = MH_GOLDENE_FERSE,
+    sp = 80,
+    cooldown = function(previousCooldown)
       if previousCooldown == 0 then
         return previousCooldown
       end
-      return math.max(1, 0.8 + level * 0.2)
+      return 2
     end,
-    level_requirement = 112,
     level = 5,
   },
-  ---@type Skill
   [MH_STEINWAND] = {
-    sp = function(level)
-      return math.max(1, 70 + level * 10)
-    end,
-    cooldown = function(level, previousCooldown)
+    id = MH_STEINWAND,
+    sp = 120,
+    cooldown = function(previousCooldown)
       if previousCooldown == 0 then
         return previousCooldown
       end
-      return math.max(1, 1 + level * 0.2)
+      return 2
     end,
-    level_requirement = 121,
     level = 5,
   },
-  ---@type Skill
   [MH_ANGRIFFS_MODUS] = {
-    sp = function(level)
-      return math.max(1, 55 + level * 5)
-    end,
-    cooldown = function(level, previousCooldown)
+    id = MH_ANGRIFFS_MODUS,
+    sp = 80,
+    cooldown = function(previousCooldown)
       if previousCooldown == 0 then
         return previousCooldown
       end
-      return math.max(1, 15 + level * 15)
+      return 30
     end,
-    level_requirement = 130,
     level = 5,
   },
-  ---@type Skill
   [MH_HEILIGE_STANGE] = {
-    sp = function(level)
-      return math.max(1, 42 + level * 6)
-    end,
-    cooldown = function(level, previousCooldown)
+    id = MH_HEILIGE_STANGE,
+    sp = 100,
+    cooldown = function(previousCooldown)
       if previousCooldown == 0 then
         return previousCooldown
       end
-      return math.max(1, 2.2 - (level * 0.2) + 1.5)
+      return 5
     end,
-    level_requirement = 138,
     level = 10,
   },
 }
 
----@param mySkill number
-local check = function(mySkill)
+local isSkillCastable = function(mySkill)
   MySkill = mySkill
-  ---@type Skill
-  local s = MySkills[MySkill]
-  local sp = s.sp(s.level)
-  local lastTime = MyCooldown[MySkill]
-  local cd = s.cooldown(s.level, lastTime)
-  if s.level_requirement > MyLevel then
-    MySkill = 0
-    return STATUS.FAILURE
-  end
-  return CheckCanCastSkill(sp, lastTime, cd)
+  local s = MySkills[mySkill]
+  local lastTime = MyCooldown[mySkill]
+  return condition.isSkillCastable(s, lastTime)
 end
 
----@param mySkill number
----@param target number
-local cast = function(mySkill, target)
-  MySkill = mySkill
-  ---@type Skill
-  local s = MySkills[MySkill]
-  local lastTime = MyCooldown[MySkill]
-  local cd = s.cooldown(s.level, lastTime)
-  local sk = { level = s.level, id = MySkill, cooldown = cd, lastTime = lastTime, currentTime = CurrentTime }
-  local casted = CastSkill(MyID, target, sk)
-  if casted then
-    MyCooldown[MySkill] = CurrentTime
+local cast = function(skill, target, opts)
+  local casted = node.castSkill(MySkills[skill], MyCooldown[skill], target, opts)
+  if casted == STATUS.RUNNING then
+    MyCooldown[skill] = GetTickInSeconds()
     return STATUS.RUNNING
+  elseif casted == STATUS.SUCCESS then
+    MyCooldown[skill] = GetTickInSeconds()
+    MySkill = 0
+    return STATUS.SUCCESS
   end
   MySkill = 0
   return STATUS.FAILURE
 end
 
+-- skills
 local stahl = {}
-function stahl.CheckCanCastSkill()
-  return check(MH_STAHL_HORN)
+function stahl.condition()
+  return isSkillCastable(MH_STAHL_HORN)
 end
-function stahl.CastSkill()
-  return cast(MH_STAHL_HORN, MyEnemy)
+function stahl.cast()
+  return cast(MH_STAHL_HORN, MyEnemy, { targetType = 'target', keepRunning = false })
 end
 
 local gold = {}
-function gold.CheckCanCastSkill()
-  return check(MH_GOLDENE_FERSE)
+function gold.condition()
+  return isSkillCastable(MH_GOLDENE_FERSE)
 end
-function gold.CastSkill()
-  return cast(MH_GOLDENE_FERSE, MyEnemy)
+function gold.cast()
+  return cast(MH_GOLDENE_FERSE, MyEnemy, { targetType = 'target', keepRunning = false })
 end
 
 local stein = {}
-function stein.CheckCanCastSkill()
-  return check(MH_STEINWAND)
+function stein.condition()
+  return isSkillCastable(MH_STEINWAND)
 end
-function stein.CastSkill()
-  return cast(MH_STEINWAND, MyOwner)
+function stein.cast()
+  return cast(MH_STEINWAND, MyOwner, { targetType = 'target', keepRunning = false })
 end
 
 local ang = {}
-function ang.CheckCanCastSkill()
-  return check(MH_ANGRIFFS_MODUS)
+function ang.condition()
+  return isSkillCastable(MH_ANGRIFFS_MODUS)
 end
-function ang.CastSkill()
-  return cast(MH_ANGRIFFS_MODUS, MyOwner)
+function ang.cast()
+  return cast(MH_ANGRIFFS_MODUS, MyOwner, { targetType = 'target', keepRunning = false })
 end
 
 local heil = {}
-function heil.CheckCanCastSkill()
-  return check(MH_HEILIGE_STANGE)
+function heil.condition()
+  return isSkillCastable(MH_HEILIGE_STANGE)
 end
-function heil.CastSkill()
-  return cast(MH_HEILIGE_STANGE, MyEnemy)
-end
-
----@return boolean
-function condition.skillsInCooldown()
-  if
-    stein.CheckCanCastSkill() == STATUS.SUCCESS
-    or stahl.CheckCanCastSkill() == STATUS.SUCCESS
-    or heil.CheckCanCastSkill() == STATUS.SUCCESS
-  then
-    return false
-  end
-  return true
+function heil.cast()
+  return cast(MH_HEILIGE_STANGE, MyEnemy, { targetType = 'target', keepRunning = false })
 end
 
-local basicAttack = Parallel({
-  Condition(ChaseEnemyNode, condition.enemyIsNotOutOfSight),
-  Condition(Condition(BasicAttackNode, condition.skillsInCooldown), condition.enemyIsAlive),
+local AttackAndChaseStahl = Parallel({
+  Condition(node.basicAttack, condition.ownerIsNotTooFar, condition.enemyIsAlive, Inversion(stahl.condition)),
+  Condition(node.chaseEnemy, condition.enemyIsNotInAttackSight, condition.ownerIsNotTooFar, condition.enemyIsAlive),
 })
-local stahlSequence = Sequence({
-  stahl.CheckCanCastSkill,
-  stahl.CastSkill,
+
+local AttackAndChaseHeil = Parallel({
+  Condition(node.basicAttack, condition.ownerIsNotTooFar, condition.enemyIsAlive, Inversion(heil.condition)),
+  Condition(node.chaseEnemy, condition.enemyIsNotInAttackSight, condition.ownerIsNotTooFar, condition.enemyIsAlive),
 })
-local stahlParallel = Parallel({
-  Condition(stahlSequence, condition.enemyIsAlive),
-  Condition(ChaseEnemyNode, condition.enemyIsNotOutOfSight),
-})
-local goldSequence = Sequence({
-  gold.CheckCanCastSkill,
-  gold.CastSkill,
-})
-local steinSequence = Sequence({
-  stein.CheckCanCastSkill,
-  stein.CastSkill,
-})
-local angSequence = Sequence({
-  ang.CheckCanCastSkill,
-  ang.CastSkill,
-})
-local heilSequence = Sequence({
-  heil.CheckCanCastSkill,
-  heil.CastSkill,
-})
-local heilParallel = Parallel({
-  Condition(heilSequence, condition.enemyIsAlive),
-  Condition(ChaseEnemyNode, condition.enemyIsNotOutOfSight),
-})
-local battleNode = Selector({
-  Condition(steinSequence, condition.ownerIsNotTooFar),
-  Condition(stahlParallel, condition.ownerIsNotTooFar),
-  Condition(goldSequence, condition.ownerIsNotTooFar),
-  Condition(angSequence, condition.ownerIsNotTooFar),
-  Condition(heilParallel, condition.ownerIsNotTooFar),
-  Condition(basicAttack, condition.ownerIsNotTooFar),
+
+local combat = Selector({
+  Condition(stein.cast, condition.ownerIsDying, stein.condition),
+  Condition(stein.cast, condition.ownerIsNotTooFar, stein.condition),
+  Condition(stahl.cast, condition.ownerIsNotTooFar, condition.enemyIsAlive, stahl.condition),
+  Condition(gold.cast, condition.ownerIsNotTooFar, condition.enemyIsAlive, gold.condition),
+  Condition(ang.cast, condition.ownerIsNotTooFar, ang.condition),
+  Condition(heil.cast, condition.ownerIsNotTooFar, condition.enemyIsAlive, heil.condition, condition.isUndeadMonster),
+  Condition(heil.cast, condition.ownerIsNotTooFar, condition.enemyIsAlive, heil.condition, condition.isDarkMonster),
+  Condition(
+    heil.cast,
+    condition.ownerIsNotTooFar,
+    condition.enemyIsAlive,
+    heil.condition,
+    Inversion(condition.isHolyMonster)
+  ),
+  Condition(AttackAndChaseHeil, condition.ownerIsNotTooFar, condition.enemyIsAlive),
+  Condition(AttackAndChaseStahl, condition.ownerIsNotTooFar, condition.enemyIsAlive),
 })
 
 local bayeri = Selector({
-  Condition(FollowNode, condition.ownerMoving),
-  Condition(Condition(PatrolNode, condition.ownerIsSitting), Inversion(condition.hasEnemy)),
-  Condition(steinSequence, condition.ownerIsDying),
-  Condition(battleNode, condition.hasEnemy),
+  Condition(combat, condition.hasEnemyOrInList),
+  Condition(node.follow, condition.ownerMoving),
+  Condition(node.patrol, condition.ownerIsSitting, Inversion(condition.hasEnemy)),
 })
+
 return Condition(bayeri, IsBayeri)

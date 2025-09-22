@@ -44,14 +44,12 @@ You can use any text editor available on your system:
 
 | Variable                           | Description                            |
 | ---------------------------------- | -------------------------------------- |
-| MyLevel                            | Your homunculus level, update it       |
 | LifCanHeal                         | Can LIF heal?                          |
 | ShouldPreventHomunculusDuplication | Should prevent homunculus duplication? |
 
 #### Example
 
 ```lua
-MyLevel = 50 -- homunculus level, always update
 LifCanHeal = true -- can LIF heal? true or false (requires condensed potion)
 ```
 
@@ -61,30 +59,3 @@ You can contribute by reporting bugs, suggesting new features, or fixing issues.
 To report a bug, create a new topic in [Issues](https://github.com/maxmx03/USER_AI/issues).
 
 If you want to contribute in another way, send a Rodex in-game to `Freya/Pelunia (BIO)` or `Freya/Millianor (AB)`, sending zeny or Seed of Life.
-
-### TODO
-
-- [x] Homunculus
-  - [x] Lif
-  - [x] Vanilmirth
-  - [x] Amistr
-  - [x] Filir
-- [x] Homunculus S
-  - [x] Bayeri
-  - [x] Dieter
-  - [x] Eira
-  - [x] Sera
-  - [x] Eleanor
-- [ ] PVP
-- [ ] WOE
-- [x] PVM
-- [x] Detect MVP
-- [x] Avoid Plant
-- [x] Skill and Cooldown
-- [x] Prevention of Homunculus Duplication Bug
-- [x] User commands
-
-### Alternative Projects
-
-> [!CAUTION]
-> AzzyAI users: disable any autobuff or other function that may trigger the duplication bug.

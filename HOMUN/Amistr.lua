@@ -1,3 +1,5 @@
+---@type Node
+local node = require('AI.USER_AI.BT.nodes')
 ---@type Condition
 local condition = require('AI.USER_AI.BT.conditions')
 
@@ -12,132 +14,103 @@ local MyCooldown = {
 local MySkills = {
   ---@type Skill
   [HAMI_CASTLE] = {
-    sp = function(_)
-      return 10
-    end,
-    cooldown = function(_, previousCooldown)
+    id = HAMI_CASTLE,
+    sp = 10,
+    cooldown = function(previousCooldown)
       if previousCooldown == 0 then
         return previousCooldown
       end
       return 20
     end,
-    level_requirement = 15,
     level = 5,
   },
   ---@type Skill
   [HAMI_DEFENCE] = {
-    sp = function(level)
-      return math.max(1, 15 + level * 5)
-    end,
-    cooldown = function(_, previousCooldown)
+    id = HAMI_DEFENCE,
+    sp = 40,
+    cooldown = function(previousCooldown)
       if previousCooldown == 0 then
         return previousCooldown
       end
       return 30
     end,
-    level_requirement = 40,
     level = 5,
   },
+  ---@type Skill
   [HAMI_BLOODLUST] = {
-    sp = function()
-      return 120
-    end,
-    cooldown = function(level, previousCooldown)
+    id = HAMI_BLOODLUST,
+    sp = 120,
+    cooldown = function(previousCooldown)
       if previousCooldown == 0 then
         return previousCooldown
       end
-      return math.max(1, 60 - level * 120)
+      return 60
     end,
-    level_requirement = 70,
     level = 3,
   },
 }
 
----@param mySkill number
-local check = function(mySkill)
+local isSkillCastable = function(mySkill)
   MySkill = mySkill
-  ---@type Skill
-  local s = MySkills[MySkill]
-  local sp = s.sp(s.level)
-  local lastTime = MyCooldown[MySkill]
-  local cd = s.cooldown(s.level, lastTime)
-  if s.level_requirement > MyLevel then
-    MySkill = 0
-    return STATUS.FAILURE
-  end
-  return CheckCanCastSkill(sp, lastTime, cd)
+  local s = MySkills[mySkill]
+  local lastTime = MyCooldown[mySkill]
+  return condition.isSkillCastable(s, lastTime)
 end
 
----@param mySkill number
-local cast = function(mySkill)
-  MySkill = mySkill
-  ---@type Skill
-  local s = MySkills[MySkill]
-  local lastTime = MyCooldown[MySkill]
-  local cd = s.cooldown(s.level, lastTime)
-  local sk = { level = s.level, id = MySkill, cooldown = cd, lastTime = lastTime, currentTime = CurrentTime }
-  local casted = CastSkill(MyID, MyID, sk)
-  if casted then
-    MyCooldown[MySkill] = CurrentTime
+local cast = function(skill, target, opts)
+  local casted = node.castSkill(MySkills[skill], MyCooldown[skill], target, opts)
+  if casted == STATUS.RUNNING then
+    MyCooldown[skill] = GetTickInSeconds()
     return STATUS.RUNNING
+  elseif casted == STATUS.SUCCESS then
+    MyCooldown[skill] = GetTickInSeconds()
+    MySkill = 0
+    return STATUS.SUCCESS
   end
   MySkill = 0
   return STATUS.FAILURE
 end
 
 local castle = {}
-function castle.CheckCanCastSkill()
-  return check(HAMI_CASTLE)
+function castle.condition()
+  return isSkillCastable(HAMI_CASTLE)
 end
-
-function castle.CastSkill()
-  return cast(HAMI_CASTLE)
+function castle.cast()
+  return cast(HAMI_CASTLE, MyID, { targetType = 'target', keepRunning = false })
 end
 
 local defense = {}
-function defense.CheckCanCastSkill()
-  return check(HAMI_DEFENCE)
+function defense.condition()
+  return isSkillCastable(HAMI_DEFENCE)
 end
-
-function defense.CastSkill()
-  return cast(HAMI_DEFENCE)
+function defense.cast()
+  return cast(HAMI_DEFENCE, MyID, { targetType = 'target', keepRunning = false })
 end
 
 local bloodlust = {}
-
-function bloodlust.CheckCanCastSkill()
-  return check(HAMI_BLOODLUST)
+function bloodlust.condition()
+  return isSkillCastable(HAMI_BLOODLUST)
+end
+function bloodlust.cast()
+  return cast(HAMI_BLOODLUST, MyID, { targetType = 'target', keepRunning = false })
 end
 
-function bloodlust.CastSkill()
-  return cast(HAMI_BLOODLUST)
-end
+local AttackAndChase = Parallel({
+  Condition(node.basicAttack, condition.ownerIsNotTooFar, condition.enemyIsAlive, Inversion(bloodlust.condition)),
+  Condition(node.chaseEnemy, condition.enemyIsNotInAttackSight, condition.ownerIsNotTooFar, condition.enemyIsAlive),
+})
 
-local basicAttack = Parallel({
-  Condition(ChaseEnemyNode, condition.enemyIsNotOutOfSight),
-  Condition(BasicAttackNode, condition.enemyIsAlive),
+local combat = Selector({
+  Condition(castle.cast, condition.ownerIsDying, castle.condition),
+  Condition(defense.cast, condition.enemyIsAlive, defense.condition),
+  Condition(bloodlust.cast, condition.enemyIsAlive, bloodlust.condition),
+  Condition(AttackAndChase, condition.ownerIsNotTooFar, condition.enemyIsAlive),
 })
-local castleSequence = Sequence({
-  castle.CheckCanCastSkill,
-  castle.CastSkill,
-})
-local defenseSequence = Sequence({
-  defense.CheckCanCastSkill,
-  defense.CastSkill,
-})
-local bloodlustSequence = Sequence({
-  bloodlust.CheckCanCastSkill,
-  bloodlust.CastSkill,
-})
-local battleNode = Selector({
-  Condition(defenseSequence, condition.enemyIsAlive),
-  Condition(bloodlustSequence, condition.enemyIsAlive),
-  Condition(Inversion(basicAttack, condition.ownerIsDying), condition.ownerIsNotTooFar),
-})
+
 local amistr = Selector({
-  Condition(FollowNode, condition.ownerMoving),
-  Condition(Condition(PatrolNode, condition.ownerIsSitting), Inversion(condition.hasEnemy)),
-  Condition(castleSequence, condition.ownerIsDying),
-  Condition(battleNode, condition.hasEnemy),
+  Condition(combat, condition.hasEnemyOrInList),
+  Condition(node.follow, condition.ownerMoving),
+  Condition(node.patrol, condition.ownerIsSitting, Inversion(condition.hasEnemy)),
 })
+
 return Condition(amistr, IsAmistr)
