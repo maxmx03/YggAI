@@ -158,22 +158,22 @@ function midnight.cast()
 end
 local sonic = {}
 function sonic.condition()
-  return isSkillCastable(MH_SONIC_CRAW, { targetType = 'target', keepRunning = false })
+  return isSkillCastable(MH_SONIC_CRAW)
 end
 function sonic.cast()
-  if not silver.condition() and not midnight.condition() then
+  if not silver.condition() or not midnight.condition() then
     return cast(MH_SONIC_CRAW, MyEnemy, { targetType = 'target', keepRunning = true })
   end
   return cast(MH_SONIC_CRAW, MyEnemy, { targetType = 'target', keepRunning = false })
 end
 local battleComboSequence = Sequence({
-  Condition(sonic.cast, condition.ownerIsNotTooFar, sonic.condition),
-  Condition(Delay(silver.cast, 2.0), condition.ownerIsNotTooFar, silver.condition),
-  Condition(Delay(midnight.cast, 2.0), condition.ownerIsNotTooFar, midnight.condition),
+  Condition(sonic.cast, condition.enemyIsAlive, sonic.condition, Inversion(condition.enemyIsNotInAttackSight)),
+  Condition(Delay(silver.cast, 2.0), condition.enemyIsAlive, silver.condition),
+  Condition(Delay(midnight.cast, 2.0), condition.enemyIsAlive, midnight.condition),
 })
-local battleComboMode = Parallel({
-  Condition(Condition(battleComboSequence, condition.enemyIsAlive), condition.ownerIsNotTooFar),
+local battleComboMode = Sequence({
   Condition(node.chaseEnemy, condition.enemyIsNotOutOfSight),
+  Condition(battleComboSequence, condition.enemyIsAlive, condition.ownerIsNotTooFar),
 })
 local AttackAndChase = Parallel({
   Condition(node.basicAttack, condition.ownerIsNotTooFar, condition.enemyIsAlive, Inversion(sonic.condition)),
@@ -189,7 +189,7 @@ local AttackAndChaseGainSpheres = Parallel({
   Condition(node.chaseEnemy, condition.ownerIsNotTooFar, condition.enemyIsAlive),
 })
 local combat = Selector({
-  Condition(Condition(battleComboMode, condition.enemyIsAlive), condition.ownerIsNotTooFar),
+  Condition(battleComboMode, condition.enemyIsAlive, condition.ownerIsNotTooFar),
   Condition(AttackAndChaseGainSpheres, condition.ownerIsNotTooFar, Inversion(condition.hasAllSpheres)),
   Condition(AttackAndChase, condition.ownerIsNotTooFar, Inversion(sonic.condition)),
 })
