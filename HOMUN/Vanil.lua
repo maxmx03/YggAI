@@ -72,35 +72,28 @@ function caprice.cast()
   return cast(HVAN_CAPRICE, MyEnemy, { targetType = 'target', keepRunning = false })
 end
 
-local chaotic = {}
-function chaotic.condition()
-  return isSkillCastable(HVAN_CHAOTIC)
-end
-function chaotic.cast()
-  return cast(HVAN_CHAOTIC, MyOwner, { targetType = 'target', keepRunning = false })
-end
+-- local chaotic = {}
+-- function chaotic.condition()
+--   return isSkillCastable(HVAN_CHAOTIC)
+-- end
+-- function chaotic.cast()
+--   return cast(HVAN_CHAOTIC, MyOwner, { targetType = 'target', keepRunning = false })
+-- end
 
 local basicAttack = Parallel({
-  Condition(node.basicAttack, condition.enemyIsNotOutOfSight),
-  Condition(node.chaseEnemy, condition.enemyIsAlive, Inversion(caprice.condition)),
+  Condition(node.basicAttack, Inversion(caprice.condition)),
+  node.chaseEnemy,
 })
 local capriceParallel = Parallel({
-  Condition(caprice.cast, caprice.condition, condition.enemyIsAlive),
-  Condition(node.chaseEnemy, condition.enemyIsNotOutOfSight),
+  Condition(caprice.cast, caprice.condition),
+  node.chaseEnemy,
 })
 local combat = Selector({
-  Condition(capriceParallel, condition.ownerIsNotTooFar),
-  Condition(basicAttack, condition.ownerIsNotTooFar, Inversion(caprice.condition)),
+  Condition(capriceParallel, caprice.condition, condition.enemyIsAlive),
+  Condition(basicAttack, condition.enemyIsAlive, Inversion(caprice.condition)),
 })
 local vanil = Selector({
-  Condition(combat, condition.hasEnemyOrInList),
-  Condition(
-    chaotic.cast,
-    chaotic.condition,
-    condition.ownerIsDying,
-    condition.ownerIsNotTooFar,
-    Inversion(condition.hasEnemyOrInList)
-  ),
+  Condition(combat, condition.hasEnemyOrInList, condition.ownerIsNotTooFar),
   Condition(node.follow, condition.ownerMoving),
   Condition(node.patrol, condition.ownerIsSitting, Inversion(condition.hasEnemyOrInList)),
 })

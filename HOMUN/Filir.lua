@@ -98,22 +98,22 @@ function speed.cast()
   return cast(HFLI_SPEED, MyID, { targetType = 'target', keepRunning = false })
 end
 local AttackAndChase = Parallel({
-  Condition(node.basicAttack, condition.ownerIsNotTooFar, condition.enemyIsAlive, Inversion(moon.condition)),
-  Condition(node.chaseEnemy, condition.ownerIsNotTooFar, condition.enemyIsAlive),
+  Condition(node.basicAttack, Inversion(moon.condition)),
+  node.chaseEnemy,
 })
 local moonParallel = Parallel({
-  Condition(moon.cast, moon.condition, condition.enemyIsAlive),
-  Condition(node.chaseEnemy, condition.enemyIsNotOutOfSight),
+  Condition(moon.cast, moon.condition),
+  node.chaseEnemy,
 })
 local combat = Selector({
   Condition(fleet.cast, fleet.condition, condition.ownerIsDying),
   Condition(moonParallel, condition.enemyIsAlive),
   Condition(speed.cast, speed.condition, condition.enemyIsAlive),
   Condition(fleet.cast, fleet.condition, condition.enemyIsAlive),
-  Condition(AttackAndChase, condition.ownerIsNotTooFar, condition.enemyIsAlive),
+  Condition(AttackAndChase, condition.enemyIsAlive),
 })
 local filir = Selector({
-  Condition(combat, condition.hasEnemyOrInList),
+  Condition(combat, condition.hasEnemyOrInList, condition.ownerIsNotTooFar),
   Condition(node.follow, condition.ownerMoving),
   Condition(node.patrol, condition.ownerIsSitting, Inversion(condition.hasEnemyOrInList)),
 })

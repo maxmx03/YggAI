@@ -119,32 +119,26 @@ function legion.cast()
   return cast(MH_SUMMON_LEGION, MyEnemy, { targetType = 'target', keepRunning = false })
 end
 local AttackAndChaseParalyze = Parallel({
-  Condition(node.basicAttack, condition.ownerIsNotTooFar, condition.enemyIsAlive, Inversion(paralyse.condition)),
-  Condition(node.chaseEnemy, condition.ownerIsNotTooFar, condition.enemyIsAlive),
+  Condition(node.basicAttack, Inversion(paralyse.condition)),
+  node.chaseEnemy,
 })
 local tryParaliseEnemy = Parallel({
-  Condition(paralyse.cast, paralyse.condition, condition.enemyIsAlive),
-  Condition(node.chaseEnemy, condition.enemyIsNotInAttackSight, condition.enemyIsNotOutOfSight),
+  Condition(paralyse.cast, paralyse.condition),
+  node.chaseEnemy,
 })
 local invokeLegion = Parallel({
-  Condition(legion.cast, legion.condition, condition.enemyIsAlive, condition.ownerIsNotTooFar),
-  Condition(node.chaseEnemy, condition.ownerIsNotTooFar, condition.enemyIsAlive),
+  Condition(legion.cast, legion.condition),
+  node.chaseEnemy,
 })
 local combat = Selector({
   Condition(invokeLegion, condition.isMVP),
-  Condition(
-    tryParaliseEnemy,
-    paralyse.condition,
-    condition.enemyIsAlive,
-    condition.ownerIsNotTooFar,
-    Inversion(poison.condition)
-  ),
-  Condition(poison.cast, poison.condition, condition.ownerIsNotTooFar, condition.enemyIsAlive),
-  Condition(pain.cast, pain.condition, condition.ownerIsNotTooFar, condition.enemyIsAlive),
-  Condition(AttackAndChaseParalyze, condition.ownerIsNotTooFar, Inversion(paralyse.condition), condition.enemyIsAlive),
+  Condition(tryParaliseEnemy, paralyse.condition, Inversion(poison.condition)),
+  Condition(poison.cast, poison.condition, condition.enemyIsAlive),
+  Condition(pain.cast, pain.condition, condition.enemyIsAlive),
+  Condition(AttackAndChaseParalyze, Inversion(paralyse.condition), condition.enemyIsAlive),
 })
 local sera = Selector({
-  Condition(combat, condition.hasEnemyOrInList),
+  Condition(combat, condition.hasEnemyOrInList, condition.ownerIsNotTooFar),
   Condition(node.follow, condition.ownerMoving),
   Condition(node.patrol, condition.ownerIsSitting, Inversion(condition.hasEnemyOrInList)),
 })

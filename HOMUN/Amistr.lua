@@ -96,19 +96,19 @@ function bloodlust.cast()
 end
 
 local AttackAndChase = Parallel({
-  Condition(node.basicAttack, condition.ownerIsNotTooFar, condition.enemyIsAlive, Inversion(bloodlust.condition)),
-  Condition(node.chaseEnemy, condition.enemyIsNotInAttackSight, condition.ownerIsNotTooFar, condition.enemyIsAlive),
+  Condition(node.basicAttack, Inversion(bloodlust.condition)),
+  node.chaseEnemy,
 })
 
 local combat = Selector({
-  Condition(castle.cast, condition.ownerIsDying, castle.condition),
-  Condition(defense.cast, condition.enemyIsAlive, defense.condition),
-  Condition(bloodlust.cast, condition.enemyIsAlive, bloodlust.condition),
-  Condition(AttackAndChase, condition.ownerIsNotTooFar, condition.enemyIsAlive),
+  Condition(castle.cast, castle.condition, condition.ownerIsDying),
+  Condition(defense.cast, defense.condition, condition.enemyIsAlive),
+  Condition(bloodlust.cast, bloodlust.condition, condition.enemyIsAlive),
+  Condition(AttackAndChase, condition.enemyIsAlive),
 })
 
 local amistr = Selector({
-  Condition(combat, condition.hasEnemyOrInList),
+  Condition(combat, condition.hasEnemyOrInList, condition.ownerIsNotTooFar),
   Condition(node.follow, condition.ownerMoving),
   Condition(node.patrol, condition.ownerIsSitting, Inversion(condition.hasEnemy)),
 })

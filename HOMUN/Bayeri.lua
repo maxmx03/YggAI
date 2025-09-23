@@ -21,7 +21,7 @@ local MySkills = {
       if previousCooldown == 0 then
         return previousCooldown
       end
-      return 0.5
+      return 0.7
     end,
     level = 10,
   },
@@ -133,24 +133,27 @@ function heil.cast()
   return cast(MH_HEILIGE_STANGE, MyEnemy, { targetType = 'target', keepRunning = false })
 end
 
-local AttackAndChaseStahl = Parallel({
-  Condition(node.basicAttack, condition.ownerIsNotTooFar, condition.enemyIsAlive, Inversion(stahl.condition)),
-  Condition(node.chaseEnemy, condition.enemyIsNotInAttackSight, condition.ownerIsNotTooFar, condition.enemyIsAlive),
+local AttackAndChase = Parallel({
+  Condition(node.basicAttack, Inversion(stahl.condition)),
+  node.chaseEnemy,
 })
 
-local AttackAndChaseHeil = Parallel({
-  Condition(node.basicAttack, condition.ownerIsNotTooFar, condition.enemyIsAlive, Inversion(heil.condition)),
-  Condition(node.chaseEnemy, condition.enemyIsNotInAttackSight, condition.ownerIsNotTooFar, condition.enemyIsAlive),
+local stahlAttack = Parallel({
+  Condition(stahl.cast, stahl.condition),
+  node.chaseEnemy,
 })
+
+local darkOrUndeadMonster = function()
+  return condition.isDarkMonster() or condition.isUndeadMonster()
+end
 
 local combat = Selector({
   Condition(stein.cast, condition.ownerIsDying, stein.condition),
-  Condition(stein.cast, condition.ownerIsNotTooFar, stein.condition),
-  Condition(stahl.cast, condition.ownerIsNotTooFar, condition.enemyIsAlive, stahl.condition),
-  Condition(gold.cast, condition.ownerIsNotTooFar, condition.enemyIsAlive, gold.condition),
-  Condition(ang.cast, condition.ownerIsNotTooFar, ang.condition),
-  Condition(heil.cast, condition.ownerIsNotTooFar, condition.enemyIsAlive, heil.condition, condition.isUndeadMonster),
-  Condition(heil.cast, condition.ownerIsNotTooFar, condition.enemyIsAlive, heil.condition, condition.isDarkMonster),
+  Condition(stein.cast, stein.condition),
+  Condition(stahlAttack, condition.enemyIsAlive, stahl.condition),
+  Condition(gold.cast, condition.enemyIsAlive, gold.condition, darkOrUndeadMonster),
+  Condition(heil.cast, condition.enemyIsAlive, heil.condition, darkOrUndeadMonster),
+  Condition(ang.cast, ang.condition),
   Condition(
     heil.cast,
     condition.ownerIsNotTooFar,
@@ -158,12 +161,11 @@ local combat = Selector({
     heil.condition,
     Inversion(condition.isHolyMonster)
   ),
-  Condition(AttackAndChaseHeil, condition.ownerIsNotTooFar, condition.enemyIsAlive),
-  Condition(AttackAndChaseStahl, condition.ownerIsNotTooFar, condition.enemyIsAlive),
+  Condition(AttackAndChase, condition.enemyIsAlive),
 })
 
 local bayeri = Selector({
-  Condition(combat, condition.hasEnemyOrInList),
+  Condition(combat, condition.hasEnemyOrInList, condition.ownerIsNotTooFar),
   Condition(node.follow, condition.ownerMoving),
   Condition(node.patrol, condition.ownerIsSitting, Inversion(condition.hasEnemy)),
 })

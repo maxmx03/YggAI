@@ -4,7 +4,7 @@ local M = {}
 local EnemyList = List.new()
 local lastEnemySearchTime = 0
 local ENEMY_SEARCH_INTERVAL = 0.3
-local MAX_ENEMIES_IN_LIST = 8
+local MAX_ENEMIES_IN_LIST = 20
 
 local function cleanEnemyList()
   local cleanList = List.new()

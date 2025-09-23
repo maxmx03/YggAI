@@ -100,8 +100,8 @@ function change.cast()
   return cast(HLIF_CHANGE, MyID, { keepRunning = false, targetType = 'target' })
 end
 local AttackAndChase = Parallel({
-  Condition(node.basicAttack, condition.ownerIsNotTooFar, condition.enemyIsAlive),
-  Condition(node.chaseEnemy, condition.ownerIsNotTooFar, condition.enemyIsAlive),
+  node.basicAttack,
+  node.chaseEnemy,
 })
 local combat = Selector({
   Condition(heal.cast, heal.condition, condition.ownerIsDying),
@@ -110,7 +110,7 @@ local combat = Selector({
   AttackAndChase,
 })
 local lif = Selector({
-  Condition(combat, condition.hasEnemyOrInList),
+  Condition(combat, condition.hasEnemyOrInList, condition.ownerIsNotTooFar),
   Condition(node.follow, condition.ownerMoving),
   Condition(node.patrol, condition.ownerIsSitting, Inversion(condition.hasEnemyOrInList)),
 })

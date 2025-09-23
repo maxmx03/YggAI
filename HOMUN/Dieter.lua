@@ -139,41 +139,35 @@ function pyroclastic.condition()
 end
 
 local AttackAndChase = Parallel({
-  Condition(node.basicAttack, condition.ownerIsNotTooFar, condition.enemyIsAlive),
-  Condition(node.chaseEnemy, condition.ownerIsNotTooFar, condition.enemyIsAlive),
+  Condition(node.basicAttack),
+  node.chaseEnemy,
 })
 local AttackAndChaseLava = Parallel({
-  Condition(node.basicAttack, condition.ownerIsNotTooFar, condition.enemyIsAlive, Inversion(lava.condition)),
-  Condition(node.chaseEnemy, condition.ownerIsNotTooFar, condition.enemyIsAlive),
+  Condition(node.basicAttack, Inversion(lava.condition)),
+  node.chaseEnemy,
 })
 local lavaAttack = Parallel({
-  Condition(lava.cast, lava.condition, condition.ownerIsNotTooFar, condition.enemyIsAlive),
-  Condition(node.chaseEnemy, condition.ownerIsNotTooFar, condition.enemyIsAlive),
+  Condition(lava.cast, lava.condition),
+  node.chaseEnemy,
 })
 
 local volcanicAttack = Parallel({
-  Condition(volcanic.cast, volcanic.condition, condition.ownerIsNotTooFar, condition.enemyIsAlive),
-  Condition(node.chaseEnemy, condition.ownerIsNotTooFar, condition.enemyIsAlive),
+  Condition(volcanic.cast, volcanic.condition),
+  node.chaseEnemy,
 })
 
 local combat = Selector({
   Condition(granitic.cast, granitic.condition, condition.ownerIsDying, condition.enemyIsAlive),
-  Condition(lavaAttack, condition.ownerIsNotTooFar, condition.enemyIsAlive, Inversion(condition.isFireMonster)),
-  Condition(
-    magma.cast,
-    magma.condition,
-    condition.ownerIsNotTooFar,
-    condition.enemyIsAlive,
-    Inversion(condition.isFireMonster)
-  ),
-  Condition(volcanicAttack, condition.isWaterMonster),
-  Condition(volcanicAttack, condition.isPlantMonster),
+  Condition(lavaAttack, condition.enemyIsAlive, Inversion(condition.isFireMonster)),
+  Condition(magma.cast, magma.condition, condition.enemyIsAlive, Inversion(condition.isFireMonster)),
+  Condition(volcanicAttack, condition.isWaterMonster, condition.enemyIsAlive),
+  Condition(volcanicAttack, condition.isPlantMonster, condition.enemyIsAlive),
   Condition(pyroclastic.cast, pyroclastic.condition, condition.enemyIsAlive),
   Condition(AttackAndChaseLava, Inversion(lava.condition), condition.enemyIsAlive, Inversion(condition.isFireMonster)),
-  Condition(AttackAndChase, condition.ownerIsNotTooFar, condition.enemyIsAlive, condition.isFireMonster),
+  Condition(AttackAndChase, condition.enemyIsAlive, condition.isFireMonster),
 })
 local dieter = Selector({
-  Condition(combat, condition.hasEnemyOrInList),
+  Condition(combat, condition.hasEnemyOrInList, condition.ownerIsNotTooFar),
   Condition(node.follow, condition.ownerMoving),
   Condition(node.patrol, condition.ownerIsSitting, Inversion(condition.hasEnemy)),
 })

@@ -129,29 +129,30 @@ function light.cast()
   return cast(MH_LIGHT_OF_REGENE, MyOwner, { targetType = 'target', keepRunning = false })
 end
 local AttackAndChase = Parallel({
-  Condition(node.basicAttack, condition.ownerIsNotTooFar, condition.enemyIsAlive, Inversion(cutter.condition)),
-  Condition(node.chaseEnemy, condition.enemyIsNotInAttackSight, condition.ownerIsNotTooFar, condition.enemyIsAlive),
+  Condition(node.basicAttack, Inversion(cutter.condition)),
+  node.chaseEnemy,
 })
 local cutterAttack = Parallel({
-  Condition(cutter.cast, cutter.condition, condition.ownerIsNotTooFar, condition.enemyIsAlive),
-  Condition(node.chaseEnemy, condition.ownerIsNotTooFar, condition.enemyIsAlive),
+  Condition(cutter.cast, cutter.condition),
+  node.chaseEnemy,
 })
 local xenoAttack = Parallel({
-  Condition(xeno.cast, xeno.condition, condition.ownerIsNotTooFar, condition.enemyIsAlive),
-  Condition(node.chaseEnemy, condition.ownerIsNotTooFar, condition.enemyIsAlive),
+  Condition(xeno.cast, xeno.condition),
+  node.chaseEnemy,
 })
 local combat = Selector({
   Condition(overed.cast, condition.isMVP, overed.condition),
-  Condition(xenoAttack, condition.ownerIsNotTooFar, condition.enemyIsAlive, condition.isWaterMonster),
-  Condition(xenoAttack, condition.ownerIsNotTooFar, condition.enemyIsAlive, condition.isPoisonMonster),
-  Condition(xenoAttack, condition.ownerIsNotTooFar, condition.enemyIsAlive, Inversion(condition.isWindMonster)),
-  Condition(cutterAttack, condition.ownerIsNotTooFar, condition.enemyIsAlive),
-  Condition(AttackAndChase, condition.ownerIsNotTooFar, condition.enemyIsAlive, Inversion(cutter.condition)),
+  Condition(xenoAttack, condition.enemyIsAlive, condition.isWaterMonster),
+  Condition(xenoAttack, condition.enemyIsAlive, condition.isPoisonMonster),
+  Condition(xenoAttack, condition.enemyIsAlive, Inversion(condition.isWindMonster)),
+  Condition(cutterAttack, condition.enemyIsAlive),
+  Condition(AttackAndChase, condition.enemyIsAlive, Inversion(cutter.condition)),
 })
 local eira = Selector({
-  Condition(combat, condition.hasEnemyOrInList),
+  Condition(combat, condition.hasEnemyOrInList, condition.ownerIsNotTooFar),
   Condition(light.cast, condition.ownerIsDead, light.condition),
   Condition(node.follow, condition.ownerMoving),
+  Condition(node.follow, condition.ownerIsOutOfSight),
   Condition(node.patrol, condition.ownerIsSitting, Inversion(condition.hasEnemyOrInList)),
 })
 return Condition(eira, IsEira)

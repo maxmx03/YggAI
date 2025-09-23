@@ -172,29 +172,24 @@ local battleComboSequence = Sequence({
   Condition(Delay(midnight.cast, 2.0), condition.enemyIsAlive, midnight.condition),
 })
 local battleComboMode = Sequence({
-  Condition(node.chaseEnemy, condition.enemyIsNotOutOfSight),
-  Condition(battleComboSequence, condition.enemyIsAlive, condition.ownerIsNotTooFar),
+  node.chaseEnemy,
+  battleComboSequence,
 })
 local AttackAndChase = Parallel({
-  Condition(node.basicAttack, condition.ownerIsNotTooFar, condition.enemyIsAlive, Inversion(sonic.condition)),
-  Condition(node.chaseEnemy, condition.ownerIsNotTooFar, condition.enemyIsAlive),
+  Condition(node.basicAttack, Inversion(sonic.condition)),
+  node.chaseEnemy,
 })
 local AttackAndChaseGainSpheres = Parallel({
-  Condition(
-    node.EleanorBasicAttack,
-    condition.ownerIsNotTooFar,
-    condition.enemyIsAlive,
-    Inversion(condition.hasAllSpheres)
-  ),
-  Condition(node.chaseEnemy, condition.ownerIsNotTooFar, condition.enemyIsAlive),
+  Condition(node.EleanorBasicAttack, Inversion(condition.hasAllSpheres)),
+  node.chaseEnemy,
 })
 local combat = Selector({
   Condition(battleComboMode, condition.enemyIsAlive, condition.ownerIsNotTooFar),
-  Condition(AttackAndChaseGainSpheres, condition.ownerIsNotTooFar, Inversion(condition.hasAllSpheres)),
-  Condition(AttackAndChase, condition.ownerIsNotTooFar, Inversion(sonic.condition)),
+  Condition(AttackAndChaseGainSpheres, condition.enemyIsAlive, Inversion(condition.hasAllSpheres)),
+  Condition(AttackAndChase, condition.enemyIsAlive, Inversion(sonic.condition)),
 })
 local eleanor = Selector({
-  Condition(combat, condition.hasEnemyOrInList),
+  Condition(combat, condition.hasEnemyOrInList, condition.ownerIsNotTooFar),
   Condition(node.follow, condition.ownerMoving),
   Condition(node.patrol, condition.ownerIsSitting, Inversion(condition.hasEnemyOrInList)),
 })

@@ -77,8 +77,8 @@ end
 
 ---@return boolean
 function IsLif()
-  local humntype = GetV(V_HOMUNTYPE, MyID)
-  return humntype == LIF or humntype == LIF_H or humntype == LIF2 or humntype == LIF_H2
+  local h = GetV(V_HOMUNTYPE, MyID)
+  return h == LIF or h == LIF2 or h == LIF_H or h == LIF_H2
 end
 
 ---@return boolean
@@ -433,7 +433,7 @@ function GetOwnerEnemy(myid, callback)
   local owner_target = GetV(V_TARGET, owner)
   if owner_target ~= 0 and owner_target ~= myid and owner_target ~= owner then
     if not IsOutOfSight(myid, owner_target) then
-      if IsMonster(owner_target) == 1 and IsEnemyAllowed(owner_target) then
+      if IsMonster(owner_target) == 1 then
         callback(owner_target)
       elseif IsMonster(owner_target) ~= 1 then -- PvP
         callback(owner_target)
@@ -452,7 +452,6 @@ function GetMyEnemyB(myid, callback)
     if actorId ~= owner and actorId ~= myid then
       if not IsOutOfSight(myid, actorId) then
         if IsMonster(actorId) == 1 and IsEnemyAllowed(actorId) then
-          -- Só adiciona se não é MVP/Boss (evita duplicata)
           if not (IsMVP(actorId) or IsBoss(actorId)) then
             callback(actorId)
           end
