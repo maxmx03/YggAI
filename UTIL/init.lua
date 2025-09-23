@@ -78,7 +78,7 @@ end
 ---@return boolean
 function IsLif()
   local humntype = GetV(V_HOMUNTYPE, MyID)
-  return humntype == LIF or humntype == LIF_H or humntype == LIF2 or type == LIF_H2
+  return humntype == LIF or humntype == LIF_H or humntype == LIF2 or humntype == LIF_H2
 end
 
 ---@return boolean
