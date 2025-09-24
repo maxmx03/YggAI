@@ -162,6 +162,7 @@ local combat = Selector({
   Condition(magma.cast, magma.condition, condition.enemyIsAlive, Inversion(condition.isFireMonster)),
   Condition(volcanicAttack, condition.isWaterMonster, condition.enemyIsAlive),
   Condition(volcanicAttack, condition.isPlantMonster, condition.enemyIsAlive),
+  Condition(volcanicAttack, condition.isMVP, condition.enemyIsAlive),
   Condition(pyroclastic.cast, pyroclastic.condition, condition.enemyIsAlive),
   Condition(AttackAndChaseLava, Inversion(lava.condition), condition.enemyIsAlive, Inversion(condition.isFireMonster)),
   Condition(AttackAndChase, condition.enemyIsAlive, condition.isFireMonster),
