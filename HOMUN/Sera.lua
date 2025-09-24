@@ -91,7 +91,10 @@ end
 
 local paralyse = {}
 function paralyse.condition()
-  return isSkillCastable(MH_NEEDLE_OF_PARALYZE)
+  if math.random(1, 100) <= 45 then
+    return isSkillCastable(MH_NEEDLE_OF_PARALYZE)
+  end
+  return false
 end
 function paralyse.cast()
   return cast(MH_NEEDLE_OF_PARALYZE, MyEnemy, { targetType = 'target', keepRunning = true })

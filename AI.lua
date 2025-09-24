@@ -25,6 +25,7 @@ local root = Selector({
   filir,
 })
 function AI(myid)
+  math.randomseed(GetTick())
   MyID = myid
   MyOwner = GetV(V_OWNER, myid)
   userCommands(root)
