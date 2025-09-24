@@ -57,59 +57,32 @@ local function addEnemyToList(enemyId)
   return false
 end
 
-local AttackTimeout = 0
-local AttackTimeLimit = 3000
-local lastEnemyPosition = { x = 0, y = 0 }
-local pathfindingAttempts = 0
+local lastPosition = { x = 0, y = 0 }
+local stuckCounter = 0
+local stuckThreshold = 3
 
-local function checkPathfinding()
-  if MyEnemy == 0 then
+local function checkIfStuck()
+  local myX, myY = GetV(V_POSITION, MyID)
+
+  if myX == lastPosition.x and myY == lastPosition.y then
+    stuckCounter = stuckCounter + 1
+  else
+    stuckCounter = 0
+    lastPosition.x = myX
+    lastPosition.y = myY
+  end
+
+  if stuckCounter >= stuckThreshold and MyEnemy ~= 0 then
+    TraceAI('Homunculus travado, abandonando alvo: ' .. MyEnemy)
+    MyEnemy = 0
     return true
   end
 
-  local currentTime = GetTick()
-  local enemyX, enemyY = GetV(V_POSITION, MyEnemy)
-  local myMotion = GetV(V_MOTION, MyID)
-
-  if myMotion == MOTION_MOVE then
-    AttackTimeout = currentTime + AttackTimeLimit
-    pathfindingAttempts = 0
-    return true
-  end
-
-  if enemyX ~= lastEnemyPosition.x or enemyY ~= lastEnemyPosition.y then
-    lastEnemyPosition.x = enemyX
-    lastEnemyPosition.y = enemyY
-    AttackTimeout = currentTime + AttackTimeLimit
-    pathfindingAttempts = 0
-    return true
-  end
-
-  local inAttackRange = IsInAttackSight(MyID, MyEnemy)
-
-  if inAttackRange then
-    AttackTimeout = currentTime + AttackTimeLimit
-    pathfindingAttempts = 0
-    return true
-  end
-
-  if currentTime > AttackTimeout then
-    pathfindingAttempts = pathfindingAttempts + 1
-
-    if pathfindingAttempts >= 2 then
-      MyEnemy = 0
-      pathfindingAttempts = 0
-      return false
-    end
-
-    AttackTimeout = currentTime + AttackTimeLimit
-  end
-
-  return true
+  return false
 end
 
 function M.hasEnemy()
-  if not checkPathfinding() then
+  if checkIfStuck() then
     return false
   end
 
