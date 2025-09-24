@@ -387,76 +387,41 @@ end
 
 ---@param myid number
 ---@param callback function
-function GetMyEnemyC(myid, callback)
+function SearchForEnemies(myid, callback)
   local owner = GetV(V_OWNER, myid)
+  local priority = {}
+  local others = {}
   local actors = GetActors()
-
   for _, actorId in ipairs(actors) do
     if actorId ~= owner and actorId ~= myid then
+      local target = GetV(V_TARGET, actorId)
+      local owner_target = GetV(V_TARGET, owner)
       if not IsOutOfSight(myid, actorId) then
         if IsMonster(actorId) == 1 then
-          if IsMVP(actorId) or IsBoss(actorId) then
-            callback(actorId)
+          if owner_target == actorId then
+            table.insert(priority, actorId)
+          elseif IsMVP(actorId) or IsBoss(actorId) then
+            table.insert(priority, actorId)
+          elseif (target == myid or target == owner) and IsEnemyAllowed(actorId) then
+            table.insert(priority, actorId)
+          else
+            if IsEnemyAllowed(actorId) then
+              table.insert(others, actorId)
+            end
           end
+        elseif target == myid or target == owner or owner_target == actorId then
+          table.insert(priority, actorId)
         end
       end
     end
   end
-end
-
----@param myid number
----@param callback function
-function GetMyEnemyA(myid, callback)
-  local owner = GetV(V_OWNER, myid)
-  local actors = GetActors()
-
-  for _, actorId in ipairs(actors) do
-    if actorId ~= owner and actorId ~= myid then
-      if not IsOutOfSight(myid, actorId) then
-        local target = GetV(V_TARGET, actorId)
-        if target == myid or target == owner then
-          if IsMonster(actorId) == 1 and IsEnemyAllowed(actorId) then
-            callback(actorId)
-          elseif IsMonster(actorId) ~= 1 then -- PvP
-            callback(actorId)
-          end
-        end
-      end
-    end
+  for _, actorId in ipairs(priority) do
+    callback(actorId)
   end
-end
-
----@param myid number
----@param callback function
-function GetOwnerEnemy(myid, callback)
-  local owner = GetV(V_OWNER, myid)
-  local owner_target = GetV(V_TARGET, owner)
-  if owner_target ~= 0 and owner_target ~= myid and owner_target ~= owner then
-    if not IsOutOfSight(myid, owner_target) then
-      if IsMonster(owner_target) == 1 then
-        callback(owner_target)
-      elseif IsMonster(owner_target) ~= 1 then -- PvP
-        callback(owner_target)
-      end
-    end
-  end
-end
-
----@param myid number
----@param callback function
-function GetMyEnemyB(myid, callback)
-  local owner = GetV(V_OWNER, myid)
-  local actors = GetActors()
-
-  for _, actorId in ipairs(actors) do
-    if actorId ~= owner and actorId ~= myid then
-      if not IsOutOfSight(myid, actorId) then
-        if IsMonster(actorId) == 1 and IsEnemyAllowed(actorId) then
-          if not (IsMVP(actorId) or IsBoss(actorId)) then
-            callback(actorId)
-          end
-        end
-      end
-    end
+  table.sort(others, function(a, b)
+    return GetDistanceFromOwner(a) < GetDistanceFromOwner(b)
+  end)
+  for _, actorId in ipairs(others) do
+    callback(actorId)
   end
 end

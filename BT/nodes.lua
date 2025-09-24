@@ -26,7 +26,6 @@ end
 
 ---@return Status
 function M.patrol()
-  math.randomseed(GetTick())
   local cooldown = math.random(3)
   if (GetTickInSeconds() - M.lastTimePatrol) > cooldown then
     local destX, destY = GetV(V_POSITION, MyOwner)

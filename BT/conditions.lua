@@ -19,38 +19,28 @@ local function cleanEnemyList()
           List.pushright(cleanList, enemyId)
         else
           removed = removed + 1
-          TraceAI('Removido inimigo morto: ' .. enemyId)
         end
       else
         removed = removed + 1
-        TraceAI('Removido inimigo fora de vista: ' .. enemyId)
       end
     else
       removed = removed + 1
-      TraceAI('Removido ID inválido: ' .. tostring(enemyId))
     end
-  end
-
-  if removed > 0 then
-    TraceAI('Removidos ' .. removed .. ' inimigos da lista')
   end
   EnemyList = cleanList
 end
 
 local function addEnemyToList(enemyId)
   if enemyId == 0 or enemyId == -1 or not enemyId then
-    TraceAI('ID inválido rejeitado: ' .. tostring(enemyId))
     return false
   end
 
   if IsOutOfSight(MyID, enemyId) then
-    TraceAI('Inimigo fora de vista rejeitado: ' .. enemyId)
     return false
   end
 
   local motion = GetV(V_MOTION, enemyId)
   if motion == MOTION_DEAD then
-    TraceAI('Inimigo morto rejeitado: ' .. enemyId)
     return false
   end
 
@@ -62,7 +52,6 @@ local function addEnemyToList(enemyId)
 
   if List.size(EnemyList) < MAX_ENEMIES_IN_LIST then
     List.pushright(EnemyList, enemyId)
-    TraceAI('Adicionado inimigo ' .. enemyId .. ' à lista. Total: ' .. List.size(EnemyList))
     return true
   end
   return false
@@ -106,10 +95,8 @@ local function checkPathfinding()
 
   if currentTime > AttackTimeout then
     pathfindingAttempts = pathfindingAttempts + 1
-    TraceAI('Timeout tentando alcançar inimigo: ' .. MyEnemy .. ' (tentativa: ' .. pathfindingAttempts .. ')')
 
     if pathfindingAttempts >= 2 then
-      TraceAI('Abandonando alvo inacessível: ' .. MyEnemy)
       MyEnemy = 0
       pathfindingAttempts = 0
       return false
@@ -130,13 +117,8 @@ function M.hasEnemy()
     if not IsOutOfSight(MyID, MyEnemy) then
       local motion = GetV(V_MOTION, MyEnemy)
       if motion ~= MOTION_DEAD then
-        TraceAI('Mantendo inimigo atual: ' .. MyEnemy)
         return true
-      else
-        TraceAI('Inimigo atual morreu: ' .. MyEnemy)
       end
-    else
-      TraceAI('Inimigo atual saiu de vista: ' .. MyEnemy)
     end
   end
 
@@ -149,19 +131,13 @@ function M.hasEnemy()
         local motion = GetV(V_MOTION, nextEnemy)
         if motion ~= MOTION_DEAD then
           MyEnemy = nextEnemy
-          TraceAI('Novo inimigo da lista: ' .. MyEnemy)
           return true
-        else
-          TraceAI('Inimigo da lista morreu: ' .. nextEnemy)
         end
-      else
-        TraceAI('Inimigo da lista fora de vista: ' .. nextEnemy)
       end
     end
   end
 
   MyEnemy = 0
-  TraceAI('Nenhum inimigo válido encontrado')
   return false
 end
 
@@ -191,24 +167,7 @@ function M.scanForEnemies()
     end
   end
 
-  TraceAI('Iniciando scan de inimigos...')
-
-  GetMyEnemyC(MyID, enemyCallback)
-  TraceAI('MVPs encontrados: ' .. foundCount)
-
-  local defensiveCount = foundCount
-  GetMyEnemyA(MyID, enemyCallback)
-  TraceAI('Inimigos defensivos: ' .. (foundCount - defensiveCount))
-
-  local ownerCount = foundCount
-  GetOwnerEnemy(MyID, enemyCallback)
-  TraceAI('Inimigos do owner: ' .. (foundCount - ownerCount))
-
-  local aggressiveCount = foundCount
-  GetMyEnemyB(MyID, enemyCallback)
-  TraceAI('Inimigos agressivos: ' .. (foundCount - aggressiveCount))
-
-  TraceAI('Total encontrados: ' .. foundCount .. ' - Lista final: ' .. List.size(EnemyList))
+  SearchForEnemies(MyID, enemyCallback)
 
   return List.size(EnemyList) > 0
 end
@@ -222,16 +181,9 @@ function M.hasEnemyOrInList()
   return M.hasEnemy()
 end
 
--- function M.clearEnemySystem()
---   List.clear(EnemyList)
---   MyEnemy = 0
---   TraceAI('Sistema de inimigos limpo')
--- end
-
 ---@return boolean
 function M.enemyIsNotOutOfSight()
   if IsOutOfSight(MyID, MyEnemy) then
-    TraceAI('Inimigo saiu de vista: ' .. MyEnemy)
     MyEnemy = 0
     return false
   end
@@ -241,7 +193,6 @@ end
 ---@return boolean
 function M.enemyIsAlive()
   if GetV(V_MOTION, MyEnemy) == MOTION_DEAD then
-    TraceAI('Inimigo morreu: ' .. MyEnemy)
     MyEnemy = 0
     return false
   end
