@@ -58,53 +58,40 @@ local function addEnemyToList(enemyId)
 end
 
 local AttackTimeout = 0
-local AttackTimeLimit = 3000
-local lastEnemyPosition = { x = 0, y = 0 }
+local AttackTimeLimit = 1
 local pathfindingAttempts = 0
 
 local function checkPathfinding()
   if MyEnemy == 0 then
     return true
   end
-
-  local currentTime = GetTick()
-  local enemyX, enemyY = GetV(V_POSITION, MyEnemy)
+  local currentTime = GetTickInSeconds()
   local myMotion = GetV(V_MOTION, MyID)
-
-  if myMotion == MOTION_MOVE then
+  if myMotion == MOTION_MOVE or myMotion == MOTION_ATTACK or myMotion == MOTION_ATTACK2 then
     AttackTimeout = currentTime + AttackTimeLimit
     pathfindingAttempts = 0
     return true
   end
-
-  if enemyX ~= lastEnemyPosition.x or enemyY ~= lastEnemyPosition.y then
-    lastEnemyPosition.x = enemyX
-    lastEnemyPosition.y = enemyY
-    AttackTimeout = currentTime + AttackTimeLimit
-    pathfindingAttempts = 0
-    return true
-  end
-
   local inAttackRange = IsInAttackSight(MyID, MyEnemy)
-
   if inAttackRange then
     AttackTimeout = currentTime + AttackTimeLimit
     pathfindingAttempts = 0
     return true
   end
-
+  if GetV(V_MOTION, MyEnemy) == MOTION_DAMAGE then
+    AttackTimeout = currentTime + AttackTimeLimit
+    pathfindingAttempts = 0
+    return true
+  end
   if currentTime > AttackTimeout then
     pathfindingAttempts = pathfindingAttempts + 1
-
     if pathfindingAttempts >= 2 then
       MyEnemy = 0
       pathfindingAttempts = 0
       return false
     end
-
     AttackTimeout = currentTime + AttackTimeLimit
   end
-
   return true
 end
 
