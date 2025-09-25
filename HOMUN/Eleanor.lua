@@ -114,6 +114,12 @@ BATTLE_MODE = {
   BATTLE = 1,
   CLAW = 2,
   CURRENT = 1,
+  isBattleMode = function()
+    return BATTLE_MODE.CURRENT == BATTLE_MODE.BATTLE
+  end,
+  isClawMode = function()
+    return BATTLE_MODE.CURRENT == BATTLE_MODE.CLAW
+  end,
 }
 
 ---@param mySkill number
@@ -131,14 +137,32 @@ end
 ---@return Status
 local cast = function(skill, target, opts)
   local casted = node.castSkill(MySkills[skill], MyCooldown[skill], target, opts)
+  local spAfterCast = GetV(V_SP, MyID)
+
+  if casted == STATUS.FAILURE or spAfterCast >= EleanorSP then
+    if BATTLE_MODE.CURRENT == BATTLE_MODE.BATTLE then
+      BATTLE_MODE.CURRENT = BATTLE_MODE.CLAW
+    else
+      BATTLE_MODE.CURRENT = BATTLE_MODE.BATTLE
+    end
+    MySkill = 0
+  end
+
   if casted == STATUS.RUNNING then
     MyCooldown[skill] = GetTickInSeconds()
+    if MySpheres > 0 then
+      MySpheres = math.max(0, MySpheres - MySkills[skill].sphere_cost)
+    end
     return STATUS.RUNNING
   elseif casted == STATUS.SUCCESS then
     MyCooldown[skill] = GetTickInSeconds()
+    if MySpheres > 0 then
+      MySpheres = math.max(0, MySpheres - MySkills[skill].sphere_cost)
+    end
     MySkill = 0
     return STATUS.SUCCESS
   end
+
   return STATUS.FAILURE
 end
 
@@ -166,14 +190,45 @@ function sonic.cast()
   end
   return cast(MH_SONIC_CRAW, MyEnemy, { targetType = 'target', keepRunning = false })
 end
+local tinder = {}
+function tinder.condition()
+  return isSkillCastable(MH_TINDER_BREAKER)
+end
+function tinder.cast()
+  return cast(MH_TINDER_BREAKER, MyEnemy, { targetType = 'target', keepRunning = false })
+end
+local cbc = {}
+function cbc.condition()
+  return isSkillCastable(MH_CBC)
+end
+function cbc.cast()
+  return cast(MH_CBC, MyEnemy, { targetType = 'target', keepRunning = false })
+end
+local eqc = {}
+function eqc.condition()
+  return isSkillCastable(MH_EQC)
+end
+function eqc.cast()
+  return cast(MH_EQC, MyEnemy, { targetType = 'target', keepRunning = false })
+end
+
 local battleComboSequence = Sequence({
   Condition(sonic.cast, condition.enemyIsAlive, sonic.condition, Inversion(condition.enemyIsNotInAttackSight)),
   Condition(Delay(silver.cast, 2.0), condition.enemyIsAlive, silver.condition),
   Condition(Delay(midnight.cast, 2.0), condition.enemyIsAlive, midnight.condition),
 })
+local ClawComboSequence = Sequence({
+  Condition(tinder.cast, condition.enemyIsAlive, tinder.condition, Inversion(condition.enemyIsNotInAttackSight)),
+  Condition(Delay(cbc.cast, 2.0), condition.enemyIsAlive, cbc.condition),
+  Condition(Delay(eqc.cast, 2.0), condition.enemyIsAlive, eqc.condition),
+})
 local battleComboMode = Sequence({
   node.chaseEnemy,
   battleComboSequence,
+})
+local ClawComboMode = Sequence({
+  node.chaseEnemy,
+  ClawComboSequence,
 })
 local AttackAndChase = Parallel({
   Condition(node.basicAttack, Inversion(sonic.condition)),
@@ -184,7 +239,8 @@ local AttackAndChaseGainSpheres = Parallel({
   node.chaseEnemy,
 })
 local combat = Selector({
-  Condition(battleComboMode, condition.enemyIsAlive, condition.ownerIsNotTooFar),
+  Condition(battleComboMode, condition.enemyIsAlive, condition.ownerIsNotTooFar, BATTLE_MODE.isBattleMode),
+  Condition(ClawComboMode, condition.enemyIsAlive, condition.ownerIsNotTooFar, BATTLE_MODE.isClawMode),
   Condition(AttackAndChaseGainSpheres, condition.enemyIsAlive, Inversion(condition.hasAllSpheres)),
   Condition(AttackAndChase, condition.enemyIsAlive, Inversion(sonic.condition)),
 })

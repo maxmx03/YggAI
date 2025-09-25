@@ -79,7 +79,6 @@ function M.castSkill(skill, cooldown, target, opts)
   end
   if casted then
     if opts.keepRunning then
-      TraceAI('Keep Running')
       return STATUS.RUNNING
     end
     return STATUS.SUCCESS

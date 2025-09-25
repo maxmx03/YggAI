@@ -245,3 +245,4 @@ MySkillTarget = TARGET.OBJECT -- Homunculus skill target
 MySkillState = SKILL_EXIT_STATE.SUCCESS -- Homunculus skill state
 MyOwner = 0 -- Homunculus owner
 MySpheres = 5 -- Eleanor only
+EleanorSP = 0 -- Eleanor only
