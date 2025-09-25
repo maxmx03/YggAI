@@ -138,8 +138,7 @@ end
 local cast = function(skill, target, opts)
   local casted = node.castSkill(MySkills[skill], MyCooldown[skill], target, opts)
   local spAfterCast = GetV(V_SP, MyID)
-
-  if casted == STATUS.FAILURE or spAfterCast >= EleanorSP then
+  if casted == STATUS.FAILURE or (spAfterCast >= EleanorSP and EleanorSP > 0) then
     if BATTLE_MODE.CURRENT == BATTLE_MODE.BATTLE then
       BATTLE_MODE.CURRENT = BATTLE_MODE.CLAW
     else
@@ -147,7 +146,6 @@ local cast = function(skill, target, opts)
     end
     MySkill = 0
   end
-
   if casted == STATUS.RUNNING then
     MyCooldown[skill] = GetTickInSeconds()
     if MySpheres > 0 then
@@ -212,7 +210,7 @@ function eqc.cast()
   return cast(MH_EQC, MyEnemy, { targetType = 'target', keepRunning = false })
 end
 
-local battleComboSequence = Sequence({
+local BattleComboSequence = Sequence({
   Condition(sonic.cast, condition.enemyIsAlive, sonic.condition, Inversion(condition.enemyIsNotInAttackSight)),
   Condition(Delay(silver.cast, 2.0), condition.enemyIsAlive, silver.condition),
   Condition(Delay(midnight.cast, 2.0), condition.enemyIsAlive, midnight.condition),
@@ -222,9 +220,9 @@ local ClawComboSequence = Sequence({
   Condition(Delay(cbc.cast, 2.0), condition.enemyIsAlive, cbc.condition),
   Condition(Delay(eqc.cast, 2.0), condition.enemyIsAlive, eqc.condition),
 })
-local battleComboMode = Sequence({
+local BattleComboMode = Sequence({
   node.chaseEnemy,
-  battleComboSequence,
+  BattleComboSequence,
 })
 local ClawComboMode = Sequence({
   node.chaseEnemy,
@@ -239,7 +237,7 @@ local AttackAndChaseGainSpheres = Parallel({
   node.chaseEnemy,
 })
 local combat = Selector({
-  Condition(battleComboMode, condition.enemyIsAlive, condition.ownerIsNotTooFar, BATTLE_MODE.isBattleMode),
+  Condition(BattleComboMode, condition.enemyIsAlive, condition.ownerIsNotTooFar, BATTLE_MODE.isBattleMode),
   Condition(ClawComboMode, condition.enemyIsAlive, condition.ownerIsNotTooFar, BATTLE_MODE.isClawMode),
   Condition(AttackAndChaseGainSpheres, condition.enemyIsAlive, Inversion(condition.hasAllSpheres)),
   Condition(AttackAndChase, condition.enemyIsAlive, Inversion(sonic.condition)),

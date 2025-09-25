@@ -88,7 +88,9 @@ end
 
 function M.EleanorBasicAttack()
   if MySpheres < 5 then
-    MySpheres = MySpheres + 1
+    if math.random(100) < 70 then
+      MySpheres = MySpheres + 1
+    end
   end
   return M.basicAttack()
 end
