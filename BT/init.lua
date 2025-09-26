@@ -113,18 +113,12 @@ end
 function Condition(node, ...)
   local conditions = { ... }
   return function()
-    local allTrue = true
     for _, condition in ipairs(conditions) do
       if not condition() then
-        allTrue = false
-        break
+        return STATUS.FAILURE
       end
     end
-    if allTrue then
-      return node()
-    else
-      return STATUS.FAILURE
-    end
+    return node()
   end
 end
 

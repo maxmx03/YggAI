@@ -22,7 +22,7 @@ local MySkills = {
       if previousCooldown == 0 then
         return previousCooldown
       end
-      return 10
+      return 5
     end,
     level = 5,
   },
@@ -146,6 +146,10 @@ local AttackAndChaseLava = Parallel({
   Condition(node.basicAttack, Inversion(lava.condition)),
   node.chaseEnemy,
 })
+local AttackAndChaseVolcanic = Parallel({
+  Condition(node.basicAttack, Inversion(volcanic.condition)),
+  node.chaseEnemy,
+})
 local lavaAttack = Parallel({
   Condition(lava.cast, lava.condition),
   node.chaseEnemy,
@@ -158,14 +162,27 @@ local volcanicAttack = Parallel({
 
 local combat = Selector({
   Condition(granitic.cast, granitic.condition, condition.ownerIsDying, condition.enemyIsAlive),
-  Condition(volcanicAttack, condition.isWaterMonster, condition.enemyIsAlive, Inversion(lava.condition)),
-  Condition(volcanicAttack, condition.isPlantMonster, condition.enemyIsAlive, Inversion(lava.condition)),
-  Condition(volcanicAttack, condition.isMVP, condition.enemyIsAlive, Inversion(lava.condition)),
-  Condition(lavaAttack, condition.enemyIsAlive, Inversion(condition.isFireMonster)),
-  Condition(magma.cast, magma.condition, condition.enemyIsAlive, Inversion(condition.isFireMonster)),
+  Condition(
+    Selector({
+      Condition(magma.cast, magma.condition, condition.enemyIsAlive),
+      Condition(pyroclastic.cast, pyroclastic.condition, condition.enemyIsAlive),
+      Condition(volcanicAttack, condition.enemyIsAlive, Inversion(lava.condition)),
+      Condition(AttackAndChaseVolcanic, Inversion(volcanic.condition), condition.enemyIsAlive),
+      Condition(lavaAttack, condition.enemyIsAlive),
+    }),
+    condition.isMVP
+  ),
+  Condition(
+    Selector({
+      Condition(pyroclastic.cast, pyroclastic.condition, condition.enemyIsAlive),
+      Condition(AttackAndChase, condition.enemyIsAlive),
+    }),
+    condition.isFireMonster
+  ),
+  Condition(lavaAttack, condition.enemyIsAlive),
+  Condition(magma.cast, magma.condition, condition.enemyIsAlive),
   Condition(pyroclastic.cast, pyroclastic.condition, condition.enemyIsAlive),
-  Condition(AttackAndChaseLava, Inversion(lava.condition), condition.enemyIsAlive, Inversion(condition.isFireMonster)),
-  Condition(AttackAndChase, condition.enemyIsAlive, condition.isFireMonster),
+  Condition(AttackAndChaseLava, Inversion(lava.condition), condition.enemyIsAlive),
 })
 local dieter = Selector({
   Condition(combat, condition.hasEnemyOrInList, condition.ownerIsNotTooFar),
