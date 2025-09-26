@@ -139,7 +139,7 @@ function pyroclastic.condition()
 end
 
 local AttackAndChase = Parallel({
-  Condition(node.basicAttack),
+  node.basicAttack,
   node.chaseEnemy,
 })
 local AttackAndChaseLava = Parallel({
@@ -158,11 +158,11 @@ local volcanicAttack = Parallel({
 
 local combat = Selector({
   Condition(granitic.cast, granitic.condition, condition.ownerIsDying, condition.enemyIsAlive),
+  Condition(volcanicAttack, condition.isWaterMonster, condition.enemyIsAlive, Inversion(lava.condition)),
+  Condition(volcanicAttack, condition.isPlantMonster, condition.enemyIsAlive, Inversion(lava.condition)),
+  Condition(volcanicAttack, condition.isMVP, condition.enemyIsAlive, Inversion(lava.condition)),
   Condition(lavaAttack, condition.enemyIsAlive, Inversion(condition.isFireMonster)),
   Condition(magma.cast, magma.condition, condition.enemyIsAlive, Inversion(condition.isFireMonster)),
-  Condition(volcanicAttack, condition.isWaterMonster, condition.enemyIsAlive),
-  Condition(volcanicAttack, condition.isPlantMonster, condition.enemyIsAlive),
-  Condition(volcanicAttack, condition.isMVP, condition.enemyIsAlive),
   Condition(pyroclastic.cast, pyroclastic.condition, condition.enemyIsAlive),
   Condition(AttackAndChaseLava, Inversion(lava.condition), condition.enemyIsAlive, Inversion(condition.isFireMonster)),
   Condition(AttackAndChase, condition.enemyIsAlive, condition.isFireMonster),
