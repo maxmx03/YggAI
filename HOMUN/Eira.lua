@@ -25,6 +25,7 @@ local MySkills = {
       return 0.3
     end,
     level = 10,
+    required_level = 106,
   },
   ---@type Skill
   [MH_OVERED_BOOST] = {
@@ -37,6 +38,7 @@ local MySkills = {
       return 30
     end,
     level = 5,
+    required_level = 114,
   },
   ---@type Skill
   [MH_XENO_SLASHER] = {
@@ -49,6 +51,7 @@ local MySkills = {
       return 0.3
     end,
     level = 10,
+    required_level = 121,
   },
   ---@type Skill
   [MH_LIGHT_OF_REGENE] = {
@@ -61,6 +64,7 @@ local MySkills = {
       return 300
     end,
     level = 5,
+    required_level = 128,
   },
   ---@type Skill
   [MH_SILENT_BREEZE] = {
@@ -73,6 +77,7 @@ local MySkills = {
       return 1.5
     end,
     level = 5,
+    required_level = 137,
   },
 }
 
@@ -129,30 +134,30 @@ function light.cast()
   return cast(MH_LIGHT_OF_REGENE, MyOwner, { targetType = 'target', keepRunning = false })
 end
 local AttackAndChase = Parallel({
-  Condition(node.basicAttack, Inversion(cutter.condition)),
+  Conditions(node.basicAttack, Inversion(cutter.condition)),
   node.chaseEnemy,
 })
 local cutterAttack = Parallel({
-  Condition(cutter.cast, cutter.condition),
+  Conditions(cutter.cast, cutter.condition),
   node.chaseEnemy,
 })
 local xenoAttack = Parallel({
-  Condition(xeno.cast, xeno.condition),
+  Conditions(xeno.cast, xeno.condition),
   node.chaseEnemy,
 })
 local combat = Selector({
-  Condition(overed.cast, condition.isMVP, overed.condition),
-  Condition(xenoAttack, condition.enemyIsAlive, condition.isWaterMonster),
-  Condition(xenoAttack, condition.enemyIsAlive, condition.isPoisonMonster),
-  Condition(xenoAttack, condition.enemyIsAlive, Inversion(condition.isWindMonster)),
-  Condition(cutterAttack, condition.enemyIsAlive),
-  Condition(AttackAndChase, condition.enemyIsAlive, Inversion(cutter.condition)),
+  Conditions(overed.cast, condition.isMVP, overed.condition),
+  Conditions(xenoAttack, condition.enemyIsAlive, condition.isWaterMonster),
+  Conditions(xenoAttack, condition.enemyIsAlive, condition.isPoisonMonster),
+  Conditions(xenoAttack, condition.enemyIsAlive, Inversion(condition.isWindMonster)),
+  Conditions(cutterAttack, condition.enemyIsAlive),
+  Conditions(AttackAndChase, condition.enemyIsAlive, Inversion(cutter.condition)),
 })
 local eira = Selector({
-  Condition(combat, condition.hasEnemyOrInList, condition.ownerIsNotTooFar),
-  Condition(light.cast, condition.ownerIsDead, light.condition),
-  Condition(node.follow, condition.ownerMoving),
-  Condition(node.follow, condition.ownerIsOutOfSight),
-  Condition(node.patrol, condition.ownerIsSitting, Inversion(condition.hasEnemyOrInList)),
+  Conditions(combat, condition.hasEnemyOrInList, condition.ownerIsNotTooFar),
+  Conditions(light.cast, condition.ownerIsDead, light.condition),
+  Conditions(node.follow, condition.ownerMoving),
+  Conditions(node.follow, condition.ownerIsOutOfSight),
+  Conditions(node.patrol, condition.ownerIsSitting, Inversion(condition.hasEnemyOrInList)),
 })
 return Condition(eira, IsEira)

@@ -70,15 +70,21 @@ function SkillGround(id, level, skill, x, y)
 end
 
 ---@param id number
----@return string
+---@return number
 function IsMonster(id)
   print(id)
-  return ''
+  return 0
 end
 
 ---@class Skill
 ---@field sp number
 ---@field cooldown fun(previousCooldown: number): number
 ---@field level number
+---@field required_level number
 ---@field sphere_cost? number
 ---@field id number
+
+---@class Homun
+---@field isSkillCastable fun(skill:number):boolean
+---@field castSkill fun(skill:number, target:number, opts:SkillOpts):Status
+---@field root fun(combat:fun():Status):fun():Status

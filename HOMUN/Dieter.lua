@@ -2,6 +2,7 @@
 local node = require('AI.USER_AI.BT.nodes')
 ---@type Condition
 local condition = require('AI.USER_AI.BT.conditions')
+local Homun = require('AI.USER_AI.UTIL.Homun')
 
 ---@class Cooldown
 local MyCooldown = {
@@ -25,6 +26,7 @@ local MySkills = {
       return 5
     end,
     level = 5,
+    required_level = 102,
   },
   ---@type Skill
   [MH_LAVA_SLIDE] = {
@@ -37,6 +39,7 @@ local MySkills = {
       return 15
     end,
     level = 10,
+    required_level = 109,
   },
   ---@type Skill
   [MH_GRANITIC_ARMOR] = {
@@ -49,6 +52,7 @@ local MySkills = {
       return 60
     end,
     level = 5,
+    required_level = 116,
   },
   ---@type Skill
   [MH_MAGMA_FLOW] = {
@@ -61,6 +65,7 @@ local MySkills = {
       return 90
     end,
     level = 5,
+    required_level = 122,
   },
   ---@type Skill
   [MH_PYROCLASTIC] = {
@@ -73,120 +78,130 @@ local MySkills = {
       return 600
     end,
     level = 10,
+    required_level = 131,
   },
 }
 
----@param mySkill number
-local isSkillCastable = function(mySkill)
-  MySkill = mySkill
-  ---@type Skill
-  local skill = MySkills[MySkill]
-  local cooldown = MyCooldown[MySkill]
-  return condition.isSkillCastable(skill, cooldown)
-end
-
----@param skill number
----@param target number
----@param opts SkillOpts
----@return Status
-local cast = function(skill, target, opts)
-  local casted = node.castSkill(MySkills[skill], MyCooldown[skill], target, opts)
-  if casted == STATUS.RUNNING then
-    MyCooldown[skill] = GetTickInSeconds()
-    return STATUS.RUNNING
-  elseif casted == STATUS.SUCCESS then
-    MyCooldown[skill] = GetTickInSeconds()
-    MySkill = 0
-    return STATUS.SUCCESS
-  end
-  return STATUS.FAILURE
-end
+---@type Homun
+local dieter = Homun(MySkills, MyCooldown)
 
 local volcanic = {}
-function volcanic.cast()
-  return cast(MH_VOLCANIC_ASH, MyEnemy, { targetType = 'ground', keepRunning = false })
+function volcanic.castSkill()
+  return dieter.castSkill(MH_VOLCANIC_ASH, MyEnemy, { targetType = 'ground', keepRunning = false })
 end
-function volcanic.condition()
-  return isSkillCastable(MH_VOLCANIC_ASH)
+function volcanic.isSkillCastable()
+  return dieter.isSkillCastable(MH_VOLCANIC_ASH)
 end
 local lava = {}
-function lava.cast()
-  return cast(MH_LAVA_SLIDE, MyEnemy, { targetType = 'ground', keepRunning = false })
+function lava.castSkill()
+  return dieter.castSkill(MH_LAVA_SLIDE, MyEnemy, { targetType = 'ground', keepRunning = false })
 end
-function lava.condition()
-  return isSkillCastable(MH_LAVA_SLIDE)
+function lava.isSkillCastable()
+  return dieter.isSkillCastable(MH_LAVA_SLIDE)
 end
 local granitic = {}
-function granitic.cast()
-  return cast(MH_GRANITIC_ARMOR, MyID, { targetType = 'target', keepRunning = false })
+function granitic.castSkill()
+  return dieter.castSkill(MH_GRANITIC_ARMOR, MyID, { targetType = 'target', keepRunning = false })
 end
-function granitic.condition()
-  return isSkillCastable(MH_GRANITIC_ARMOR)
+function granitic.isSkillCastable()
+  return dieter.isSkillCastable(MH_GRANITIC_ARMOR)
 end
 local magma = {}
-function magma.cast()
-  return cast(MH_MAGMA_FLOW, MyID, { targetType = 'target', keepRunning = false })
+function magma.castSkill()
+  return dieter.castSkill(MH_MAGMA_FLOW, MyID, { targetType = 'target', keepRunning = false })
 end
-function magma.condition()
-  return isSkillCastable(MH_MAGMA_FLOW)
+function magma.isSkillCastable()
+  return dieter.isSkillCastable(MH_MAGMA_FLOW)
 end
 local pyroclastic = {}
-function pyroclastic.cast()
-  return cast(MH_PYROCLASTIC, MyID, { targetType = 'target', keepRunning = false })
+function pyroclastic.castSkill()
+  return dieter.castSkill(MH_PYROCLASTIC, MyID, { targetType = 'target', keepRunning = false })
 end
-function pyroclastic.condition()
-  return isSkillCastable(MH_PYROCLASTIC)
+function pyroclastic.isSkillCastable()
+  return dieter.isSkillCastable(MH_PYROCLASTIC)
 end
-
-local AttackAndChase = Parallel({
+local attackAndChase = Parallel({
   node.basicAttack,
   node.chaseEnemy,
 })
 local AttackAndChaseLava = Parallel({
-  Condition(node.basicAttack, Inversion(lava.condition)),
+  Condition(node.basicAttack, Inversion(lava.isSkillCastable)),
   node.chaseEnemy,
 })
 local AttackAndChaseVolcanic = Parallel({
-  Condition(node.basicAttack, Inversion(volcanic.condition)),
+  Condition(node.basicAttack, Inversion(volcanic.isSkillCastable)),
   node.chaseEnemy,
 })
 local lavaAttack = Parallel({
-  Condition(lava.cast, lava.condition),
+  Condition(lava.castSkill, lava.isSkillCastable),
   node.chaseEnemy,
 })
-
 local volcanicAttack = Parallel({
-  Condition(volcanic.cast, volcanic.condition),
+  Condition(volcanic.castSkill, volcanic.isSkillCastable),
   node.chaseEnemy,
 })
 
-local combat = Selector({
-  Condition(granitic.cast, granitic.condition, condition.ownerIsDying, condition.enemyIsAlive),
-  Condition(
-    Selector({
-      Condition(magma.cast, magma.condition, condition.enemyIsAlive),
-      Condition(pyroclastic.cast, pyroclastic.condition, condition.enemyIsAlive),
-      Condition(volcanicAttack, condition.enemyIsAlive, Inversion(lava.condition)),
-      Condition(AttackAndChaseVolcanic, Inversion(volcanic.condition), condition.enemyIsAlive),
-      Condition(lavaAttack, condition.enemyIsAlive),
-    }),
-    condition.isMVP
-  ),
-  Condition(
-    Selector({
-      Condition(pyroclastic.cast, pyroclastic.condition, condition.enemyIsAlive),
-      Condition(AttackAndChase, condition.enemyIsAlive),
-    }),
-    condition.isFireMonster
-  ),
-  Condition(lavaAttack, condition.enemyIsAlive),
-  Condition(magma.cast, magma.condition, condition.enemyIsAlive),
-  Condition(pyroclastic.cast, pyroclastic.condition, condition.enemyIsAlive),
-  Condition(AttackAndChaseLava, Inversion(lava.condition), condition.enemyIsAlive),
-})
-local dieter = Selector({
-  Condition(combat, condition.hasEnemyOrInList, condition.ownerIsNotTooFar),
-  Condition(node.follow, condition.ownerMoving),
-  Condition(node.patrol, condition.ownerIsSitting, Inversion(condition.hasEnemy)),
-})
-return Condition(dieter, IsDieter)
+local enemyIsMVP = Condition(
+  Selector({
+    Condition(magma.castSkill, magma.isSkillCastable),
+    Condition(pyroclastic.castSkill, pyroclastic.isSkillCastable),
+    Condition(volcanicAttack, Inversion(lava.isSkillCastable)),
+    Condition(AttackAndChaseVolcanic, Inversion(volcanic.isSkillCastable)),
+    lavaAttack,
+  }),
+  condition.isMVP
+)
+
+local enemyIsPlantMonster = Condition(
+  Selector({
+    Condition(magma.castSkill, magma.isSkillCastable),
+    Condition(volcanicAttack, Inversion(lava.isSkillCastable)),
+    Condition(AttackAndChaseVolcanic, Inversion(volcanic.isSkillCastable)),
+    lavaAttack,
+  }),
+  condition.isPlantMonster
+)
+
+local enemyIsWaterMonster = Condition(
+  Selector({
+    Condition(volcanicAttack, Inversion(lava.isSkillCastable)),
+    Condition(AttackAndChaseVolcanic, Inversion(volcanic.isSkillCastable)),
+    lavaAttack,
+  }),
+  condition.isWaterMonster
+)
+
+local enemyIsFireMonster = Condition(
+  Selector({
+    Condition(pyroclastic.castSkill, pyroclastic.isSkillCastable),
+    attackAndChase,
+  }),
+  condition.isFireMonster
+)
+
+local enemyIsEarthMonster = Condition(
+  Selector({
+    Condition(magma.castSkill, magma.isSkillCastable),
+    Condition(AttackAndChaseLava, Inversion(lava.isSkillCastable)),
+    Condition(pyroclastic.castSkill, pyroclastic.isSkillCastable),
+    lavaAttack,
+  }),
+  condition.isEarthMonster
+)
+
+local graniticArmor = Condition(granitic.castSkill, granitic.isSkillCastable)
+local combat = Condition(
+  Selector({
+    enemyIsMVP,
+    enemyIsFireMonster,
+    enemyIsWaterMonster,
+    enemyIsPlantMonster,
+    enemyIsEarthMonster,
+    Condition(graniticArmor, condition.ownerIsDying),
+    Condition(pyroclastic.castSkill, pyroclastic.isSkillCastable),
+    Condition(AttackAndChaseLava, Inversion(lava.isSkillCastable)),
+    lavaAttack,
+  }),
+  condition.enemyIsAlive
+)
+return Condition(dieter.root(combat), IsDieter)

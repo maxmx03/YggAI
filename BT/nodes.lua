@@ -47,9 +47,8 @@ end
 
 ---@return Status
 function M.follow()
-  MoveToOwner(MyID)
-  local motion = GetV(V_MOTION, MyOwner)
-  if motion == MOTION_MOVE then
+  if GetDistanceFromOwner(MyID) > 3 then
+    MoveToOwner(MyID)
     return STATUS.RUNNING
   end
   return STATUS.SUCCESS

@@ -94,6 +94,7 @@ function Delay(node, delay)
 end
 
 ---@param node fun():Status
+---@return fun(): Status
 function Reverse(node)
   return function()
     local status = node()
@@ -110,13 +111,25 @@ end
 ---@param node fun():Status
 ---@param ... fun():boolean
 ---@return fun():Status
-function Condition(node, ...)
+function Conditions(node, ...)
   local conditions = { ... }
   return function()
     for _, condition in ipairs(conditions) do
       if not condition() then
         return STATUS.FAILURE
       end
+    end
+    return node()
+  end
+end
+
+---@param node fun():Status
+---@param condition fun():boolean
+---@return fun():Status
+function Condition(node, condition)
+  return function()
+    if not condition() then
+      return STATUS.FAILURE
     end
     return node()
   end

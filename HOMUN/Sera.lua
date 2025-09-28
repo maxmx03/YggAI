@@ -24,6 +24,7 @@ local MySkills = {
       return 0.2
     end,
     level = 10,
+    required_level = 105,
   },
   ---@type Skill
   [MH_POISON_MIST] = {
@@ -36,6 +37,7 @@ local MySkills = {
       return 15
     end,
     level = 5,
+    required_level = 116,
   },
   ---@type Skill
   [MH_PAIN_KILLER] = {
@@ -48,6 +50,7 @@ local MySkills = {
       return 600
     end,
     level = 10,
+    required_level = 123,
   },
   ---@type Skill
   [MH_SUMMON_LEGION] = {
@@ -60,6 +63,7 @@ local MySkills = {
       return 30
     end,
     level = 5,
+    required_level = 132,
   },
 }
 
@@ -122,27 +126,27 @@ function legion.cast()
   return cast(MH_SUMMON_LEGION, MyEnemy, { targetType = 'target', keepRunning = false })
 end
 local AttackAndChaseParalyze = Parallel({
-  Condition(node.basicAttack, Inversion(paralyse.condition)),
+  Conditions(node.basicAttack, Inversion(paralyse.condition)),
   node.chaseEnemy,
 })
 local tryParaliseEnemy = Parallel({
-  Condition(paralyse.cast, paralyse.condition),
+  Conditions(paralyse.cast, paralyse.condition),
   node.chaseEnemy,
 })
 local invokeLegion = Parallel({
-  Condition(legion.cast, legion.condition),
+  Conditions(legion.cast, legion.condition),
   node.chaseEnemy,
 })
 local combat = Selector({
-  Condition(invokeLegion, condition.isMVP),
-  Condition(tryParaliseEnemy, paralyse.condition, Inversion(poison.condition)),
-  Condition(poison.cast, poison.condition, condition.enemyIsAlive),
-  Condition(pain.cast, pain.condition, condition.enemyIsAlive),
-  Condition(AttackAndChaseParalyze, Inversion(paralyse.condition), condition.enemyIsAlive),
+  Conditions(invokeLegion, condition.isMVP),
+  Conditions(tryParaliseEnemy, paralyse.condition, Inversion(poison.condition)),
+  Conditions(poison.cast, poison.condition, condition.enemyIsAlive),
+  Conditions(pain.cast, pain.condition, condition.enemyIsAlive),
+  Conditions(AttackAndChaseParalyze, Inversion(paralyse.condition), condition.enemyIsAlive),
 })
 local sera = Selector({
-  Condition(combat, condition.hasEnemyOrInList, condition.ownerIsNotTooFar),
-  Condition(node.follow, condition.ownerMoving),
-  Condition(node.patrol, condition.ownerIsSitting, Inversion(condition.hasEnemyOrInList)),
+  Conditions(combat, condition.hasEnemyOrInList, condition.ownerIsNotTooFar),
+  Conditions(node.follow, condition.ownerMoving),
+  Conditions(node.patrol, condition.ownerIsSitting, Inversion(condition.hasEnemyOrInList)),
 })
 return Condition(sera, IsSera)

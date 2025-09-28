@@ -22,6 +22,7 @@ local MySkills = {
       return 3
     end,
     level = 5,
+    required_level = 15,
   },
   ---@type Skill
   [HVAN_CHAOTIC] = {
@@ -34,6 +35,7 @@ local MySkills = {
       return 3
     end,
     level = 5,
+    required_level = 25,
   },
 }
 
@@ -81,20 +83,20 @@ end
 -- end
 
 local basicAttack = Parallel({
-  Condition(node.basicAttack, Inversion(caprice.condition)),
+  Conditions(node.basicAttack, Inversion(caprice.condition)),
   node.chaseEnemy,
 })
 local capriceParallel = Parallel({
-  Condition(caprice.cast, caprice.condition),
+  Conditions(caprice.cast, caprice.condition),
   node.chaseEnemy,
 })
 local combat = Selector({
-  Condition(capriceParallel, caprice.condition, condition.enemyIsAlive),
-  Condition(basicAttack, condition.enemyIsAlive, Inversion(caprice.condition)),
+  Conditions(capriceParallel, caprice.condition, condition.enemyIsAlive),
+  Conditions(basicAttack, condition.enemyIsAlive, Inversion(caprice.condition)),
 })
 local vanil = Selector({
-  Condition(combat, condition.hasEnemyOrInList, condition.ownerIsNotTooFar),
-  Condition(node.follow, condition.ownerMoving),
-  Condition(node.patrol, condition.ownerIsSitting, Inversion(condition.hasEnemyOrInList)),
+  Conditions(combat, condition.hasEnemyOrInList, condition.ownerIsNotTooFar),
+  Conditions(node.follow, condition.ownerMoving),
+  Conditions(node.patrol, condition.ownerIsSitting, Inversion(condition.hasEnemyOrInList)),
 })
 return Condition(vanil, IsVanilmirth)

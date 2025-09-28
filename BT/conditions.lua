@@ -196,7 +196,15 @@ end
 
 ---@return boolean
 function M.ownerMoving()
-  if GetDistanceFromOwner(MyID) > 2 and GetV(V_MOTION, MyOwner) == MOTION_MOVE then
+  if GetDistanceFromOwner(MyID) > 3 and GetV(V_MOTION, MyOwner) == MOTION_MOVE then
+    return true
+  end
+  return false
+end
+
+---@return boolean
+function M.ownerNotMoving()
+  if GetV(V_MOTION, MyOwner) == MOTION_STAND then
     return true
   end
   return false
@@ -210,6 +218,15 @@ function M.ownerIsNotTooFar()
   return true
 end
 
+---@return boolean
+function M.ownerTookDamage()
+  if GetV(V_MOTION, MyOwner) == MOTION_DAMAGE then
+    return true
+  end
+  return false
+end
+
+---@return boolean
 function M.ownerIsOutOfSight()
   if IsOutOfSight(MyID, MyOwner) then
     return true
@@ -227,10 +244,11 @@ end
 
 ---@return boolean
 function M.ownerIsDying()
+  local ownerTakingDamage = GetV(V_MOTION, MyOwner) == MOTION_DAMAGE
   local ownerHp = GetHp(MyOwner)
   local ownerMaxHp = GetMaxHp(MyOwner)
   local ownerDying = ownerHp <= ownerMaxHp * 0.3
-  if ownerDying then
+  if ownerDying and ownerTakingDamage then
     return true
   end
   return false
@@ -253,6 +271,7 @@ function M.isMVP()
   return false
 end
 
+---@return boolean
 function M.isPoisonMonster()
   if IsPoisonMonster(MyEnemy) then
     return true
@@ -260,6 +279,7 @@ function M.isPoisonMonster()
   return false
 end
 
+---@return boolean
 function M.isWindMonster()
   if IsWindMonster(MyEnemy) then
     return true
@@ -267,6 +287,7 @@ function M.isWindMonster()
   return false
 end
 
+---@return boolean
 function M.isWaterMonster()
   if IsWaterMonster(MyEnemy) then
     return true
@@ -274,6 +295,7 @@ function M.isWaterMonster()
   return false
 end
 
+---@return boolean
 function M.isFireMonster()
   if IsFireMonster(MyEnemy) then
     return true
@@ -281,6 +303,7 @@ function M.isFireMonster()
   return false
 end
 
+---@return boolean
 function M.isPlantMonster()
   if IsPlantMonster(MyEnemy) then
     return true
@@ -288,6 +311,7 @@ function M.isPlantMonster()
   return false
 end
 
+---@return boolean
 function M.isHolyMonster()
   if IsHolyMonster(MyEnemy) then
     return true
@@ -295,6 +319,7 @@ function M.isHolyMonster()
   return false
 end
 
+---@return boolean
 function M.isDarkMonster()
   if IsDarkMonster(MyEnemy) then
     return true
@@ -302,8 +327,17 @@ function M.isDarkMonster()
   return false
 end
 
+---@return boolean
 function M.isUndeadMonster()
   if IsUndeadMonster(MyEnemy) then
+    return true
+  end
+  return false
+end
+
+---@return boolean
+function M.isEarthMonster()
+  if IsEarthMonster(MyEnemy) then
     return true
   end
   return false
@@ -314,11 +348,9 @@ end
 ---@return boolean
 function M.isSkillCastable(skill, lastTime)
   if not HasEnoughSp(skill.sp) then
-    MySkill = 0
     return false
   end
   if not CanUseSkill(GetTickInSeconds(), lastTime, skill.cooldown(lastTime)) then
-    MySkill = 0
     return false
   end
   return true

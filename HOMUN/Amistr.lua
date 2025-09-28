@@ -2,6 +2,7 @@
 local node = require('AI.USER_AI.BT.nodes')
 ---@type Condition
 local condition = require('AI.USER_AI.BT.conditions')
+local Homun = require('AI.USER_AI.UTIL.Homun')
 
 ---@class Cooldown
 local MyCooldown = {
@@ -10,7 +11,7 @@ local MyCooldown = {
   [HAMI_BLOODLUST] = 0,
 }
 
----@class Skills
+---@type Skills
 local MySkills = {
   ---@type Skill
   [HAMI_CASTLE] = {
@@ -23,6 +24,7 @@ local MySkills = {
       return 20
     end,
     level = 5,
+    required_level = 15,
   },
   ---@type Skill
   [HAMI_DEFENCE] = {
@@ -35,6 +37,7 @@ local MySkills = {
       return 30
     end,
     level = 5,
+    required_level = 25,
   },
   ---@type Skill
   [HAMI_BLOODLUST] = {
@@ -47,70 +50,50 @@ local MySkills = {
       return 60
     end,
     level = 3,
+    required_level = 80,
   },
 }
 
-local isSkillCastable = function(mySkill)
-  MySkill = mySkill
-  local s = MySkills[mySkill]
-  local lastTime = MyCooldown[mySkill]
-  return condition.isSkillCastable(s, lastTime)
-end
-
-local cast = function(skill, target, opts)
-  local casted = node.castSkill(MySkills[skill], MyCooldown[skill], target, opts)
-  if casted == STATUS.RUNNING then
-    MyCooldown[skill] = GetTickInSeconds()
-    return STATUS.RUNNING
-  elseif casted == STATUS.SUCCESS then
-    MyCooldown[skill] = GetTickInSeconds()
-    MySkill = 0
-    return STATUS.SUCCESS
-  end
-  MySkill = 0
-  return STATUS.FAILURE
-end
-
+---@type Homun
+local amistr = Homun(MySkills, MyCooldown)
 local castle = {}
-function castle.condition()
-  return isSkillCastable(HAMI_CASTLE)
+function castle.isSkillCastable()
+  return amistr.isSkillCastable(HAMI_CASTLE)
 end
-function castle.cast()
-  return cast(HAMI_CASTLE, MyID, { targetType = 'target', keepRunning = false })
+function castle.castSkill()
+  return amistr.castSkill(HAMI_CASTLE, MyID, { targetType = 'target', keepRunning = false })
 end
-
 local defense = {}
-function defense.condition()
-  return isSkillCastable(HAMI_DEFENCE)
+function defense.isSkillCastable()
+  return amistr.isSkillCastable(HAMI_DEFENCE)
 end
-function defense.cast()
-  return cast(HAMI_DEFENCE, MyID, { targetType = 'target', keepRunning = false })
+function defense.castSkill()
+  return amistr.castSkill(HAMI_DEFENCE, MyID, { targetType = 'target', keepRunning = false })
 end
-
 local bloodlust = {}
-function bloodlust.condition()
-  return isSkillCastable(HAMI_BLOODLUST)
+function bloodlust.isSkillCastable()
+  return amistr.isSkillCastable(HAMI_BLOODLUST)
 end
-function bloodlust.cast()
-  return cast(HAMI_BLOODLUST, MyID, { targetType = 'target', keepRunning = false })
+function bloodlust.castSkill()
+  return amistr.castSkill(HAMI_BLOODLUST, MyID, { targetType = 'target', keepRunning = false })
 end
-
 local AttackAndChase = Parallel({
-  Condition(node.basicAttack, Inversion(bloodlust.condition)),
+  node.basicAttack,
   node.chaseEnemy,
 })
-
-local combat = Selector({
-  Condition(castle.cast, castle.condition, condition.ownerIsDying),
-  Condition(defense.cast, defense.condition, condition.enemyIsAlive),
-  Condition(bloodlust.cast, bloodlust.condition, condition.enemyIsAlive),
-  Condition(AttackAndChase, condition.enemyIsAlive),
+local AttackWhenCastleIsNotAvailable = Parallel({
+  Conditions(node.basicAttack, Inversion(castle.isSkillCastable)),
+  node.chaseEnemy,
 })
-
-local amistr = Selector({
-  Condition(combat, condition.hasEnemyOrInList, condition.ownerIsNotTooFar),
-  Condition(node.follow, condition.ownerMoving),
-  Condition(node.patrol, condition.ownerIsSitting, Inversion(condition.hasEnemy)),
-})
-
-return Condition(amistr, IsAmistr)
+local swapWithOwner = Condition(castle.castSkill, castle.isSkillCastable)
+local combat = Condition(
+  Selector({
+    Condition(swapWithOwner, condition.ownerIsDying),
+    Condition(defense.castSkill, defense.isSkillCastable),
+    Condition(bloodlust.castSkill, bloodlust.isSkillCastable),
+    Condition(AttackWhenCastleIsNotAvailable, Inversion(castle.isSkillCastable)),
+    AttackAndChase,
+  }),
+  condition.enemyIsAlive
+)
+return Condition(amistr.root(combat), IsAmistr)

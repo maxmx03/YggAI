@@ -278,6 +278,14 @@ end
 
 ---@param myEnemy number
 ---@return boolean
+function IsEarthMonster(myEnemy)
+  local earthMonsters = require('AI.USER_AI.MONSTER_DATA.earth')
+  local id = GetV(V_HOMUNTYPE, myEnemy)
+  return earthMonsters[id]
+end
+
+---@param myEnemy number
+---@return boolean
 function MustAvoidMonster(myEnemy)
   local monstersToAvoid = require('AI.USER_AI.MONSTER_DATA.avoid')
   local id = GetV(V_HOMUNTYPE, myEnemy)
@@ -381,7 +389,9 @@ end
 ---@param sp number
 ---@return boolean
 function HasEnoughSp(sp)
-  local enoughSp = GetSp(MyID) > sp
+  local enoughSp = GetSp(MyID) >= sp
+  TraceAI('MY_SP: ' .. tostring(GetSp(MyID)))
+  TraceAI('SP TO USE: ' .. tostring(sp))
   return enoughSp
 end
 

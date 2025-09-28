@@ -44,6 +44,7 @@ Puedes usar cualquier editor de texto disponible en tu sistema:
 
 | Variable                             | Descripción                                     |
 | ------------------------------------ | ----------------------------------------------- |
+| `MyLevel`                            | Nivel de tu homúnculo, actualízalo              |
 | `LifCanHeal`                         | ¿LIF puede curar?                               |
 | `ShouldPreventHomunculusDuplication` | ¿Debería prevenir la duplicación del homúnculo? |
 

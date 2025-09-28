@@ -2,6 +2,7 @@
 local node = require('AI.USER_AI.BT.nodes')
 ---@type Condition
 local condition = require('AI.USER_AI.BT.conditions')
+local Homun = require('AI.USER_AI.UTIL.Homun')
 
 ---@class Cooldown
 local MyCooldown = {
@@ -28,6 +29,7 @@ local MySkills = {
     sp = 35,
     level = 5,
     sphere_cost = 0,
+    required_level = 100,
   },
   ---@type Skill
   [MH_SONIC_CRAW] = {
@@ -41,6 +43,7 @@ local MySkills = {
     end,
     level = 5,
     sphere_cost = 1,
+    required_level = 100,
   },
   ---@type Skill
   [MH_SILVERVEIN_RUSH] = {
@@ -54,6 +57,7 @@ local MySkills = {
     end,
     level = 10,
     sphere_cost = 1,
+    required_level = 114,
   },
   ---@type Skill
   [MH_MIDNIGHT_FRENZY] = {
@@ -67,6 +71,7 @@ local MySkills = {
     end,
     level = 10,
     sphere_cost = 1,
+    required_level = 128,
   },
   ---@type Skill
   [MH_TINDER_BREAKER] = {
@@ -80,6 +85,7 @@ local MySkills = {
     end,
     level = 5,
     sphere_cost = 1,
+    required_level = 100,
   },
   ---@type Skill
   [MH_CBC] = {
@@ -93,6 +99,7 @@ local MySkills = {
     end,
     level = 5,
     sphere_cost = 2,
+    required_level = 112,
   },
   ---@type Skill
   [MH_EQC] = {
@@ -106,6 +113,7 @@ local MySkills = {
     end,
     level = 5,
     sphere_cost = 2,
+    required_level = 133,
   },
 }
 
@@ -211,14 +219,24 @@ function eqc.cast()
 end
 
 local BattleComboSequence = Sequence({
-  Condition(sonic.cast, condition.enemyIsAlive, sonic.condition, Inversion(condition.enemyIsNotInAttackSight)),
-  Condition(Delay(silver.cast, 2.0), condition.enemyIsAlive, silver.condition),
-  Condition(Delay(midnight.cast, 2.0), condition.enemyIsAlive, midnight.condition),
+  Conditions(sonic.cast, condition.enemyIsAlive, sonic.condition, Inversion(condition.enemyIsNotInAttackSight)),
+  Conditions(
+    Delay(silver.cast, 2.0),
+    condition.enemyIsAlive,
+    silver.condition,
+    Inversion(condition.enemyIsNotInAttackSight)
+  ),
+  Conditions(
+    Delay(midnight.cast, 2.0),
+    condition.enemyIsAlive,
+    midnight.condition,
+    Inversion(condition.enemyIsNotInAttackSight)
+  ),
 })
 local ClawComboSequence = Sequence({
-  Condition(tinder.cast, condition.enemyIsAlive, tinder.condition, Inversion(condition.enemyIsNotInAttackSight)),
-  Condition(Delay(cbc.cast, 2.0), condition.enemyIsAlive, cbc.condition),
-  Condition(Delay(eqc.cast, 2.0), condition.enemyIsAlive, eqc.condition),
+  Conditions(tinder.cast, condition.enemyIsAlive, tinder.condition, Inversion(condition.enemyIsNotInAttackSight)),
+  Conditions(Delay(cbc.cast, 2.0), condition.enemyIsAlive, cbc.condition),
+  Conditions(Delay(eqc.cast, 2.0), condition.enemyIsAlive, eqc.condition),
 })
 local BattleComboMode = Sequence({
   node.chaseEnemy,
@@ -229,23 +247,19 @@ local ClawComboMode = Sequence({
   ClawComboSequence,
 })
 local AttackAndChase = Parallel({
-  Condition(node.basicAttack, Inversion(sonic.condition)),
+  Conditions(node.basicAttack, Inversion(sonic.condition)),
   node.chaseEnemy,
 })
 local AttackAndChaseGainSpheres = Parallel({
-  Condition(node.EleanorBasicAttack, Inversion(condition.hasAllSpheres)),
+  Conditions(node.EleanorBasicAttack, Inversion(condition.hasAllSpheres)),
   node.chaseEnemy,
 })
 local combat = Selector({
-  Condition(BattleComboMode, condition.enemyIsAlive, condition.ownerIsNotTooFar, BATTLE_MODE.isBattleMode),
-  Condition(ClawComboMode, condition.enemyIsAlive, condition.ownerIsNotTooFar, BATTLE_MODE.isClawMode),
-  Condition(AttackAndChaseGainSpheres, condition.enemyIsAlive, Inversion(condition.hasAllSpheres)),
-  Condition(AttackAndChase, condition.enemyIsAlive, Inversion(sonic.condition)),
+  Conditions(BattleComboMode, condition.enemyIsAlive, condition.ownerIsNotTooFar, BATTLE_MODE.isBattleMode),
+  Conditions(ClawComboMode, condition.enemyIsAlive, condition.ownerIsNotTooFar, BATTLE_MODE.isClawMode),
+  Conditions(AttackAndChaseGainSpheres, condition.enemyIsAlive, Inversion(condition.hasAllSpheres)),
+  Conditions(AttackAndChase, condition.enemyIsAlive, Inversion(sonic.condition)),
 })
-local eleanor = Selector({
-  Condition(combat, condition.hasEnemyOrInList, condition.ownerIsNotTooFar),
-  Condition(node.follow, condition.ownerMoving),
-  Condition(node.patrol, condition.ownerIsSitting, Inversion(condition.hasEnemyOrInList)),
-})
-
-return Condition(eleanor, IsEleanor)
+---@type Homun
+local eleanor = Homun(MySkills, MyCooldown)
+return Condition(eleanor.root(combat), IsEleanor)

@@ -44,6 +44,7 @@ You can use any text editor available on your system:
 
 | Variable                           | Description                            |
 | ---------------------------------- | -------------------------------------- |
+| MyLevel                            | Your homunculus level, update it       |
 | LifCanHeal                         | Can LIF heal?                          |
 | ShouldPreventHomunculusDuplication | Should prevent homunculus duplication? |
 

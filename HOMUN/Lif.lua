@@ -23,6 +23,7 @@ local MySkills = {
       return 20
     end,
     level = 5,
+    required_level = 15,
   },
   ---@type Skill
   [HLIF_AVOID] = {
@@ -35,6 +36,7 @@ local MySkills = {
       return 35
     end,
     level = 5,
+    required_level = 25,
   },
   [HLIF_CHANGE] = {
     id = HLIF_CHANGE,
@@ -46,6 +48,7 @@ local MySkills = {
       return 5 * 60
     end,
     level = 3,
+    required_level = 40,
   },
 }
 
@@ -104,14 +107,14 @@ local AttackAndChase = Parallel({
   node.chaseEnemy,
 })
 local combat = Selector({
-  Condition(heal.cast, heal.condition, condition.ownerIsDying),
-  Condition(avoid.cast, avoid.condition, condition.enemyIsAlive),
-  Condition(change.cast, change.condition, condition.enemyIsAlive),
+  Conditions(heal.cast, heal.condition, condition.ownerIsDying),
+  Conditions(avoid.cast, avoid.condition, condition.enemyIsAlive),
+  Conditions(change.cast, change.condition, condition.enemyIsAlive),
   AttackAndChase,
 })
 local lif = Selector({
-  Condition(combat, condition.hasEnemyOrInList, condition.ownerIsNotTooFar),
-  Condition(node.follow, condition.ownerMoving),
-  Condition(node.patrol, condition.ownerIsSitting, Inversion(condition.hasEnemyOrInList)),
+  Conditions(combat, condition.hasEnemyOrInList, condition.ownerIsNotTooFar),
+  Conditions(node.follow, condition.ownerMoving),
+  Conditions(node.patrol, condition.ownerIsSitting, Inversion(condition.hasEnemyOrInList)),
 })
 return Condition(lif, IsLif)
