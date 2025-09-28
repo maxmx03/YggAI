@@ -120,38 +120,44 @@ function heil.castSkill()
   return bayeri.castSkill(MH_HEILIGE_STANGE, MyEnemy, { targetType = 'target', keepRunning = false })
 end
 
-local attackAndChase = Parallel({
-  Conditions(node.basicAttack, Inversion(stahl.isSkillCastable)),
-  node.chaseEnemy,
-})
-local magicShield = Condition(stein.castSkill, stein.isSkillCastable)
-local hornAttack = Parallel({
-  Condition(stahl.castSkill, stahl.isSkillCastable),
-  node.chaseEnemy,
-})
-local illuminatusAtack = Parallel({
-  Condition(heil.castSkill, heil.isSkillCastable),
-  node.chaseEnemy,
-})
+local magicShieldTrigger = Condition(
+  Selector({
+    Condition(stein.castSkill, condition.ownerIsDying),
+    Condition(stein.castSkill, condition.ownerTookDamage),
+  }),
+  stein.isSkillCastable
+)
+local hornAttack = Condition(
+  Parallel({
+    stahl.castSkill,
+    node.chaseEnemy,
+  }),
+  stahl.isSkillCastable
+)
+local illuminatusAtack = Condition(
+  Parallel({
+    heil.castSkill,
+    node.chaseEnemy,
+  }),
+  heil.isSkillCastable
+)
+local attackWhileStahlNotAvailable = Condition(node.attackAndChase, Inversion(stahl.isSkillCastable))
 local fightAgainsUnholyMonsters = Selector({
   Condition(gold.castSkill, gold.isSkillCastable),
-  Condition(magicShield, condition.ownerIsDying),
-  Condition(magicShield, condition.ownerTookDamage),
   illuminatusAtack,
   hornAttack,
-  attackAndChase,
+  attackWhileStahlNotAvailable,
 })
 local isUndeadMonster = Condition(fightAgainsUnholyMonsters, condition.isUndeadMonster)
 local isDarkMonster = Condition(fightAgainsUnholyMonsters, condition.isDarkMonster)
 local combat = Condition(
   Selector({
+    magicShieldTrigger,
     isDarkMonster,
     isUndeadMonster,
-    Condition(magicShield, condition.ownerIsDying),
-    Condition(magicShield, condition.ownerTookDamage),
     Condition(ang.castSkill, ang.isSkillCastable),
     hornAttack,
-    attackAndChase,
+    attackWhileStahlNotAvailable,
   }),
   condition.enemyIsAlive
 )

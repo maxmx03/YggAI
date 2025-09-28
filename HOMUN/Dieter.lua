@@ -120,33 +120,29 @@ end
 function pyroclastic.isSkillCastable()
   return dieter.isSkillCastable(MH_PYROCLASTIC)
 end
-local attackAndChase = Parallel({
-  node.basicAttack,
-  node.chaseEnemy,
-})
-local AttackAndChaseLava = Parallel({
-  Condition(node.basicAttack, Inversion(lava.isSkillCastable)),
-  node.chaseEnemy,
-})
-local AttackAndChaseVolcanic = Parallel({
-  Condition(node.basicAttack, Inversion(volcanic.isSkillCastable)),
-  node.chaseEnemy,
-})
-local lavaAttack = Parallel({
-  Condition(lava.castSkill, lava.isSkillCastable),
-  node.chaseEnemy,
-})
-local volcanicAttack = Parallel({
-  Condition(volcanic.castSkill, volcanic.isSkillCastable),
-  node.chaseEnemy,
-})
+
+local lavaAttack = Condition(
+  Parallel({
+    lava.castSkill,
+    node.chaseEnemy,
+  }),
+  lava.isSkillCastable
+)
+local volcanicAttack = Condition(
+  Parallel({
+    volcanic.castSkill,
+    volcanic.isSkillCastable,
+    node.chaseEnemy,
+  }),
+  volcanic.isSkillCastable
+)
 
 local enemyIsMVP = Condition(
   Selector({
     Condition(magma.castSkill, magma.isSkillCastable),
     Condition(pyroclastic.castSkill, pyroclastic.isSkillCastable),
     Condition(volcanicAttack, Inversion(lava.isSkillCastable)),
-    Condition(AttackAndChaseVolcanic, Inversion(volcanic.isSkillCastable)),
+    Condition(node.attackAndChase, Inversion(volcanic.isSkillCastable)),
     lavaAttack,
   }),
   condition.isMVP
@@ -156,7 +152,7 @@ local enemyIsPlantMonster = Condition(
   Selector({
     Condition(magma.castSkill, magma.isSkillCastable),
     Condition(volcanicAttack, Inversion(lava.isSkillCastable)),
-    Condition(AttackAndChaseVolcanic, Inversion(volcanic.isSkillCastable)),
+    Condition(node.attackAndChase, Inversion(volcanic.isSkillCastable)),
     lavaAttack,
   }),
   condition.isPlantMonster
@@ -165,7 +161,7 @@ local enemyIsPlantMonster = Condition(
 local enemyIsWaterMonster = Condition(
   Selector({
     Condition(volcanicAttack, Inversion(lava.isSkillCastable)),
-    Condition(AttackAndChaseVolcanic, Inversion(volcanic.isSkillCastable)),
+    Condition(node.attackAndChase, Inversion(volcanic.isSkillCastable)),
     lavaAttack,
   }),
   condition.isWaterMonster
@@ -174,7 +170,7 @@ local enemyIsWaterMonster = Condition(
 local enemyIsFireMonster = Condition(
   Selector({
     Condition(pyroclastic.castSkill, pyroclastic.isSkillCastable),
-    attackAndChase,
+    node.attackAndChase,
   }),
   condition.isFireMonster
 )
@@ -182,7 +178,7 @@ local enemyIsFireMonster = Condition(
 local enemyIsEarthMonster = Condition(
   Selector({
     Condition(magma.castSkill, magma.isSkillCastable),
-    Condition(AttackAndChaseLava, Inversion(lava.isSkillCastable)),
+    Condition(node.attackAndChase, Inversion(lava.isSkillCastable)),
     Condition(pyroclastic.castSkill, pyroclastic.isSkillCastable),
     lavaAttack,
   }),
@@ -199,7 +195,7 @@ local combat = Condition(
     enemyIsEarthMonster,
     Condition(graniticArmor, condition.ownerIsDying),
     Condition(pyroclastic.castSkill, pyroclastic.isSkillCastable),
-    Condition(AttackAndChaseLava, Inversion(lava.isSkillCastable)),
+    Condition(node.attackAndChase, Inversion(lava.isSkillCastable)),
     lavaAttack,
   }),
   condition.enemyIsAlive

@@ -77,22 +77,14 @@ end
 function bloodlust.castSkill()
   return amistr.castSkill(HAMI_BLOODLUST, MyID, { targetType = 'target', keepRunning = false })
 end
-local AttackAndChase = Parallel({
-  node.basicAttack,
-  node.chaseEnemy,
-})
-local AttackWhenCastleIsNotAvailable = Parallel({
-  Conditions(node.basicAttack, Inversion(castle.isSkillCastable)),
-  node.chaseEnemy,
-})
 local swapWithOwner = Condition(castle.castSkill, castle.isSkillCastable)
 local combat = Condition(
   Selector({
     Condition(swapWithOwner, condition.ownerIsDying),
     Condition(defense.castSkill, defense.isSkillCastable),
     Condition(bloodlust.castSkill, bloodlust.isSkillCastable),
-    Condition(AttackWhenCastleIsNotAvailable, Inversion(castle.isSkillCastable)),
-    AttackAndChase,
+    Condition(node.attackAndChase, Inversion(castle.isSkillCastable)),
+    node.attackAndChase,
   }),
   condition.enemyIsAlive
 )

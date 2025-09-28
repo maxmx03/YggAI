@@ -2,6 +2,7 @@
 local node = require('AI.USER_AI.BT.nodes')
 ---@type Condition
 local condition = require('AI.USER_AI.BT.conditions')
+local Homun = require('AI.USER_AI.UTIL.Homun')
 
 ---@class Cooldown
 local MyCooldown = {
@@ -22,7 +23,7 @@ local MySkills = {
       if previousCooldown == 0 then
         return previousCooldown
       end
-      return 0.3
+      return 3
     end,
     level = 10,
     required_level = 106,
@@ -81,83 +82,72 @@ local MySkills = {
   },
 }
 
-local isSkillCastable = function(mySkill)
-  MySkill = mySkill
-  local s = MySkills[mySkill]
-  local lastTime = MyCooldown[mySkill]
-  return condition.isSkillCastable(s, lastTime)
-end
-
-local cast = function(skill, target, opts)
-  local casted = node.castSkill(MySkills[skill], MyCooldown[skill], target, opts)
-  if casted == STATUS.RUNNING then
-    MyCooldown[skill] = GetTickInSeconds()
-    return STATUS.RUNNING
-  elseif casted == STATUS.SUCCESS then
-    MyCooldown[skill] = GetTickInSeconds()
-    MySkill = 0
-    return STATUS.SUCCESS
-  end
-  MySkill = 0
-  return STATUS.FAILURE
-end
-
+---@type Homun
+local eira = Homun(MySkills, MyCooldown)
 local cutter = {}
-function cutter.condition()
-  return isSkillCastable(MH_ERASER_CUTTER)
+function cutter.isSkillCastable()
+  return eira.isSkillCastable(MH_ERASER_CUTTER)
 end
-function cutter.cast()
-  return cast(MH_ERASER_CUTTER, MyEnemy, { targetType = 'target', keepRunning = true })
+function cutter.castSkill()
+  return eira.castSkill(MH_ERASER_CUTTER, MyEnemy, { targetType = 'target', keepRunning = true })
 end
 
 local overed = {}
-function overed.condition()
-  return isSkillCastable(MH_OVERED_BOOST)
+function overed.isSkillCastable()
+  return eira.isSkillCastable(MH_OVERED_BOOST)
 end
-function overed.cast()
-  return cast(MH_OVERED_BOOST, MyID, { targetType = 'target', keepRunning = false })
+function overed.castSkill()
+  return eira.castSkill(MH_OVERED_BOOST, MyID, { targetType = 'target', keepRunning = false })
 end
 
 local xeno = {}
-function xeno.condition()
-  return isSkillCastable(MH_XENO_SLASHER)
+function xeno.isSkillCastable()
+  return eira.isSkillCastable(MH_XENO_SLASHER)
 end
-function xeno.cast()
-  return cast(MH_XENO_SLASHER, MyEnemy, { targetType = 'ground', keepRunning = true })
+function xeno.castSkill()
+  return eira.castSkill(MH_XENO_SLASHER, MyEnemy, { targetType = 'ground', keepRunning = true })
 end
 
 local light = {}
-function light.condition()
-  return isSkillCastable(MH_LIGHT_OF_REGENE)
+function light.isSkillCastable()
+  return eira.isSkillCastable(MH_LIGHT_OF_REGENE)
 end
-function light.cast()
-  return cast(MH_LIGHT_OF_REGENE, MyOwner, { targetType = 'target', keepRunning = false })
+function light.castSkill()
+  return eira.castSkill(MH_LIGHT_OF_REGENE, MyOwner, { targetType = 'target', keepRunning = false })
 end
-local AttackAndChase = Parallel({
-  Conditions(node.basicAttack, Inversion(cutter.condition)),
-  node.chaseEnemy,
-})
-local cutterAttack = Parallel({
-  Conditions(cutter.cast, cutter.condition),
-  node.chaseEnemy,
-})
+local cutterAttack = Condition(
+  Parallel({
+    cutter.castSkill,
+    node.chaseEnemy,
+  }),
+  cutter.isSkillCastable
+)
 local xenoAttack = Parallel({
-  Conditions(xeno.cast, xeno.condition),
+  xeno.castSkill,
   node.chaseEnemy,
 })
-local combat = Selector({
-  Conditions(overed.cast, condition.isMVP, overed.condition),
-  Conditions(xenoAttack, condition.enemyIsAlive, condition.isWaterMonster),
-  Conditions(xenoAttack, condition.enemyIsAlive, condition.isPoisonMonster),
-  Conditions(xenoAttack, condition.enemyIsAlive, Inversion(condition.isWindMonster)),
-  Conditions(cutterAttack, condition.enemyIsAlive),
-  Conditions(AttackAndChase, condition.enemyIsAlive, Inversion(cutter.condition)),
+local tryReviveOwner = Parallel({
+  Conditions(light.castSkill, light.isSkillCastable),
+  node.follow,
 })
-local eira = Selector({
-  Conditions(combat, condition.hasEnemyOrInList, condition.ownerIsNotTooFar),
-  Conditions(light.cast, condition.ownerIsDead, light.condition),
-  Conditions(node.follow, condition.ownerMoving),
-  Conditions(node.follow, condition.ownerIsOutOfSight),
-  Conditions(node.patrol, condition.ownerIsSitting, Inversion(condition.hasEnemyOrInList)),
-})
-return Condition(eira, IsEira)
+local xenoAttackIfAvailable = Condition(
+  Selector({
+    Condition(xenoAttack, condition.isWaterMonster),
+    Condition(xenoAttack, condition.isPoisonMonster),
+    Condition(xenoAttack, Inversion(condition.isWindMonster)),
+  }),
+  xeno.isSkillCastable
+)
+
+local combat = Condition(
+  Selector({
+    Condition(tryReviveOwner, condition.ownerIsDead),
+    Conditions(overed.castSkill, overed.isSkillCastable, condition.isMVP),
+    Conditions(overed.castSkill, overed.isSkillCastable, condition.ownerIsDying),
+    xenoAttackIfAvailable,
+    cutterAttack,
+    Condition(node.attackAndChase, Inversion(cutter.isSkillCastable)),
+  }),
+  condition.enemyIsAlive
+)
+return Condition(eira.root(combat), IsEira)
