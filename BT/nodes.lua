@@ -24,6 +24,11 @@ function M.basicAttack()
   return STATUS.SUCCESS
 end
 
+M.attackAndChase = Parallel({
+  M.basicAttack,
+  M.chaseEnemy,
+})
+
 ---@return Status
 function M.patrol()
   local cooldown = math.random(3)

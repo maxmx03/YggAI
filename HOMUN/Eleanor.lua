@@ -218,26 +218,22 @@ function eqc.cast()
   return cast(MH_EQC, MyEnemy, { targetType = 'target', keepRunning = false })
 end
 
-local BattleComboSequence = Sequence({
-  Conditions(sonic.cast, condition.enemyIsAlive, sonic.condition, Inversion(condition.enemyIsNotInAttackSight)),
-  Conditions(
-    Delay(silver.cast, 2.0),
-    condition.enemyIsAlive,
-    silver.condition,
-    Inversion(condition.enemyIsNotInAttackSight)
-  ),
-  Conditions(
-    Delay(midnight.cast, 2.0),
-    condition.enemyIsAlive,
-    midnight.condition,
-    Inversion(condition.enemyIsNotInAttackSight)
-  ),
-})
-local ClawComboSequence = Sequence({
-  Conditions(tinder.cast, condition.enemyIsAlive, tinder.condition, Inversion(condition.enemyIsNotInAttackSight)),
-  Conditions(Delay(cbc.cast, 2.0), condition.enemyIsAlive, cbc.condition),
-  Conditions(Delay(eqc.cast, 2.0), condition.enemyIsAlive, eqc.condition),
-})
+local BattleComboSequence = Condition(
+  Sequence({
+    Condition(sonic.cast, sonic.condition),
+    Condition(Delay(silver.cast, 2.0), silver.condition),
+    Condition(Delay(midnight.cast, 2.0), midnight.condition),
+  }),
+  Inversion(condition.enemyIsNotInAttackSight)
+)
+local ClawComboSequence = Condition(
+  Sequence({
+    Condition(tinder.cast, tinder.condition),
+    Condition(Delay(cbc.cast, 2.0), cbc.condition),
+    Condition(Delay(eqc.cast, 2.0), eqc.condition),
+  }),
+  Inversion(condition.enemyIsNotInAttackSight)
+)
 local BattleComboMode = Sequence({
   node.chaseEnemy,
   BattleComboSequence,
@@ -246,19 +242,15 @@ local ClawComboMode = Sequence({
   node.chaseEnemy,
   ClawComboSequence,
 })
-local AttackAndChase = Parallel({
-  Conditions(node.basicAttack, Inversion(sonic.condition)),
-  node.chaseEnemy,
-})
 local AttackAndChaseGainSpheres = Parallel({
-  Conditions(node.EleanorBasicAttack, Inversion(condition.hasAllSpheres)),
+  Conditions(node.EleanorBasicAttack),
   node.chaseEnemy,
 })
 local combat = Selector({
-  Conditions(BattleComboMode, condition.enemyIsAlive, condition.ownerIsNotTooFar, BATTLE_MODE.isBattleMode),
-  Conditions(ClawComboMode, condition.enemyIsAlive, condition.ownerIsNotTooFar, BATTLE_MODE.isClawMode),
-  Conditions(AttackAndChaseGainSpheres, condition.enemyIsAlive, Inversion(condition.hasAllSpheres)),
-  Conditions(AttackAndChase, condition.enemyIsAlive, Inversion(sonic.condition)),
+  Condition(BattleComboMode, BATTLE_MODE.isBattleMode),
+  Condition(ClawComboMode, BATTLE_MODE.isClawMode),
+  Condition(AttackAndChaseGainSpheres, Inversion(condition.hasAllSpheres)),
+  Condition(node.attackAndChase, Inversion(sonic.condition)),
 })
 ---@type Homun
 local eleanor = Homun(MySkills, MyCooldown)
