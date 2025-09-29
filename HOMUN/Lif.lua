@@ -2,6 +2,7 @@
 local node = require('AI.USER_AI.BT.nodes')
 ---@type Condition
 local condition = require('AI.USER_AI.BT.conditions')
+local Homun = require('AI.USER_AI.UTIL.Homun')
 
 ---@class Cooldown
 local MyCooldown = {
@@ -52,69 +53,44 @@ local MySkills = {
   },
 }
 
----@param mySkill number
-local isSkillCastable = function(mySkill)
-  MySkill = mySkill
-  ---@type Skill
-  local skill = MySkills[MySkill]
-  local cooldown = MyCooldown[MySkill]
-  return condition.isSkillCastable(skill, cooldown)
-end
-
----@param skill number
----@param target number
----@param opts SkillOpts
----@return Status
-local cast = function(skill, target, opts)
-  local casted = node.castSkill(MySkills[skill], MyCooldown[skill], target, opts)
-  if casted == STATUS.RUNNING then
-    MyCooldown[skill] = GetTickInSeconds()
-    return STATUS.RUNNING
-  elseif casted == STATUS.SUCCESS then
-    MyCooldown[skill] = GetTickInSeconds()
-    MySkill = 0
-    return STATUS.SUCCESS
-  end
-  return STATUS.FAILURE
-end
+---@type Homun
+local lif = Homun(MySkills, MyCooldown)
 
 local heal = {}
-function heal.condition()
-  return isSkillCastable(HLIF_HEAL)
+function heal.isSkillCastable()
+  return lif.isSkillCastable(HLIF_HEAL)
 end
-function heal.cast()
+function heal.castSkill()
   if LifCanHeal then
-    return cast(HLIF_HEAL, MyOwner, { keepRunning = false, targetType = 'target' })
+    return lif.castSkill(HLIF_HEAL, MyOwner, { keepRunning = false, targetType = 'target' })
   end
   return STATUS.FAILURE
 end
 local avoid = {}
-function avoid.condition()
-  return isSkillCastable(HLIF_AVOID)
+function avoid.isSkillCastable()
+  return lif.isSkillCastable(HLIF_AVOID)
 end
-function avoid.cast()
-  return cast(HLIF_AVOID, MyOwner, { targetType = 'target', keepRunning = false })
+function avoid.castSkill()
+  return lif.castSkill(HLIF_AVOID, MyOwner, { targetType = 'target', keepRunning = false })
 end
 local change = {}
-function change.condition()
-  return isSkillCastable(HLIF_CHANGE)
+function change.isSkillCastable()
+  return lif.isSkillCastable(HLIF_CHANGE)
 end
-function change.cast()
-  return cast(HLIF_CHANGE, MyID, { keepRunning = false, targetType = 'target' })
+function change.castSkill()
+  return lif.castSkill(HLIF_CHANGE, MyID, { keepRunning = false, targetType = 'target' })
 end
-local AttackAndChase = Parallel({
-  node.basicAttack,
-  node.chaseEnemy,
-})
+local healOwner = Condition(
+  Parallel({
+    heal.castSkill,
+    node.runToSaveOwner,
+  }),
+  heal.isSkillCastable
+)
 local combat = Selector({
-  Conditions(heal.cast, heal.condition, condition.ownerIsDying),
-  Conditions(avoid.cast, avoid.condition, condition.enemyIsAlive),
-  Conditions(change.cast, change.condition, condition.enemyIsAlive),
-  AttackAndChase,
+  Condition(healOwner, condition.ownerIsDying),
+  Condition(avoid.castSkill, avoid.isSkillCastable),
+  Condition(change.castSkill, change.isSkillCastable),
+  node.attackAndChase,
 })
-local lif = Selector({
-  Conditions(combat, condition.hasEnemyOrInList, condition.ownerIsNotTooFar),
-  Conditions(node.follow, condition.ownerMoving),
-  Conditions(node.patrol, condition.ownerIsSitting, Inversion(condition.hasEnemyOrInList)),
-})
-return Condition(lif, IsLif)
+return Condition(lif.root(combat), IsLif)

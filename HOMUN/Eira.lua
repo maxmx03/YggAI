@@ -128,7 +128,7 @@ local xenoAttack = Parallel({
 })
 local tryReviveOwner = Parallel({
   Conditions(light.castSkill, light.isSkillCastable),
-  node.follow,
+  node.runToSaveOwner,
 })
 local xenoAttackIfAvailable = Condition(
   Selector({

@@ -1,7 +1,7 @@
 ---@type Node
 local node = require('AI.USER_AI.BT.nodes')
 ---@type Condition
-local condition = require('AI.USER_AI.BT.conditions')
+local Homun = require('AI.USER_AI.UTIL.Homun')
 
 ---@class Cooldown
 local MyCooldown = {
@@ -53,71 +53,41 @@ local MySkills = {
   },
 }
 
----@param mySkill number
-local isSkillCastable = function(mySkill)
-  MySkill = mySkill
-  ---@type Skill
-  local skill = MySkills[MySkill]
-  local cooldown = MyCooldown[MySkill]
-  return condition.isSkillCastable(skill, cooldown)
-end
-
----@param skill number
----@param target number
----@param opts SkillOpts
----@return Status
-local cast = function(skill, target, opts)
-  local casted = node.castSkill(MySkills[skill], MyCooldown[skill], target, opts)
-  if casted == STATUS.RUNNING then
-    MyCooldown[skill] = GetTickInSeconds()
-    return STATUS.RUNNING
-  elseif casted == STATUS.SUCCESS then
-    MyCooldown[skill] = GetTickInSeconds()
-    MySkill = 0
-    return STATUS.SUCCESS
-  end
-  return STATUS.FAILURE
-end
+---@type Homun
+local filir = Homun(MySkills, MyCooldown)
 
 local moon = {}
-function moon.condition()
-  return isSkillCastable(HFLI_MOON)
+function moon.isSkillCastable()
+  return filir.isSkillCastable(HFLI_MOON)
 end
-function moon.cast()
-  return cast(HFLI_MOON, MyEnemy, { targetType = 'target', keepRunning = false })
+function moon.castSkill()
+  return filir.castSkill(HFLI_MOON, MyEnemy, { targetType = 'target', keepRunning = false })
 end
 local fleet = {}
-function fleet.condition()
-  return isSkillCastable(HFLI_FLEET)
+function fleet.isSkillCastable()
+  return filir.isSkillCastable(HFLI_FLEET)
 end
-function fleet.cast()
-  return cast(HFLI_FLEET, MyID, { targetType = 'target', keepRunning = false })
+function fleet.castSkill()
+  return filir.castSkill(HFLI_FLEET, MyID, { targetType = 'target', keepRunning = false })
 end
 local speed = {}
-function speed.condition()
-  return isSkillCastable(HFLI_SPEED)
+function speed.isSkillCastable()
+  return filir.isSkillCastable(HFLI_SPEED)
 end
-function speed.cast()
-  return cast(HFLI_SPEED, MyID, { targetType = 'target', keepRunning = false })
+function speed.castSkill()
+  return filir.castSkill(HFLI_SPEED, MyID, { targetType = 'target', keepRunning = false })
 end
-local AttackAndChase = Parallel({
-  Conditions(node.basicAttack, Inversion(moon.condition)),
-  node.chaseEnemy,
-})
-local moonParallel = Parallel({
-  Conditions(moon.cast, moon.condition),
-  node.chaseEnemy,
-})
+local moonLightAttack = Condition(
+  Parallel({
+    moon.castSkill,
+    node.chaseEnemy,
+  }),
+  moon.isSkillCastable
+)
 local combat = Selector({
-  Conditions(fleet.cast, fleet.condition, condition.ownerIsDying),
-  Conditions(moonParallel, condition.enemyIsAlive),
-  Conditions(speed.cast, speed.condition, condition.enemyIsAlive),
-  Conditions(fleet.cast, fleet.condition, condition.enemyIsAlive),
-  Conditions(AttackAndChase, condition.enemyIsAlive),
+  Condition(speed.castSkill, speed.isSkillCastable),
+  Condition(fleet.castSkill, fleet.isSkillCastable),
+  moonLightAttack,
+  Condition(node.attackAndChase, Inversion(moon.isSkillCastable)),
 })
-local filir = Selector({
-  Conditions(combat, condition.hasEnemyOrInList, condition.ownerIsNotTooFar),
-  Conditions(node.follow, condition.ownerMoving),
-  Conditions(node.patrol, condition.ownerIsSitting, Inversion(condition.hasEnemyOrInList)),
-})
-return Condition(filir, IsFilir)
+return Condition(filir.root(combat), IsFilir)

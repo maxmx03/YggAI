@@ -2,6 +2,7 @@
 local node = require('AI.USER_AI.BT.nodes')
 ---@type Condition
 local condition = require('AI.USER_AI.BT.conditions')
+local Homun = require('AI.USER_AI.UTIL.Homun')
 
 ---@class Cooldown
 local MyCooldown = {
@@ -39,64 +40,43 @@ local MySkills = {
   },
 }
 
----@param mySkill number
-local isSkillCastable = function(mySkill)
-  MySkill = mySkill
-  ---@type Skill
-  local skill = MySkills[MySkill]
-  local cooldown = MyCooldown[MySkill]
-  return condition.isSkillCastable(skill, cooldown)
-end
-
----@param skill number
----@param target number
----@param opts SkillOpts
----@return Status
-local cast = function(skill, target, opts)
-  local casted = node.castSkill(MySkills[skill], MyCooldown[skill], target, opts)
-  if casted == STATUS.RUNNING then
-    MyCooldown[skill] = GetTickInSeconds()
-    return STATUS.RUNNING
-  elseif casted == STATUS.SUCCESS then
-    MyCooldown[skill] = GetTickInSeconds()
-    MySkill = 0
-    return STATUS.SUCCESS
-  end
-  return STATUS.FAILURE
-end
-
+---@type Homun
+local vanil = Homun(MySkills, MyCooldown)
 local caprice = {}
-
-function caprice.condition()
-  return isSkillCastable(HVAN_CAPRICE)
+function caprice.isSkillCastable()
+  return vanil.isSkillCastable(HVAN_CAPRICE)
 end
-function caprice.cast()
-  return cast(HVAN_CAPRICE, MyEnemy, { targetType = 'target', keepRunning = false })
+function caprice.castSkill()
+  return vanil.castSkill(HVAN_CAPRICE, MyEnemy, { targetType = 'target', keepRunning = false })
+end
+local chaotic = {}
+function chaotic.isSkillCastable()
+  if math.random(100) <= 30 then
+    return false
+  end
+  return vanil.isSkillCastable(HVAN_CHAOTIC)
+end
+function chaotic.castSkill()
+  return vanil.castSkill(HVAN_CHAOTIC, MyOwner, { targetType = 'target', keepRunning = false })
 end
 
--- local chaotic = {}
--- function chaotic.condition()
---   return isSkillCastable(HVAN_CHAOTIC)
--- end
--- function chaotic.cast()
---   return cast(HVAN_CHAOTIC, MyOwner, { targetType = 'target', keepRunning = false })
--- end
-
-local basicAttack = Parallel({
-  Conditions(node.basicAttack, Inversion(caprice.condition)),
-  node.chaseEnemy,
-})
-local capriceParallel = Parallel({
-  Conditions(caprice.cast, caprice.condition),
-  node.chaseEnemy,
-})
+local magickAttack = Condition(
+  Parallel({
+    caprice.castSkill,
+    node.chaseEnemy,
+  }),
+  caprice.isSkillCastable
+)
+local chaoticHealing = Condition(
+  Parallel({
+    chaotic.castSkill,
+    node.runToSaveOwner,
+  }),
+  chaotic.isSkillCastable
+)
 local combat = Selector({
-  Conditions(capriceParallel, caprice.condition, condition.enemyIsAlive),
-  Conditions(basicAttack, condition.enemyIsAlive, Inversion(caprice.condition)),
+  Condition(chaoticHealing, condition.ownerIsDying),
+  magickAttack,
+  Condition(node.attackAndChase, Inversion(caprice.isSkillCastable)),
 })
-local vanil = Selector({
-  Conditions(combat, condition.hasEnemyOrInList, condition.ownerIsNotTooFar),
-  Conditions(node.follow, condition.ownerMoving),
-  Conditions(node.patrol, condition.ownerIsSitting, Inversion(condition.hasEnemyOrInList)),
-})
-return Condition(vanil, IsVanilmirth)
+return Condition(vanil.root(combat), IsVanilmirth)

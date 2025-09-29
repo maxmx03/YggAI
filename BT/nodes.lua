@@ -13,6 +13,15 @@ function M.chaseEnemy()
   return STATUS.SUCCESS
 end
 
+function M.runToSaveOwner()
+  if not IsInAttackSight(MyID, MyOwner) then
+    local ownerX, ownerY = GetV(V_POSITION, MyOwner)
+    Move(MyID, ownerX, ownerY)
+    return STATUS.RUNNING
+  end
+  return STATUS.SUCCESS
+end
+
 ---@return Status
 function M.basicAttack()
   if MyEnemy == 0 then
