@@ -52,9 +52,9 @@ end
 local chaotic = {}
 function chaotic.isSkillCastable()
   if math.random(100) <= 30 then
-    return false
+    return vanil.isSkillCastable(HVAN_CHAOTIC)
   end
-  return vanil.isSkillCastable(HVAN_CHAOTIC)
+  return false
 end
 function chaotic.castSkill()
   return vanil.castSkill(HVAN_CHAOTIC, MyOwner, { targetType = 'target', keepRunning = false })
