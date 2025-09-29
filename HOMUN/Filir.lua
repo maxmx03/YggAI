@@ -1,6 +1,5 @@
 ---@type Node
 local node = require('AI.USER_AI.BT.nodes')
----@type Condition
 local Homun = require('AI.USER_AI.UTIL.Homun')
 
 ---@class Cooldown

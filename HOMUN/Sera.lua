@@ -71,14 +71,20 @@ local MySkills = {
 ---@type Homun
 local sera = Homun(MySkills, MyCooldown)
 
-local paralyse = {}
-function paralyse.isSkillCastable()
+local paralyze = {}
+function paralyze.isSkillCastable()
   if math.random(1, 100) <= 40 then
     return sera.isSkillCastable(MH_NEEDLE_OF_PARALYZE)
   end
   return false
 end
-function paralyse.castSkill()
+function paralyze.isSkillCastableMoreOften()
+  if math.random(1, 100) <= 80 then
+    return sera.isSkillCastable(MH_NEEDLE_OF_PARALYZE)
+  end
+  return false
+end
+function paralyze.castSkill()
   return sera.castSkill(MH_NEEDLE_OF_PARALYZE, MyEnemy, { targetType = 'target', keepRunning = true })
 end
 local poison = {}
@@ -111,13 +117,12 @@ local castPoisonMist = Condition(
   }),
   poison.isSkillCastable
 )
-local tryParaliseEnemy = Condition(
-  Parallel({
-    paralyse.castSkill,
-    node.chaseEnemy,
-  }),
-  paralyse.isSkillCastable
-)
+local castParalyze = Parallel({
+  paralyze.castSkill,
+  node.chaseEnemy,
+})
+local tryParalizeEnemy = Condition(castParalyze, paralyze.isSkillCastable)
+local tryParalizeEnemyMoreOften = Condition(castParalyze, paralyze.isSkillCastableMoreOften)
 local invokeLegion = Condition(
   Parallel({
     legion.castSkill,
@@ -125,11 +130,20 @@ local invokeLegion = Condition(
   }),
   legion.isSkillCastable
 )
+
+local isMVP = Condition(
+  Selector({
+    invokeLegion,
+    tryParalizeEnemyMoreOften,
+  }),
+  condition.isMVP
+)
+
 local combat = Selector({
-  Condition(invokeLegion, condition.isMVP),
-  castPoisonMist,
-  Condition(tryParaliseEnemy, Inversion(poison.isSkillCastable)),
   Condition(pain.castSkill, pain.isSkillCastable),
-  Condition(node.attackAndChase, Inversion(paralyse.isSkillCastable)),
+  castPoisonMist,
+  Condition(node.attackAndChase, Inversion(paralyze.isSkillCastable)),
+  isMVP,
+  Condition(tryParalizeEnemy, Inversion(poison.isSkillCastable)),
 })
 return Condition(sera.root(combat), IsSera)
