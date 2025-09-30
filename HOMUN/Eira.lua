@@ -23,7 +23,7 @@ local MySkills = {
       if previousCooldown == 0 then
         return previousCooldown
       end
-      return 3
+      return 0.3
     end,
     level = 10,
     required_level = 106,
