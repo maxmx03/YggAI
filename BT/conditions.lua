@@ -65,7 +65,7 @@ local function checkPathfinding()
   if MyEnemy == 0 then
     return true
   end
-  local currentTime = GetTickInSeconds()
+  local currentTime = GetTick()
   local myMotion = GetV(V_MOTION, MyID)
   if myMotion == MOTION_MOVE or myMotion == MOTION_ATTACK or myMotion == MOTION_ATTACK2 then
     AttackTimeout = currentTime + AttackTimeLimit
@@ -341,19 +341,6 @@ function M.isEarthMonster()
     return true
   end
   return false
-end
-
----@param skill Skill
----@param lastTime number
----@return boolean
-function M.isSkillCastable(skill, lastTime)
-  if not HasEnoughSp(skill.sp) then
-    return false
-  end
-  if not CanUseSkill(GetTickInSeconds(), lastTime, skill.cooldown(lastTime)) then
-    return false
-  end
-  return true
 end
 
 ---@return boolean

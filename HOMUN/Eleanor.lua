@@ -20,175 +20,103 @@ local MySkills = {
   ---@type Skill
   [MH_STYLE_CHANGE] = {
     id = MH_STYLE_CHANGE,
-    cooldown = function(previousCooldown)
-      if previousCooldown == 0 then
-        return previousCooldown
-      end
-      return 1
-    end,
+    cooldown = 1000,
     sp = 35,
     level = 5,
     sphere_cost = 0,
     required_level = 100,
+    cast_time = 0,
   },
   ---@type Skill
   [MH_SONIC_CRAW] = {
     id = MH_SONIC_CRAW,
     sp = 40,
-    cooldown = function(previousCooldown)
-      if previousCooldown == 0 then
-        return previousCooldown
-      end
-      return 0.5
-    end,
+    cooldown = 500,
     level = 5,
     sphere_cost = 1,
     required_level = 100,
+    cast_time = 0,
   },
   ---@type Skill
   [MH_SILVERVEIN_RUSH] = {
     id = MH_SILVERVEIN_RUSH,
     sp = 35,
-    cooldown = function(previousCooldown)
-      if previousCooldown == 0 then
-        return previousCooldown
-      end
-      return 1.5
-    end,
+    cooldown = 1500,
     level = 10,
     sphere_cost = 1,
     required_level = 114,
+    cast_time = 0,
   },
   ---@type Skill
   [MH_MIDNIGHT_FRENZY] = {
     id = MH_MIDNIGHT_FRENZY,
     sp = 45,
-    cooldown = function(previousCooldown)
-      if previousCooldown == 0 then
-        return previousCooldown
-      end
-      return 1.5
-    end,
+    cooldown = 1500,
     level = 10,
     sphere_cost = 1,
     required_level = 128,
+    cast_time = 0,
   },
   ---@type Skill
   [MH_TINDER_BREAKER] = {
     id = MH_TINDER_BREAKER,
     sp = 40,
-    cooldown = function(previousCooldown)
-      if previousCooldown == 0 then
-        return previousCooldown
-      end
-      return 0.5
-    end,
+    cooldown = 500,
     level = 5,
     sphere_cost = 1,
     required_level = 100,
+    cast_time = 1000,
   },
   ---@type Skill
   [MH_CBC] = {
     id = MH_CBC,
     sp = 50,
-    cooldown = function(previousCooldown)
-      if previousCooldown == 0 then
-        return previousCooldown
-      end
-      return 0.3
-    end,
+    cooldown = 300,
     level = 5,
     sphere_cost = 2,
     required_level = 112,
+    cast_time = 0,
   },
   ---@type Skill
   [MH_EQC] = {
     id = MH_EQC,
     sp = 40,
-    cooldown = function(previousCooldown)
-      if previousCooldown == 0 then
-        return previousCooldown
-      end
-      return 0.3
-    end,
+    cooldown = 300,
     level = 5,
     sphere_cost = 2,
     required_level = 133,
+    cast_time = 0,
   },
 }
 
----@enum BattleMode
-BATTLE_MODE = {
-  BATTLE = 1,
-  CLAW = 2,
-  CURRENT = 1,
-  isBattleMode = function()
-    return BATTLE_MODE.CURRENT == BATTLE_MODE.BATTLE
-  end,
-  isClawMode = function()
-    return BATTLE_MODE.CURRENT == BATTLE_MODE.CLAW
-  end,
-}
+---@type Homun
+local eleanor = Homun(MySkills, MyCooldown)
 
----@param mySkill number
-local isSkillCastable = function(mySkill)
-  MySkill = mySkill
-  ---@type Skill
-  local skill = MySkills[MySkill]
-  local cooldown = MyCooldown[MySkill]
-  return condition.isSkillCastable(skill, cooldown)
-end
-
----@param skill number
+---@param skillId number
 ---@param target number
 ---@param opts SkillOpts
 ---@return Status
-local cast = function(skill, target, opts)
-  local casted = node.castSkill(MySkills[skill], MyCooldown[skill], target, opts)
-  local spAfterCast = GetV(V_SP, MyID)
-  if casted == STATUS.FAILURE or (spAfterCast >= EleanorSP and EleanorSP > 0) then
-    if BATTLE_MODE.CURRENT == BATTLE_MODE.BATTLE then
-      BATTLE_MODE.CURRENT = BATTLE_MODE.CLAW
-    else
-      BATTLE_MODE.CURRENT = BATTLE_MODE.BATTLE
-    end
-    MySkill = 0
-  end
-  if casted == STATUS.RUNNING then
-    MyCooldown[skill] = GetTickInSeconds()
-    if MySpheres > 0 then
-      MySpheres = math.max(0, MySpheres - MySkills[skill].sphere_cost)
-    end
-    return STATUS.RUNNING
-  elseif casted == STATUS.SUCCESS then
-    MyCooldown[skill] = GetTickInSeconds()
-    if MySpheres > 0 then
-      MySpheres = math.max(0, MySpheres - MySkills[skill].sphere_cost)
-    end
-    MySkill = 0
-    return STATUS.SUCCESS
-  end
-
-  return STATUS.FAILURE
+local function cast(skillId, target, opts)
+  return eleanor.castSkill(skillId, target, opts)
 end
 
 local silver = {}
 function silver.condition()
-  return isSkillCastable(MH_SILVERVEIN_RUSH)
+  return eleanor.isSkillCastable(MH_SILVERVEIN_RUSH)
 end
 function silver.cast()
   return cast(MH_SILVERVEIN_RUSH, MyEnemy, { targetType = 'target', keepRunning = false })
 end
 local midnight = {}
 function midnight.condition()
-  return isSkillCastable(MH_MIDNIGHT_FRENZY)
+  return eleanor.isSkillCastable(MH_MIDNIGHT_FRENZY)
 end
 function midnight.cast()
   return cast(MH_MIDNIGHT_FRENZY, MyEnemy, { targetType = 'target', keepRunning = false })
 end
 local sonic = {}
 function sonic.condition()
-  return isSkillCastable(MH_SONIC_CRAW)
+  return eleanor.isSkillCastable(MH_SONIC_CRAW)
 end
 function sonic.cast()
   if not silver.condition() or not midnight.condition() then
@@ -198,21 +126,21 @@ function sonic.cast()
 end
 local tinder = {}
 function tinder.condition()
-  return isSkillCastable(MH_TINDER_BREAKER)
+  return eleanor.isSkillCastable(MH_TINDER_BREAKER)
 end
 function tinder.cast()
   return cast(MH_TINDER_BREAKER, MyEnemy, { targetType = 'target', keepRunning = false })
 end
 local cbc = {}
 function cbc.condition()
-  return isSkillCastable(MH_CBC)
+  return eleanor.isSkillCastable(MH_CBC)
 end
 function cbc.cast()
   return cast(MH_CBC, MyEnemy, { targetType = 'target', keepRunning = false })
 end
 local eqc = {}
 function eqc.condition()
-  return isSkillCastable(MH_EQC)
+  return eleanor.isSkillCastable(MH_EQC)
 end
 function eqc.cast()
   return cast(MH_EQC, MyEnemy, { targetType = 'target', keepRunning = false })
@@ -252,6 +180,4 @@ local combat = Selector({
   Condition(AttackAndChaseGainSpheres, Inversion(condition.hasAllSpheres)),
   Condition(node.attackAndChase, Inversion(sonic.condition)),
 })
----@type Homun
-local eleanor = Homun(MySkills, MyCooldown)
 return Condition(eleanor.root(combat), IsEleanor)

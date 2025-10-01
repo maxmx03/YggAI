@@ -17,40 +17,28 @@ local MySkills = {
   [HAMI_CASTLE] = {
     id = HAMI_CASTLE,
     sp = 10,
-    cooldown = function(previousCooldown)
-      if previousCooldown == 0 then
-        return previousCooldown
-      end
-      return 20
-    end,
+    cooldown = 20000,
     level = 5,
     required_level = 15,
+    cast_time = 0,
   },
   ---@type Skill
   [HAMI_DEFENCE] = {
     id = HAMI_DEFENCE,
     sp = 40,
-    cooldown = function(previousCooldown)
-      if previousCooldown == 0 then
-        return previousCooldown
-      end
-      return 30
-    end,
+    cooldown = 30000,
     level = 5,
     required_level = 25,
+    cast_time = 0,
   },
   ---@type Skill
   [HAMI_BLOODLUST] = {
     id = HAMI_BLOODLUST,
     sp = 120,
-    cooldown = function(previousCooldown)
-      if previousCooldown == 0 then
-        return previousCooldown
-      end
-      return 60
-    end,
+    cooldown = 60000,
     level = 3,
     required_level = 80,
+    cast_time = 0,
   },
 }
 

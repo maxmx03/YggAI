@@ -19,66 +19,46 @@ local MySkills = {
   [MH_ERASER_CUTTER] = {
     id = MH_ERASER_CUTTER,
     sp = 70,
-    cooldown = function(previousCooldown)
-      if previousCooldown == 0 then
-        return previousCooldown
-      end
-      return 0.3
-    end,
+    cooldown = 300,
     level = 10,
     required_level = 106,
+    cast_time = 1500,
   },
   ---@type Skill
   [MH_OVERED_BOOST] = {
     id = MH_OVERED_BOOST,
     sp = 150,
-    cooldown = function(previousCooldown)
-      if previousCooldown == 0 then
-        return previousCooldown
-      end
-      return 30
-    end,
+    cooldown = 30000,
     level = 5,
     required_level = 114,
+    cast_time = 400,
   },
   ---@type Skill
   [MH_XENO_SLASHER] = {
     id = MH_XENO_SLASHER,
     sp = 180,
-    cooldown = function(previousCooldown)
-      if previousCooldown == 0 then
-        return previousCooldown
-      end
-      return 0.3
-    end,
+    cooldown = 300,
     level = 10,
     required_level = 121,
+    cast_time = 1500,
   },
   ---@type Skill
   [MH_LIGHT_OF_REGENE] = {
     id = MH_LIGHT_OF_REGENE,
     sp = 40,
-    cooldown = function(previousCooldown)
-      if previousCooldown == 0 then
-        return previousCooldown
-      end
-      return 300
-    end,
+    cooldown = 300000,
     level = 5,
     required_level = 128,
+    cast_time = 800,
   },
   ---@type Skill
   [MH_SILENT_BREEZE] = {
     id = MH_SILENT_BREEZE,
     sp = 160,
-    cooldown = function(previousCooldown)
-      if previousCooldown == 0 then
-        return previousCooldown
-      end
-      return 1.5
-    end,
+    cooldown = 1500,
     level = 5,
     required_level = 137,
+    cast_time = 1800,
   },
 }
 

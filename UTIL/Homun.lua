@@ -8,6 +8,7 @@ local function Homun(mySkills, myCooldown)
   local node = require('AI.USER_AI.BT.nodes')
   local MySkills = mySkills
   local MyCooldown = myCooldown
+  local lastTime = 0
 
   ---@param mySkill number
   ---@return boolean
@@ -16,27 +17,53 @@ local function Homun(mySkills, myCooldown)
     local skill = MySkills[mySkill]
     local cooldown = MyCooldown[mySkill]
     if MyLevel >= skill.required_level then
-      return condition.isSkillCastable(skill, cooldown)
+      if not HasEnoughSp(skill.sp) then
+        return false
+      end
+      local currentTime = GetTick()
+      if currentTime < cooldown then
+        return false
+      end
+      return true
     end
     return false
   end
 
-  ---@param skill number
+  ---@param skillId number
   ---@param target number
   ---@param opts SkillOpts
   ---@return Status
-  local function castSkill(skill, target, opts)
-    local casted = node.castSkill(MySkills[skill], MyCooldown[skill], target, opts)
-    if casted == STATUS.RUNNING then
-      MyCooldown[skill] = GetTickInSeconds()
-      return STATUS.RUNNING
-    elseif casted == STATUS.SUCCESS then
-      MyCooldown[skill] = GetTickInSeconds()
-      MySkill = 0
-      return STATUS.SUCCESS
+  local function castSkill(skillId, target, opts)
+    MySkill = skillId
+    ---@type Skill
+    local skill = MySkills[skillId]
+    local isGroundCast = opts.targetType == 'ground'
+    if isGroundCast then
+      local x, y = GetV(V_POSITION, target)
+      SkillGround(MyID, skill.level, skill.id, x, y)
+    else
+      SkillObject(MyID, skill.level, skill.id, target)
     end
+
+    if GetV(V_HOMUNTYPE, MyID) == ELEANOR then
+      if MySpheres > 0 then
+        MySpheres = math.max(0, MySpheres - MySkills[skillId].sphere_cost)
+      end
+      local currentSp = GetV(V_SP, MyID)
+      if currentSp <= MySP then
+        if BATTLE_MODE.isBattleMode() then
+          BATTLE_MODE.CURRENT = BATTLE_MODE.CLAW
+        else
+          BATTLE_MODE.CURRENT = BATTLE_MODE.BATTLE
+        end
+      end
+    end
+    if opts.keepRunning then
+      return STATUS.RUNNING
+    end
+    MyCooldown[skillId] = GetTick() + skill.cast_time + skill.cooldown
     MySkill = 0
-    return STATUS.FAILURE
+    return STATUS.SUCCESS
   end
 
   ---@param combat fun():Status

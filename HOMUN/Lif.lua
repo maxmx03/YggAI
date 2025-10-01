@@ -17,39 +17,28 @@ local MySkills = {
   [HLIF_HEAL] = {
     id = HLIF_HEAL,
     sp = 25,
-    cooldown = function(previousCooldown)
-      if previousCooldown == 0 then
-        return previousCooldown
-      end
-      return 20
-    end,
+    cooldown = 20000,
     level = 5,
     required_level = 15,
+    cast_time = 0,
   },
   ---@type Skill
   [HLIF_AVOID] = {
     id = HLIF_AVOID,
     sp = 40,
-    cooldown = function(previousCooldown)
-      if previousCooldown == 0 then
-        return previousCooldown
-      end
-      return 35
-    end,
+    cooldown = 35000,
     level = 5,
     required_level = 25,
+    cast_time = 0,
   },
+  ---@type Skill
   [HLIF_CHANGE] = {
     id = HLIF_CHANGE,
     sp = 100,
-    cooldown = function(previousCooldown)
-      if previousCooldown == 0 then
-        return previousCooldown
-      end
-      return 5 * 60
-    end,
+    cooldown = 300000,
     level = 3,
     required_level = 40,
+    cast_time = 0,
   },
 }
 
