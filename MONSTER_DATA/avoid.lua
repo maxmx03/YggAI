@@ -27,8 +27,7 @@ local M = {
   [1959] = true, -- Thorn of Recovery
   [1958] = true, -- Thorny Skeleton
   -- Halloween event
-  [20695] = true, -- E_GARLING
+  [2695] = true, -- E_GARLING
   [1926] = true, -- JAKK_H
-  [21911] = true, -- 2210_EV_SPIDING
 }
 return M
