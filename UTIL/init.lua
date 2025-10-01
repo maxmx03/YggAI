@@ -331,67 +331,10 @@ function GetMaxSp(id)
   return GetV(V_MAXSP, id)
 end
 
----@return number
-function GetTickInSeconds()
-  return GetTick() / 1000
-end
-
----@param currentTime number
----@param lastTime number
----@param cooldown number
-function CanUseSkill(currentTime, lastTime, cooldown)
-  if not currentTime or not lastTime or not cooldown then
-    return false
-  end
-  if (currentTime - lastTime) >= cooldown then
-    return true
-  end
-  return false
-end
-
----@class sk
----@field lastTime number
----@field cooldown number
----@field currentTime number
----@field level number
----@field id number
-
----@param target number
----@param sk sk
----@return boolean
-function CastSkill(target, sk)
-  if CanUseSkill(sk.currentTime, sk.lastTime, sk.cooldown) then
-    local status = SkillObject(MyID, sk.level, sk.id, target)
-    if status == nil or status == 1 then
-      return true
-    end
-  end
-  return false
-end
-
----@class Position
----@field x number
----@field y number
-
----@param position Position
----@param sk sk
----@return boolean
-function CastSkillGround(position, sk)
-  if CanUseSkill(sk.currentTime, sk.lastTime, sk.cooldown) then
-    local status = SkillGround(MyID, sk.level, sk.id, position.x, position.y)
-    if status == nil or status == 1 then
-      return true
-    end
-  end
-  return false
-end
-
 ---@param sp number
 ---@return boolean
 function HasEnoughSp(sp)
   local enoughSp = GetSp(MyID) >= sp
-  TraceAI('MY_SP: ' .. tostring(GetSp(MyID)))
-  TraceAI('SP TO USE: ' .. tostring(sp))
   return enoughSp
 end
 
@@ -434,4 +377,11 @@ function SearchForEnemies(myid, callback)
   for _, actorId in ipairs(others) do
     callback(actorId)
   end
+end
+
+---@param message string
+---@param ... any
+function Trace(message, ...)
+  message = ' ' .. message
+  TraceAI(string.format(message, ...))
 end

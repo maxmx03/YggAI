@@ -18,53 +18,37 @@ local MySkills = {
   [MH_NEEDLE_OF_PARALYZE] = {
     id = MH_NEEDLE_OF_PARALYZE,
     sp = 96,
-    cooldown = function(previousCooldown)
-      if previousCooldown == 0 then
-        return previousCooldown
-      end
-      return 0.2
-    end,
+    cooldown = 200,
     level = 10,
     required_level = 105,
+    cast_time = 1300,
   },
   ---@type Skill
   [MH_POISON_MIST] = {
     id = MH_POISON_MIST,
     sp = 105,
-    cooldown = function(previousCooldown)
-      if previousCooldown == 0 then
-        return previousCooldown
-      end
-      return 15
-    end,
+    cooldown = 15000,
     level = 5,
     required_level = 116,
+    cast_time = 1500,
   },
   ---@type Skill
   [MH_PAIN_KILLER] = {
     id = MH_PAIN_KILLER,
     sp = 64,
-    cooldown = function(previousCooldown)
-      if previousCooldown == 0 then
-        return previousCooldown
-      end
-      return 600
-    end,
+    cooldown = 600000,
     level = 10,
     required_level = 123,
+    cast_time = 100,
   },
   ---@type Skill
   [MH_SUMMON_LEGION] = {
     id = MH_SUMMON_LEGION,
     sp = 140,
-    cooldown = function(previousCooldown)
-      if previousCooldown == 0 then
-        return previousCooldown
-      end
-      return 30
-    end,
+    cooldown = 30000,
     level = 5,
     required_level = 132,
+    cast_time = 1200,
   },
 }
 

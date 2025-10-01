@@ -15,40 +15,28 @@ local MySkills = {
   [HFLI_MOON] = {
     id = HFLI_MOON,
     sp = 20,
-    cooldown = function(previousCooldown)
-      if previousCooldown == 0 then
-        return previousCooldown
-      end
-      return 2
-    end,
+    cooldown = 2000,
     level = 5,
     required_level = 15,
+    cast_time = 0,
   },
   ---@type Skill
   [HFLI_FLEET] = {
     id = HFLI_FLEET,
     sp = 70,
-    cooldown = function(previousCooldown)
-      if previousCooldown == 0 then
-        return previousCooldown
-      end
-      return 120
-    end,
+    cooldown = 120000,
     level = 5,
     required_level = 25,
+    cast_time = 0,
   },
   ---@type Skill
   [HFLI_SPEED] = {
     id = HFLI_SPEED,
     sp = 70,
-    cooldown = function(previousCooldown)
-      if previousCooldown == 0 then
-        return previousCooldown
-      end
-      return 120
-    end,
+    cooldown = 120000,
     level = 5,
     required_level = 40,
+    cast_time = 0,
   },
 }
 

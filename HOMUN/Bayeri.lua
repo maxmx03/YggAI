@@ -18,62 +18,46 @@ local MySkills = {
   [MH_STAHL_HORN] = {
     id = MH_STAHL_HORN,
     sp = 70,
-    cooldown = function(previousCooldown)
-      if previousCooldown == 0 then
-        return previousCooldown
-      end
-      return 0.7
-    end,
+    cooldown = 700,
     level = 10,
     required_level = 105,
+    cast_time = 500,
   },
+  ---@type Skill
   [MH_GOLDENE_FERSE] = {
     id = MH_GOLDENE_FERSE,
     sp = 80,
-    cooldown = function(previousCooldown)
-      if previousCooldown == 0 then
-        return previousCooldown
-      end
-      return 2
-    end,
+    cooldown = 2000,
     level = 5,
     required_level = 112,
+    cast_time = 1800,
   },
+  ---@type Skill
   [MH_STEINWAND] = {
     id = MH_STEINWAND,
     sp = 120,
-    cooldown = function(previousCooldown)
-      if previousCooldown == 0 then
-        return previousCooldown
-      end
-      return 2
-    end,
+    cooldown = 2000,
     level = 5,
     required_level = 121,
+    cast_time = 1000,
   },
+  ---@type Skill
   [MH_ANGRIFFS_MODUS] = {
     id = MH_ANGRIFFS_MODUS,
     sp = 80,
-    cooldown = function(previousCooldown)
-      if previousCooldown == 0 then
-        return previousCooldown
-      end
-      return 30
-    end,
+    cooldown = 30000,
     level = 5,
     required_level = 130,
+    cast_time = 1000,
   },
+  ---@type Skill
   [MH_HEILIGE_STANGE] = {
     id = MH_HEILIGE_STANGE,
     sp = 100,
-    cooldown = function(previousCooldown)
-      if previousCooldown == 0 then
-        return previousCooldown
-      end
-      return 5
-    end,
+    cooldown = 5000,
     level = 10,
     required_level = 138,
+    cast_time = 200,
   },
 }
 

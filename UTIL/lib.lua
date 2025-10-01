@@ -78,13 +78,18 @@ end
 
 ---@class Skill
 ---@field sp number
----@field cooldown fun(previousCooldown: number): number
+---@field cooldown number
 ---@field level number
 ---@field required_level number
 ---@field sphere_cost? number
+---@field cast_time number
 ---@field id number
 
 ---@class Homun
 ---@field isSkillCastable fun(skill:number):boolean
 ---@field castSkill fun(skill:number, target:number, opts:SkillOpts):Status
 ---@field root fun(combat:fun():Status):fun():Status
+
+---@class SkillOpts
+---@field keepRunning boolean
+---@field targetType "ground" | "target"

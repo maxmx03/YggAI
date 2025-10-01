@@ -16,27 +16,19 @@ local MySkills = {
   [HVAN_CAPRICE] = {
     id = HVAN_CAPRICE,
     sp = 30,
-    cooldown = function(previousCooldown)
-      if previousCooldown == 0 then
-        return previousCooldown
-      end
-      return 3
-    end,
+    cooldown = 3000,
     level = 5,
     required_level = 15,
+    cast_time = 0,
   },
   ---@type Skill
   [HVAN_CHAOTIC] = {
     id = HVAN_CHAOTIC,
     sp = 40,
-    cooldown = function(previousCooldown)
-      if previousCooldown == 0 then
-        return previousCooldown
-      end
-      return 3
-    end,
+    cooldown = 3000,
     level = 5,
     required_level = 25,
+    cast_time = 0,
   },
 }
 

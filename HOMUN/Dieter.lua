@@ -19,66 +19,46 @@ local MySkills = {
   [MH_VOLCANIC_ASH] = {
     id = MH_VOLCANIC_ASH,
     sp = 80,
-    cooldown = function(previousCooldown)
-      if previousCooldown == 0 then
-        return previousCooldown
-      end
-      return 5
-    end,
+    cooldown = 6000,
     level = 5,
     required_level = 102,
+    cast_time = 2000,
   },
   ---@type Skill
   [MH_LAVA_SLIDE] = {
     id = MH_LAVA_SLIDE,
     sp = 85,
-    cooldown = function(previousCooldown)
-      if previousCooldown == 0 then
-        return previousCooldown
-      end
-      return 15
-    end,
+    cooldown = 15000,
     level = 10,
     required_level = 109,
+    cast_time = 3500,
   },
   ---@type Skill
   [MH_GRANITIC_ARMOR] = {
     id = MH_GRANITIC_ARMOR,
     sp = 70,
-    cooldown = function(previousCooldown)
-      if previousCooldown == 0 then
-        return previousCooldown
-      end
-      return 60
-    end,
+    cooldown = 60000,
     level = 5,
     required_level = 116,
+    cast_time = 0,
   },
   ---@type Skill
   [MH_MAGMA_FLOW] = {
     id = MH_MAGMA_FLOW,
     sp = 50,
-    cooldown = function(previousCooldown)
-      if previousCooldown == 0 then
-        return previousCooldown
-      end
-      return 90
-    end,
+    cooldown = 90000,
     level = 5,
     required_level = 122,
+    cast_time = 500,
   },
   ---@type Skill
   [MH_PYROCLASTIC] = {
     id = MH_PYROCLASTIC,
     sp = 70,
-    cooldown = function(previousCooldown)
-      if previousCooldown == 0 then
-        return previousCooldown
-      end
-      return 600
-    end,
+    cooldown = 600000,
     level = 10,
     required_level = 131,
+    cast_time = 5500,
   },
 }
 
@@ -141,9 +121,9 @@ local enemyIsMVP = Condition(
   Selector({
     Condition(magma.castSkill, magma.isSkillCastable),
     Condition(pyroclastic.castSkill, pyroclastic.isSkillCastable),
+    lavaAttack,
     Condition(volcanicAttack, Inversion(lava.isSkillCastable)),
     Condition(node.attackAndChase, Inversion(volcanic.isSkillCastable)),
-    lavaAttack,
   }),
   condition.isMVP
 )
@@ -152,8 +132,8 @@ local enemyIsPlantMonster = Condition(
   Selector({
     Condition(magma.castSkill, magma.isSkillCastable),
     Condition(volcanicAttack, Inversion(lava.isSkillCastable)),
-    Condition(node.attackAndChase, Inversion(volcanic.isSkillCastable)),
     lavaAttack,
+    Condition(node.attackAndChase, Inversion(volcanic.isSkillCastable)),
   }),
   condition.isPlantMonster
 )

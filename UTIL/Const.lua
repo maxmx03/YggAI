@@ -186,6 +186,9 @@ MH_SUMMON_LEGION = 8018
 MH_NEEDLE_OF_PARALYZE = 8019
 MH_POISON_MIST = 8020
 MH_PAIN_KILLER = 8021
+MH_POLISHING_NEEDLE = 8052
+MH_TOXIN_OF_MANDARA = 8053
+MH_NEEDLE_STINGER = 8054
 
 -- EIRA
 MH_LIGHT_OF_REGENE = 8022
@@ -193,6 +196,8 @@ MH_OVERED_BOOST = 8023
 MH_ERASER_CUTTER = 8024
 MH_XENO_SLASHER = 8025
 MH_SILENT_BREEZE = 8026
+MH_CLASSY_FLUTTER = 8046
+MH_TWISTER_CUTTER = 8047
 
 -- ELEANOR
 MH_STYLE_CHANGE = 8027
@@ -202,6 +207,9 @@ MH_MIDNIGHT_FRENZY = 8030
 MH_TINDER_BREAKER = 8036
 MH_CBC = 8037
 MH_EQC = 8038
+MH_BRUSHUP_CLAW = 8049
+MH_BLAZING_AND_FURIOUS = 8050
+MH_THE_ONE_FIGHTER_RISES = 8051
 
 -- Bayeri
 MH_STAHL_HORN = 8031
@@ -209,6 +217,10 @@ MH_GOLDENE_FERSE = 8032
 MH_STEINWAND = 8033
 MH_HEILIGE_STANGE = 8034
 MH_ANGRIFFS_MODUS = 8035
+MH_LICHT_GEHORN = 8055
+MH_GLANZEN_SPIES = 8056
+MH_HEILIGE_PFERD = 8057
+MH_GOLDENE_TONE = 8058
 
 -- DIETER
 MH_MAGMA_FLOW = 8039
@@ -216,18 +228,9 @@ MH_GRANITIC_ARMOR = 8040
 MH_LAVA_SLIDE = 8041
 MH_PYROCLASTIC = 8042
 MH_VOLCANIC_ASH = 8043
-
----@enum Target
-TARGET = {
-  GROUND = 1,
-  OBJECT = 2,
-}
-
----@enum ExitState
-SKILL_EXIT_STATE = {
-  SUCCESS = 1, -- cast once
-  RUNNING = 2, -- cast multiple times
-}
+MH_BLAZING_LAVA = 8059
+MH_BLAST_FORGE = 8044
+MH_TEMPERING = 8045
 
 ------------------------------------------
 -- HOMUNCULUS | BLACKBOARD
@@ -241,8 +244,20 @@ MyPatrolY = 0 -- y coordinate of a scouting location
 MyID = 0 -- Homunculus ID
 MySkill = 0 -- Homunculus skills
 MySkillLevel = 0 -- Homunculus skill level
-MySkillTarget = TARGET.OBJECT -- Homunculus skill target
-MySkillState = SKILL_EXIT_STATE.SUCCESS -- Homunculus skill state
 MyOwner = 0 -- Homunculus owner
 MySpheres = 5 -- Eleanor only
-EleanorSP = 0 -- Eleanor only
+MySP = 0
+MyHomun = {}
+
+---@enum BattleMode
+BATTLE_MODE = {
+  BATTLE = 1,
+  CLAW = 2,
+  CURRENT = 1,
+  isBattleMode = function()
+    return BATTLE_MODE.CURRENT == BATTLE_MODE.BATTLE
+  end,
+  isClawMode = function()
+    return BATTLE_MODE.CURRENT == BATTLE_MODE.CLAW
+  end,
+}

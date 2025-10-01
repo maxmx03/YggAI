@@ -25,7 +25,7 @@ local root = Selector({
   filir,
 })
 function AI(myid)
-  EleanorSP = GetV(V_SP, myid) -- for Eleanor BATTLE MODE, to know if the skill was casted or not
+  MySP = GetV(V_SP, MyID)
   math.randomseed(GetTick())
   MyID = myid
   MyOwner = GetV(V_OWNER, myid)
