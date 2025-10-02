@@ -29,5 +29,9 @@ local M = {
   -- Halloween event
   [2695] = true, -- E_GARLING
   [1926] = true, -- JAKK_H
+  -- Sera Legion
+  [2160] = true,
+  [2159] = true,
+  [2158] = true,
 }
 return M
