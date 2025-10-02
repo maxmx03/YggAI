@@ -94,6 +94,16 @@ function legion.castSkill()
   return sera.castSkill(MH_SUMMON_LEGION, MyEnemy, { targetType = 'target', keepRunning = false })
 end
 
+---@param cell number
+---@return function: Status
+local function dance(cell)
+  return function()
+    local enemyX, enemyY = GetV(V_POSITION, MyEnemy)
+    Move(MyID, enemyX + math.random(-cell, cell), enemyY + math.random(-cell, cell))
+    return STATUS.RUNNING
+  end
+end
+
 local castPoisonMist = Condition(
   Parallel({
     poison.castSkill,
@@ -122,11 +132,15 @@ local isMVP = Condition(
   }),
   condition.isMVP
 )
+local attackAndChase = Parallel({
+  Delay(node.basicAttack, 0.25),
+  dance(1),
+})
 
 local combat = Selector({
   Condition(pain.castSkill, pain.isSkillCastable),
   castPoisonMist,
-  Condition(node.attackAndChase, Inversion(paralyze.isSkillCastable)),
+  Condition(attackAndChase, Inversion(paralyze.isSkillCastable)),
   isMVP,
   Condition(tryParalizeEnemy, Inversion(poison.isSkillCastable)),
 })
