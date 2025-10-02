@@ -1,10 +1,5 @@
 # Ragnarok Online - YggAI
 
-> [!CAUTION]
-> ROLATAM tiene un error que duplica al homúnculo cuando el dueño pasa por un portal.  
-> Esto ocurre porque el homúnculo ataca a un monstruo al mismo tiempo que el dueño intenta cruzar.  
-> Por eso, mi script hace que el homúnculo sea agresivo solo contra monstruos de instancia, ilusorios, jefes y MVPs. Además, solo usará buffs si el dueño está en combate, evitando que el homúnculo use habilidades dentro de la ciudad. [Ver](https://youtu.be/A_NnJk_ZBRQ?si=M3BAxdLwUaw-pCib)
-
 ### Introducción
 
 Este es un proyecto de IA para el juego Ragnarok Online, desarrollado en Lua.

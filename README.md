@@ -3,11 +3,6 @@
 - [English](https://github.com/maxmx03/YggAI/blob/main/README_EN.md)
 - [Español](https://github.com/maxmx03/YggAI/blob/main/README_ESP.md)
 
-> [!CAUTION]
-> O ROLATAM apresenta um bug que duplica o homunculus quando o dono passa pelo portal.
-> Isso ocorre porque o homunculus ataca um monstro no momento em que o dono tenta atravessar o portal.
-> Devido a isso, o meu script fará com que o homunculus seja agressivo contra monstros de instância, illusionais, boss e MVP, e só utilizará buffs apenas se o dono estiver em combate, para evitar que o homunculus use habilidades dentro da cidade. [Veja](https://youtu.be/A_NnJk_ZBRQ?si=M3BAxdLwUaw-pCib)
-
 ## Introdução
 
 Este é um projeto de AI para o jogo Ragnarok Online, desenvolvido em Lua.

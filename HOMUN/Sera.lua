@@ -63,13 +63,13 @@ function paralyze.isSkillCastable()
   return false
 end
 function paralyze.isSkillCastableMoreOften()
-  if math.random(1, 100) <= 80 then
+  if math.random(1, 100) <= 65 then
     return sera.isSkillCastable(MH_NEEDLE_OF_PARALYZE)
   end
   return false
 end
 function paralyze.castSkill()
-  return sera.castSkill(MH_NEEDLE_OF_PARALYZE, MyEnemy, { targetType = 'target', keepRunning = true })
+  return sera.castSkill(MH_NEEDLE_OF_PARALYZE, MyEnemy, { targetType = 'target', keepRunning = false })
 end
 local poison = {}
 function poison.isSkillCastable()

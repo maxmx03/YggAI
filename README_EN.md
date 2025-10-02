@@ -1,10 +1,5 @@
 # Ragnarok Online - YggAI
 
-> [!CAUTION]  
-> ROLATAM has a bug that duplicates the homunculus when the owner goes through a portal.  
-> This happens because the homunculus attacks a monster at the same time the owner tries to cross.  
-> Because of this, my script makes the homunculus aggressive only against instance monsters, illusion monsters, bosses, and MVPs. It will only use buffs if the owner is in combat, preventing the homunculus from using skills inside the city. [See](https://youtu.be/A_NnJk_ZBRQ?si=M3BAxdLwUaw-pCib)
-
 ### Introduction
 
 This is an AI project for the game Ragnarok Online, developed in Lua.
