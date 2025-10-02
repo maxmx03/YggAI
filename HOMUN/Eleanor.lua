@@ -171,7 +171,7 @@ local ClawComboMode = Sequence({
   ClawComboSequence,
 })
 local AttackAndChaseGainSpheres = Parallel({
-  Conditions(node.EleanorBasicAttack),
+  node.EleanorBasicAttack,
   node.chaseEnemy,
 })
 local combat = Selector({
