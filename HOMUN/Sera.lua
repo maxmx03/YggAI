@@ -10,6 +10,8 @@ local MyCooldown = {
   [MH_POISON_MIST] = 0,
   [MH_PAIN_KILLER] = 0,
   [MH_SUMMON_LEGION] = 0,
+  [MH_TOXIN_OF_MANDARA] = 0,
+  [MH_NEEDLE_STINGER] = 0,
 }
 
 ---@class Skills
@@ -49,6 +51,24 @@ local MySkills = {
     level = 5,
     required_level = 132,
     cast_time = 1200,
+  },
+  ---@type Skill
+  [MH_TOXIN_OF_MANDARA] = {
+    id = MH_TOXIN_OF_MANDARA,
+    sp = 105,
+    cooldown = 7000,
+    cast_time = 700,
+    level = 10,
+    required_level = 215,
+  },
+  ---@type Skill
+  [MH_NEEDLE_STINGER] = {
+    id = MH_NEEDLE_STINGER,
+    sp = 146,
+    level = 10,
+    cooldown = 250,
+    cast_time = 300,
+    required_level = 230,
   },
 }
 
@@ -93,6 +113,23 @@ end
 function legion.castSkill()
   return sera.castSkill(MH_SUMMON_LEGION, MyEnemy, { targetType = 'target', keepRunning = false })
 end
+local toxin = {}
+function toxin.isSkillCastable()
+  return sera.isSkillCastable(MH_TOXIN_OF_MANDARA)
+end
+function toxin.castSkill()
+  return sera.castSkill(MH_TOXIN_OF_MANDARA, MyEnemy, { targetType = 'target', keepRunning = false })
+end
+local needle = {}
+function needle.isSkillCastable()
+  if math.random(1, 100) <= 50 then
+    return sera.isSkillCastable(MH_NEEDLE_STINGER)
+  end
+  return false
+end
+function needle.castSkill()
+  return sera.castSkill(MH_NEEDLE_STINGER, MyEnemy, { targetType = 'target', keepRunning = false })
+end
 
 local castPoisonMist = Condition(
   Parallel({
@@ -114,6 +151,20 @@ local invokeLegion = Condition(
   }),
   legion.isSkillCastable
 )
+local castNeedle = Condition(
+  Parallel({
+    needle.castSkill,
+    node.chaseEnemy,
+  }),
+  needle.isSkillCastable
+)
+local castToxin = Condition(
+  Parallel({
+    toxin.castSkill,
+    node.chaseEnemy,
+  }),
+  toxin.isSkillCastable
+)
 
 local isMVP = Condition(
   Selector({
@@ -125,6 +176,8 @@ local isMVP = Condition(
 
 local combat = Selector({
   Condition(pain.castSkill, pain.isSkillCastable),
+  castToxin,
+  castNeedle,
   castPoisonMist,
   Condition(node.attackAndChase, Inversion(paralyze.isSkillCastable)),
   isMVP,
