@@ -26,12 +26,13 @@ local M = {
   [1960] = true, -- Thorn of Magic
   [1959] = true, -- Thorn of Recovery
   [1958] = true, -- Thorny Skeleton
-  -- Halloween event
-  [2695] = true, -- E_GARLING
-  [1926] = true, -- JAKK_H
-  -- Sera Legion
-  [2160] = true,
-  [2159] = true,
-  [2158] = true,
+  [2695] = true, -- E_GARLING (Halloween)
+  [1926] = true, -- JAKK_H (Halloween)
+  [2160] = true, -- S_LUCIOLA_VESPA (Sera)
+  [2159] = true, -- S_GIANT_HORNET (Sera)
+  [2158] = true, -- S_HORNET (Sera)
+  [3028] = true, -- Sonia
+  [3061] = true, -- E_ANGRY_MIMIC
+  [3026] = true, -- FIREPIT
 }
 return M
