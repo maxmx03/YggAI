@@ -8,7 +8,6 @@ local function Homun(mySkills, myCooldown)
   local node = require('AI.USER_AI.BT.nodes')
   local MySkills = mySkills
   local MyCooldown = myCooldown
-  local lastTime = 0
 
   ---@param mySkill number
   ---@return boolean
@@ -40,9 +39,15 @@ local function Homun(mySkills, myCooldown)
     local isGroundCast = opts.targetType == 'ground'
     if isGroundCast then
       local x, y = GetV(V_POSITION, target)
-      SkillGround(MyID, skill.level, skill.id, x, y)
+      if 0 == SkillGround(MyID, skill.level, skill.id, x, y) then
+        MyCooldown[skillId] = GetTick() + 3000
+        return STATUS.FAILURE
+      end
     else
-      SkillObject(MyID, skill.level, skill.id, target)
+      if 0 == SkillObject(MyID, skill.level, skill.id, target) then
+        MyCooldown[skillId] = GetTick() + 3000
+        return STATUS.FAILURE
+      end
     end
 
     if GetV(V_HOMUNTYPE, MyID) == ELEANOR then
