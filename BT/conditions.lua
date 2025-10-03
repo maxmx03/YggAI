@@ -212,7 +212,7 @@ end
 
 ---@return boolean
 function M.ownerIsNotTooFar()
-  if GetDistanceFromOwner(MyID) > 10 and GetV(V_MOTION, MyOwner) == MOTION_MOVE then
+  if GetDistanceFromOwner(MyID) > 7 and GetV(V_MOTION, MyOwner) == MOTION_MOVE then
     return false
   end
   return true
