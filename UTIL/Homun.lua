@@ -6,6 +6,8 @@ local function Homun(mySkills, myCooldown)
   local condition = require('AI.USER_AI.BT.conditions')
   ---@type Node
   local node = require('AI.USER_AI.BT.nodes')
+  ---@type Enemy
+  local enemy = require('AI.USER_AI.BT.enemy')
   local MySkills = mySkills
   local MyCooldown = myCooldown
 
@@ -18,6 +20,9 @@ local function Homun(mySkills, myCooldown)
     if MyLevel >= skill.required_level then
       if not HasEnoughSp(skill.sp) then
         return false
+      end
+      if cooldown == 0 then
+        return true
       end
       local currentTime = GetTick()
       if currentTime < cooldown then
@@ -71,18 +76,53 @@ local function Homun(mySkills, myCooldown)
     return STATUS.SUCCESS
   end
 
-  ---@param combat fun():Status
+  ---@param skillId number
+  ---@return Status
+  local function castAOESkill(skillId)
+    ---@type Skill
+    local skill = MySkills[skillId]
+    if 0 == SkillGround(MyID, skill.level, skill.id, MySkillX, MySkillY) then
+      MyCooldown[skillId] = GetTick() + 3000
+      return STATUS.FAILURE
+    end
+    MyCooldown[skillId] = GetTick() + skill.cast_time + skill.cooldown
+    MySkill = 0
+    MySkillX = 0
+    MySkillY = 0
+    return STATUS.SUCCESS
+  end
+
+  local checkStuckAndAbandon = function()
+    if enemy.homunIsStuck() then
+      return STATUS.FAILURE
+    end
+    return STATUS.SUCCESS
+  end
+
+  ---@param homunAttacking fun():Status
   ---@return fun():Status
-  local function root(combat)
+  local function root(homunAttacking)
     return Selector({
-      Conditions(combat, condition.hasEnemyOrInList, condition.ownerIsNotTooFar),
+      Condition(
+        Selector({
+          Condition(enemy.searchForEnemies, Inversion(enemy.hasEnemy)),
+          Condition(
+            Parallel({
+              homunAttacking,
+              Delay(checkStuckAndAbandon, 0.5),
+            }),
+            enemy.hasEnemy
+          ),
+        }),
+        condition.ownerIsNotTooFar
+      ),
       Condition(node.follow, condition.ownerMoving),
       Condition(
         Selector({
           Condition(node.patrol, condition.ownerIsSitting),
           Condition(node.follow, condition.ownerNotMoving),
         }),
-        Inversion(condition.hasEnemyOrInList)
+        Inversion(enemy.hasEnemy)
       ),
     })
   end
@@ -90,6 +130,7 @@ local function Homun(mySkills, myCooldown)
   return {
     isSkillCastable = isSkillCastable,
     castSkill = castSkill,
+    castAOESkill = castAOESkill,
     root = root,
   }
 end
