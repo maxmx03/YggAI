@@ -2,6 +2,8 @@
 local node = require('AI.USER_AI.BT.nodes')
 ---@type Condition
 local condition = require('AI.USER_AI.BT.conditions')
+---@type Enemy
+local enemy = require('AI.USER_AI.BT.enemy')
 local Homun = require('AI.USER_AI.UTIL.Homun')
 
 ---@class Cooldown
@@ -85,7 +87,7 @@ function xeno.isSkillCastable()
   return eira.isSkillCastable(MH_XENO_SLASHER)
 end
 function xeno.castSkill()
-  return eira.castSkill(MH_XENO_SLASHER, MyEnemy, { targetType = 'ground', keepRunning = true })
+  return eira.castAOESkill(MH_XENO_SLASHER)
 end
 
 local light = {}
@@ -97,7 +99,7 @@ function light.castSkill()
 end
 local cutterAttack = Condition(
   Parallel({
-    cutter.castSkill,
+    Condition(cutter.castSkill, condition.enemyIsAlive),
     node.chaseEnemy,
   }),
   cutter.isSkillCastable
@@ -124,8 +126,9 @@ local combat = Condition(
     Condition(tryReviveOwner, condition.ownerIsDead),
     Conditions(overed.castSkill, overed.isSkillCastable, condition.isMVP),
     Conditions(overed.castSkill, overed.isSkillCastable, condition.ownerIsDying),
-    xenoAttackIfAvailable,
-    cutterAttack,
+    Condition(xenoAttackIfAvailable, enemy.hasEnemyGroup),
+    Condition(cutterAttack, Inversion(enemy.hasEnemyGroup)),
+    Condition(cutterAttack, condition.isWindMonster),
     Condition(node.attackAndChase, Inversion(cutter.isSkillCastable)),
   }),
   condition.enemyIsAlive

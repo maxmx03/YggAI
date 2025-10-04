@@ -3,6 +3,8 @@ local node = require('AI.USER_AI.BT.nodes')
 ---@type Condition
 local condition = require('AI.USER_AI.BT.conditions')
 local Homun = require('AI.USER_AI.UTIL.Homun')
+---@type Enemy
+local enemy = require('AI.USER_AI.BT.enemy')
 
 ---@class Cooldown
 local MyCooldown = {
@@ -75,6 +77,11 @@ local poison = {}
 function poison.isSkillCastable()
   return sera.isSkillCastable(MH_POISON_MIST)
 end
+
+function poison.castAOESkill()
+  return sera.castAOESkill(MH_POISON_MIST)
+end
+
 function poison.castSkill()
   return sera.castSkill(MH_POISON_MIST, MyEnemy, { targetType = 'ground', keepRunning = false })
 end
@@ -101,6 +108,15 @@ local castPoisonMist = Condition(
   }),
   poison.isSkillCastable
 )
+
+local castPoisonMistAgainstMultiEnemies = Condition(
+  Parallel({
+    poison.castAOESkill,
+    node.chaseEnemy,
+  }),
+  poison.isSkillCastable
+)
+
 local castParalyze = Parallel({
   paralyze.castSkill,
   node.chaseEnemy,
@@ -119,15 +135,16 @@ local isMVP = Condition(
   Selector({
     invokeLegion,
     tryParalizeEnemyMoreOften,
+    castPoisonMist,
   }),
   condition.isMVP
 )
 
 local combat = Selector({
   Condition(pain.castSkill, pain.isSkillCastable),
-  castPoisonMist,
+  Condition(castPoisonMistAgainstMultiEnemies, enemy.hasEnemyGroup),
   Condition(node.attackAndChase, Inversion(paralyze.isSkillCastable)),
   isMVP,
-  Condition(tryParalizeEnemy, Inversion(poison.isSkillCastable)),
+  tryParalizeEnemy,
 })
 return Condition(sera.root(combat), IsSera)
