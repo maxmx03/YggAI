@@ -50,8 +50,8 @@ function M.homunIsStuck()
     IsInAttackSight(MyID, MyEnemy)
     or myEnemy == MOTION_DAMAGE
     or myMotion == MOTION_ATTACK
-    or MOTION_ATTACK2
-    or MOTION_MOVE
+    or myMotion == MOTION_ATTACK2
+    or myMotion == MOTION_MOVE
   then
     return false
   end
