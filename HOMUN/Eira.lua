@@ -99,7 +99,7 @@ function light.castSkill()
 end
 local cutterAttack = Condition(
   Parallel({
-    Condition(cutter.castSkill, condition.enemyIsAlive),
+    cutter.castSkill,
     node.chaseEnemy,
   }),
   cutter.isSkillCastable
