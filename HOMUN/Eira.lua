@@ -24,7 +24,7 @@ local MySkills = {
     cooldown = 300,
     level = 10,
     required_level = 106,
-    cast_time = 1500,
+    cast_time = 0,
   },
   ---@type Skill
   [MH_OVERED_BOOST] = {
@@ -42,7 +42,7 @@ local MySkills = {
     cooldown = 300,
     level = 10,
     required_level = 121,
-    cast_time = 1500,
+    cast_time = 0,
   },
   ---@type Skill
   [MH_LIGHT_OF_REGENE] = {
@@ -71,7 +71,7 @@ function cutter.isSkillCastable()
   return eira.isSkillCastable(MH_ERASER_CUTTER)
 end
 function cutter.castSkill()
-  return eira.castSkill(MH_ERASER_CUTTER, MyEnemy, { targetType = 'target', keepRunning = true })
+  return eira.castSkill(MH_ERASER_CUTTER, MyEnemy, { targetType = 'target', keepRunning = false })
 end
 
 local overed = {}
