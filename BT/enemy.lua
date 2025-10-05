@@ -30,7 +30,7 @@ function M.hasEnemy()
   if not isEnemyInvalid(MyEnemy) then
     return true
   end
-  while #M.enemies > 0 do
+  if #M.enemies > 0 then
     local enemy = table.remove(M.enemies, 1)
     if not isEnemyInvalid(enemy) then
       MyEnemy = enemy
@@ -49,7 +49,7 @@ function M.homunIsStuck()
   if IsInAttackSight(MyID, MyEnemy) or myEnemy == MOTION_DAMAGE or myMotion == MOTION_MOVE then
     return false
   end
-  while #M.enemies > 0 do
+  if #M.enemies > 0 then
     local enemy = table.remove(M.enemies, 1)
     if not isEnemyInvalid(enemy) then
       MyEnemy = enemy
