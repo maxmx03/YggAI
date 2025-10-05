@@ -109,7 +109,7 @@ local function Homun(mySkills, myCooldown)
           Condition(
             Parallel({
               homunAttacking,
-              Delay(checkStuckAndAbandon, 0.5),
+              Delay(checkStuckAndAbandon, 1),
             }),
             enemy.hasEnemy
           ),

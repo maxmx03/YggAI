@@ -3,19 +3,6 @@ local M = {
   enemies = {},
 }
 
----@return Status
-function M.searchForEnemies()
-  if #M.enemies == 0 then
-    SearchForEnemies(MyID, function(actor)
-      table.insert(M.enemies, actor)
-    end)
-  end
-  if #M.enemies == 0 then
-    return STATUS.FAILURE
-  end
-  return STATUS.SUCCESS
-end
-
 ---@return boolean
 local function isEnemyInvalid(id)
   if id == nil then
@@ -25,19 +12,33 @@ local function isEnemyInvalid(id)
   return motion == MOTION_DEAD or id == 0 or IsOutOfSight(MyID, id)
 end
 
+---@return Status
+function M.searchForEnemies()
+  if #M.enemies == 0 then
+    SearchForEnemies(MyID, function(actor)
+      if not isEnemyInvalid(actor) then
+        table.insert(M.enemies, actor)
+      end
+    end)
+  end
+  if #M.enemies == 0 then
+    return STATUS.FAILURE
+  end
+  return STATUS.SUCCESS
+end
+
 ---@return boolean
 function M.hasEnemy()
   if not isEnemyInvalid(MyEnemy) then
     return true
   end
-  if #M.enemies > 0 then
+  while #M.enemies > 0 do
     local enemy = table.remove(M.enemies, 1)
     if not isEnemyInvalid(enemy) then
       MyEnemy = enemy
       return true
     end
   end
-  M.enemies = {}
   MyEnemy = 0
   return false
 end
@@ -49,15 +50,13 @@ function M.homunIsStuck()
   if IsInAttackSight(MyID, MyEnemy) or myEnemy == MOTION_DAMAGE or myMotion == MOTION_MOVE then
     return false
   end
-  if #M.enemies > 0 then
+  while #M.enemies > 0 do
     local enemy = table.remove(M.enemies, 1)
     if not isEnemyInvalid(enemy) then
       MyEnemy = enemy
       return true
     end
   end
-  MyEnemy = 0
-  M.enemies = {}
   return true
 end
 
