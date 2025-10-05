@@ -83,7 +83,7 @@ function M.ownerIsDying()
   local ownerTakingDamage = GetV(V_MOTION, MyOwner) == MOTION_DAMAGE
   local ownerHp = GetHp(MyOwner)
   local ownerMaxHp = GetMaxHp(MyOwner)
-  local ownerDying = ownerHp <= ownerMaxHp * 0.3
+  local ownerDying = ownerHp <= ownerMaxHp * 0.4
   if ownerDying and ownerTakingDamage then
     return true
   end

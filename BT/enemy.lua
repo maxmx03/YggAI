@@ -46,13 +46,7 @@ end
 function M.homunIsStuck()
   local myEnemy = GetV(V_MOTION, MyEnemy)
   local myMotion = GetV(V_MOTION, MyID)
-  if
-    IsInAttackSight(MyID, MyEnemy)
-    or myEnemy == MOTION_DAMAGE
-    or myMotion == MOTION_ATTACK
-    or myMotion == MOTION_ATTACK2
-    or myMotion == MOTION_MOVE
-  then
+  if IsInAttackSight(MyID, MyEnemy) or myEnemy == MOTION_DAMAGE or myMotion == MOTION_MOVE then
     return false
   end
   while #M.enemies > 0 do
