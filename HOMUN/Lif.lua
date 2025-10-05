@@ -20,7 +20,6 @@ local MySkills = {
     cooldown = 20000,
     level = 5,
     required_level = 15,
-    cast_time = 0,
   },
   ---@type Skill
   [HLIF_AVOID] = {
@@ -29,7 +28,6 @@ local MySkills = {
     cooldown = 35000,
     level = 5,
     required_level = 25,
-    cast_time = 0,
   },
   ---@type Skill
   [HLIF_CHANGE] = {
@@ -38,7 +36,6 @@ local MySkills = {
     cooldown = 300000,
     level = 3,
     required_level = 40,
-    cast_time = 0,
   },
 }
 

@@ -21,7 +21,6 @@ local MySkills = {
     cooldown = 700,
     level = 10,
     required_level = 105,
-    cast_time = 500,
   },
   ---@type Skill
   [MH_GOLDENE_FERSE] = {
@@ -30,7 +29,6 @@ local MySkills = {
     cooldown = 2000,
     level = 5,
     required_level = 112,
-    cast_time = 1800,
   },
   ---@type Skill
   [MH_STEINWAND] = {
@@ -39,7 +37,6 @@ local MySkills = {
     cooldown = 2000,
     level = 5,
     required_level = 121,
-    cast_time = 1000,
   },
   ---@type Skill
   [MH_ANGRIFFS_MODUS] = {
@@ -48,7 +45,6 @@ local MySkills = {
     cooldown = 30000,
     level = 5,
     required_level = 130,
-    cast_time = 1000,
   },
   ---@type Skill
   [MH_HEILIGE_STANGE] = {
@@ -57,7 +53,6 @@ local MySkills = {
     cooldown = 5000,
     level = 10,
     required_level = 138,
-    cast_time = 200,
   },
 }
 

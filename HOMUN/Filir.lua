@@ -18,7 +18,6 @@ local MySkills = {
     cooldown = 2000,
     level = 5,
     required_level = 15,
-    cast_time = 0,
   },
   ---@type Skill
   [HFLI_FLEET] = {
@@ -27,7 +26,6 @@ local MySkills = {
     cooldown = 120000,
     level = 5,
     required_level = 25,
-    cast_time = 0,
   },
   ---@type Skill
   [HFLI_SPEED] = {
@@ -36,7 +34,6 @@ local MySkills = {
     cooldown = 120000,
     level = 5,
     required_level = 40,
-    cast_time = 0,
   },
 }
 

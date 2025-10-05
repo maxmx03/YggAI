@@ -25,7 +25,6 @@ local MySkills = {
     level = 5,
     sphere_cost = 0,
     required_level = 100,
-    cast_time = 0,
   },
   ---@type Skill
   [MH_SONIC_CRAW] = {
@@ -35,7 +34,6 @@ local MySkills = {
     level = 5,
     sphere_cost = 1,
     required_level = 100,
-    cast_time = 0,
   },
   ---@type Skill
   [MH_SILVERVEIN_RUSH] = {
@@ -45,7 +43,6 @@ local MySkills = {
     level = 10,
     sphere_cost = 1,
     required_level = 114,
-    cast_time = 0,
   },
   ---@type Skill
   [MH_MIDNIGHT_FRENZY] = {
@@ -55,7 +52,6 @@ local MySkills = {
     level = 10,
     sphere_cost = 1,
     required_level = 128,
-    cast_time = 0,
   },
   ---@type Skill
   [MH_TINDER_BREAKER] = {
@@ -65,7 +61,6 @@ local MySkills = {
     level = 5,
     sphere_cost = 1,
     required_level = 100,
-    cast_time = 1000,
   },
   ---@type Skill
   [MH_CBC] = {
@@ -75,7 +70,6 @@ local MySkills = {
     level = 5,
     sphere_cost = 2,
     required_level = 112,
-    cast_time = 0,
   },
   ---@type Skill
   [MH_EQC] = {
@@ -85,7 +79,6 @@ local MySkills = {
     level = 5,
     sphere_cost = 2,
     required_level = 133,
-    cast_time = 0,
   },
 }
 

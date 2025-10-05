@@ -82,7 +82,6 @@ end
 ---@field level number
 ---@field required_level number
 ---@field sphere_cost? number
----@field cast_time number
 ---@field id number
 
 ---@class Homun

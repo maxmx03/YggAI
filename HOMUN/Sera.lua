@@ -23,7 +23,6 @@ local MySkills = {
     cooldown = 200,
     level = 10,
     required_level = 105,
-    cast_time = 1300,
   },
   ---@type Skill
   [MH_POISON_MIST] = {
@@ -32,7 +31,6 @@ local MySkills = {
     cooldown = 15000,
     level = 5,
     required_level = 116,
-    cast_time = 1500,
   },
   ---@type Skill
   [MH_PAIN_KILLER] = {
@@ -41,7 +39,6 @@ local MySkills = {
     cooldown = 600000,
     level = 10,
     required_level = 123,
-    cast_time = 100,
   },
   ---@type Skill
   [MH_SUMMON_LEGION] = {
@@ -50,7 +47,6 @@ local MySkills = {
     cooldown = 30000,
     level = 5,
     required_level = 132,
-    cast_time = 1200,
   },
 }
 

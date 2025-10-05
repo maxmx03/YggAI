@@ -22,16 +22,14 @@ local MySkills = {
     cooldown = 6000,
     level = 5,
     required_level = 102,
-    cast_time = 2000,
   },
   ---@type Skill
   [MH_LAVA_SLIDE] = {
     id = MH_LAVA_SLIDE,
     sp = 85,
-    cooldown = 15000,
+    cooldown = 15500,
     level = 10,
     required_level = 109,
-    cast_time = 3500,
   },
   ---@type Skill
   [MH_GRANITIC_ARMOR] = {
@@ -40,7 +38,6 @@ local MySkills = {
     cooldown = 60000,
     level = 5,
     required_level = 116,
-    cast_time = 0,
   },
   ---@type Skill
   [MH_MAGMA_FLOW] = {
@@ -49,7 +46,6 @@ local MySkills = {
     cooldown = 90000,
     level = 5,
     required_level = 122,
-    cast_time = 500,
   },
   ---@type Skill
   [MH_PYROCLASTIC] = {
@@ -58,7 +54,6 @@ local MySkills = {
     cooldown = 600000,
     level = 10,
     required_level = 131,
-    cast_time = 5500,
   },
 }
 

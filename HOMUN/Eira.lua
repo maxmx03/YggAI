@@ -24,7 +24,6 @@ local MySkills = {
     cooldown = 300,
     level = 10,
     required_level = 106,
-    cast_time = 0,
   },
   ---@type Skill
   [MH_OVERED_BOOST] = {
@@ -33,7 +32,6 @@ local MySkills = {
     cooldown = 30000,
     level = 5,
     required_level = 114,
-    cast_time = 400,
   },
   ---@type Skill
   [MH_XENO_SLASHER] = {
@@ -42,7 +40,6 @@ local MySkills = {
     cooldown = 300,
     level = 10,
     required_level = 121,
-    cast_time = 0,
   },
   ---@type Skill
   [MH_LIGHT_OF_REGENE] = {
@@ -51,7 +48,6 @@ local MySkills = {
     cooldown = 300000,
     level = 5,
     required_level = 128,
-    cast_time = 800,
   },
   ---@type Skill
   [MH_SILENT_BREEZE] = {
@@ -60,7 +56,6 @@ local MySkills = {
     cooldown = 1500,
     level = 5,
     required_level = 137,
-    cast_time = 1800,
   },
 }
 

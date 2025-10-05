@@ -71,7 +71,7 @@ local function Homun(mySkills, myCooldown)
     if opts.keepRunning then
       return STATUS.RUNNING
     end
-    MyCooldown[skillId] = GetTick() + skill.cast_time + skill.cooldown
+    MyCooldown[skillId] = GetTick() + skill.cooldown
     MySkill = 0
     return STATUS.SUCCESS
   end
@@ -85,7 +85,7 @@ local function Homun(mySkills, myCooldown)
       MyCooldown[skillId] = GetTick() + 3000
       return STATUS.FAILURE
     end
-    MyCooldown[skillId] = GetTick() + skill.cast_time + skill.cooldown
+    MyCooldown[skillId] = GetTick() + skill.cooldown
     MySkill = 0
     MySkillX = 0
     MySkillY = 0

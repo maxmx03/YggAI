@@ -20,7 +20,6 @@ local MySkills = {
     cooldown = 20000,
     level = 5,
     required_level = 15,
-    cast_time = 0,
   },
   ---@type Skill
   [HAMI_DEFENCE] = {
@@ -29,7 +28,6 @@ local MySkills = {
     cooldown = 30000,
     level = 5,
     required_level = 25,
-    cast_time = 0,
   },
   ---@type Skill
   [HAMI_BLOODLUST] = {
@@ -38,7 +36,6 @@ local MySkills = {
     cooldown = 60000,
     level = 3,
     required_level = 80,
-    cast_time = 0,
   },
 }
 

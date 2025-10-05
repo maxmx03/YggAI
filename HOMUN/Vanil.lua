@@ -19,7 +19,6 @@ local MySkills = {
     cooldown = 3000,
     level = 5,
     required_level = 15,
-    cast_time = 0,
   },
   ---@type Skill
   [HVAN_CHAOTIC] = {
@@ -28,7 +27,6 @@ local MySkills = {
     cooldown = 3000,
     level = 5,
     required_level = 25,
-    cast_time = 0,
   },
 }
 
