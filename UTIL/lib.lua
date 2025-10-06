@@ -87,7 +87,7 @@ end
 ---@class Homun
 ---@field isSkillCastable fun(skill:number):boolean
 ---@field castSkill fun(skill:number, target:number, opts:SkillOpts):Status
----@field castAOESkill fun(skill:number):Status
+---@field castAOESkill fun(skill:number, opts:SkillOpts):Status
 ---@field root fun(combat:fun():Status):fun():Status
 
 ---@class SkillOpts

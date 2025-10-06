@@ -77,13 +77,17 @@ local function Homun(mySkills, myCooldown)
   end
 
   ---@param skillId number
+  ---@param opts SkillOpts
   ---@return Status
-  local function castAOESkill(skillId)
+  local function castAOESkill(skillId, opts)
     ---@type Skill
     local skill = MySkills[skillId]
     if 0 == SkillGround(MyID, skill.level, skill.id, MySkillX, MySkillY) then
       MyCooldown[skillId] = GetTick() + 3000
       return STATUS.FAILURE
+    end
+    if opts.keepRunning then
+      return STATUS.RUNNING
     end
     MyCooldown[skillId] = GetTick() + skill.cooldown
     MySkill = 0
@@ -103,24 +107,39 @@ local function Homun(mySkills, myCooldown)
   ---@return fun():Status
   local function root(homunAttacking)
     return Selector({
-      Condition(
-        Selector({
-          Condition(enemy.searchForEnemies, Inversion(enemy.hasEnemy)),
-          Condition(
-            Parallel({
-              homunAttacking,
-              Delay(checkStuckAndAbandon, 1),
-            }),
-            enemy.hasEnemy
-          ),
+      Conditions(
+        Parallel({
+          homunAttacking,
+          Delay(checkStuckAndAbandon, 1),
+          Delay(enemy.protectOwner, 0.3),
+          Delay(enemy.searchForEnemies, 0.3),
         }),
+        enemy.hasEnemy,
         condition.ownerIsNotTooFar
       ),
-      Condition(node.follow, condition.ownerMoving),
+      Condition(
+        Parallel({
+          node.follow,
+          Delay(enemy.searchForEnemies, 0.3),
+        }),
+        condition.ownerMoving
+      ),
       Condition(
         Selector({
-          Condition(node.patrol, condition.ownerIsSitting),
-          Condition(node.follow, condition.ownerNotMoving),
+          Condition(
+            Parallel({
+              node.patrol,
+              Delay(enemy.searchForEnemies, 0.3),
+            }),
+            condition.ownerIsSitting
+          ),
+          Condition(
+            Parallel({
+              node.follow,
+              Delay(enemy.searchForEnemies, 0.3),
+            }),
+            condition.ownerNotMoving
+          ),
         }),
         Inversion(enemy.hasEnemy)
       ),

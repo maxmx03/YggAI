@@ -40,7 +40,8 @@ end
 
 ---@return boolean
 function M.ownerNotMoving()
-  if GetV(V_MOTION, MyOwner) == MOTION_STAND then
+  local ownerMotion = GetV(V_MOTION, MyOwner)
+  if ownerMotion == MOTION_STAND or ownerMotion == MOTION_DEAD then
     return true
   end
   return false

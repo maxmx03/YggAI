@@ -1,7 +1,7 @@
 -- SCRIPT FOR MERCENARY
 -- https://irowiki.org/wiki/Mercenary_System
-require 'AI.USER_AI.MERCE.Const'
-require 'AI.USER_AI.MERCE.Util'
+require('AI.USER_AI.MERCE.Const')
+require('AI.USER_AI.MERCE.Util')
 
 -----------------------------
 -- state
@@ -52,7 +52,7 @@ end
 ------------- command process  ---------------------
 
 function OnMOVE_CMD(x, y)
-  TraceAI 'OnMOVE_CMD'
+  TraceAI('OnMOVE_CMD')
 
   if x == MyDestX and y == MyDestY and MOTION_MOVE == GetV(V_MOTION, MyID) then
     return -- ÇöÀç ÀÌµ¿ÁßÀÎ ¸ñÀûÁö¿Í °°Àº °÷ÀÌ¸é Ã³¸®ÇÏÁö ¾Ê´Â´Ù.
@@ -75,7 +75,7 @@ function OnMOVE_CMD(x, y)
 end
 
 function OnSTOP_CMD()
-  TraceAI 'OnSTOP_CMD'
+  TraceAI('OnSTOP_CMD')
 
   if GetV(V_MOTION, MyID) ~= MOTION_STAND then
     Move(MyID, GetV(V_POSITION, MyID))
@@ -88,7 +88,7 @@ function OnSTOP_CMD()
 end
 
 function OnATTACK_OBJECT_CMD(id)
-  TraceAI 'OnATTACK_OBJECT_CMD'
+  TraceAI('OnATTACK_OBJECT_CMD')
 
   MySkill = 0
   MyEnemy = id
@@ -96,7 +96,7 @@ function OnATTACK_OBJECT_CMD(id)
 end
 
 function OnATTACK_AREA_CMD(x, y)
-  TraceAI 'OnATTACK_AREA_CMD'
+  TraceAI('OnATTACK_AREA_CMD')
 
   if x ~= MyDestX or y ~= MyDestY or MOTION_MOVE ~= GetV(V_MOTION, MyID) then
     Move(MyID, x, y)
@@ -108,7 +108,7 @@ function OnATTACK_AREA_CMD(x, y)
 end
 
 function OnPATROL_CMD(x, y)
-  TraceAI 'OnPATROL_CMD'
+  TraceAI('OnPATROL_CMD')
 
   MyPatrolX, MyPatrolY = GetV(V_POSITION, MyID)
   MyDestX = x
@@ -118,7 +118,7 @@ function OnPATROL_CMD(x, y)
 end
 
 function OnHOLD_CMD()
-  TraceAI 'OnHOLD_CMD'
+  TraceAI('OnHOLD_CMD')
 
   MyDestX = 0
   MyDestY = 0
@@ -127,7 +127,7 @@ function OnHOLD_CMD()
 end
 
 function OnSKILL_OBJECT_CMD(level, skill, id)
-  TraceAI 'OnSKILL_OBJECT_CMD'
+  TraceAI('OnSKILL_OBJECT_CMD')
 
   MySkillLevel = level
   MySkill = skill
@@ -136,7 +136,7 @@ function OnSKILL_OBJECT_CMD(level, skill, id)
 end
 
 function OnSKILL_AREA_CMD(level, skill, x, y)
-  TraceAI 'OnSKILL_AREA_CMD'
+  TraceAI('OnSKILL_AREA_CMD')
 
   Move(MyID, x, y)
   MyDestX = x
@@ -154,12 +154,12 @@ function OnFOLLOW_CMD()
     MyDestX, MyDestY = GetV(V_POSITION, GetV(V_OWNER, MyID))
     MyEnemy = 0
     MySkill = 0
-    TraceAI 'OnFOLLOW_CMD'
+    TraceAI('OnFOLLOW_CMD')
   else
     MyState = IDLE_ST
     MyEnemy = 0
     MySkill = 0
-    TraceAI 'FOLLOW_CMD_ST --> IDLE_ST'
+    TraceAI('FOLLOW_CMD_ST --> IDLE_ST')
   end
 end
 
@@ -168,38 +168,38 @@ function ProcessCommand(msg)
 
   if msg[1] == MOVE_CMD then
     OnMOVE_CMD(msg[2], msg[3])
-    TraceAI 'MOVE_CMD'
+    TraceAI('MOVE_CMD')
   elseif msg[1] == STOP_CMD then
     OnSTOP_CMD()
-    TraceAI 'STOP_CMD'
+    TraceAI('STOP_CMD')
   elseif msg[1] == ATTACK_OBJECT_CMD then
     OnATTACK_OBJECT_CMD(msg[2])
-    TraceAI 'ATTACK_OBJECT_CMD'
+    TraceAI('ATTACK_OBJECT_CMD')
   elseif msg[1] == ATTACK_AREA_CMD then
     OnATTACK_AREA_CMD(msg[2], msg[3])
-    TraceAI 'ATTACK_AREA_CMD'
+    TraceAI('ATTACK_AREA_CMD')
   elseif msg[1] == PATROL_CMD then
     OnPATROL_CMD(msg[2], msg[3])
-    TraceAI 'PATROL_CMD'
+    TraceAI('PATROL_CMD')
   elseif msg[1] == HOLD_CMD then
     OnHOLD_CMD()
-    TraceAI 'HOLD_CMD'
+    TraceAI('HOLD_CMD')
   elseif msg[1] == SKILL_OBJECT_CMD then
     OnSKILL_OBJECT_CMD(msg[2], msg[3], msg[4], msg[5])
-    TraceAI 'SKILL_OBJECT_CMD'
+    TraceAI('SKILL_OBJECT_CMD')
   elseif msg[1] == SKILL_AREA_CMD then
     OnSKILL_AREA_CMD(msg[2], msg[3], msg[4], msg[5])
-    TraceAI 'SKILL_AREA_CMD'
+    TraceAI('SKILL_AREA_CMD')
   elseif msg[1] == FOLLOW_CMD then
     OnFOLLOW_CMD()
-    TraceAI 'FOLLOW_CMD'
+    TraceAI('FOLLOW_CMD')
   end
 end
 
 -------------- state process  --------------------
 
 function OnIDLE_ST()
-  TraceAI 'OnIDLE_ST'
+  TraceAI('OnIDLE_ST')
 
   local cmd = List.popleft(ResCmdList)
   if cmd ~= nil then
@@ -211,7 +211,7 @@ function OnIDLE_ST()
   if object ~= 0 then
     MyState = CHASE_ST
     MyEnemy = object
-    TraceAI 'IDLE_ST -> CHASE_ST : MYOWNER_ATTACKED_IN'
+    TraceAI('IDLE_ST -> CHASE_ST : MYOWNER_ATTACKED_IN')
     return
   end
 
@@ -219,45 +219,45 @@ function OnIDLE_ST()
   if object ~= 0 then
     MyState = CHASE_ST
     MyEnemy = object
-    TraceAI 'IDLE_ST -> CHASE_ST : ATTACKED_IN'
+    TraceAI('IDLE_ST -> CHASE_ST : ATTACKED_IN')
     return
   end
 
   local distance = GetDistanceFromOwner(MyID)
   if distance > 3 or distance == -1 then -- MYOWNER_OUTSIGNT_IN
     MyState = FOLLOW_ST
-    TraceAI 'IDLE_ST -> FOLLOW_ST'
+    TraceAI('IDLE_ST -> FOLLOW_ST')
     return
   end
 end
 
 function OnFOLLOW_ST()
-  TraceAI 'OnFOLLOW_ST'
+  TraceAI('OnFOLLOW_ST')
 
   if GetDistanceFromOwner(MyID) <= 3 then --  DESTINATION_ARRIVED_IN
     MyState = IDLE_ST
-    TraceAI 'FOLLOW_ST -> IDLW_ST'
+    TraceAI('FOLLOW_ST -> IDLW_ST')
     return
   elseif GetV(V_MOTION, MyID) == MOTION_STAND then
     MoveToOwner(MyID)
-    TraceAI 'FOLLOW_ST -> FOLLOW_ST'
+    TraceAI('FOLLOW_ST -> FOLLOW_ST')
     return
   end
 end
 
 function OnCHASE_ST()
-  TraceAI 'OnCHASE_ST'
+  TraceAI('OnCHASE_ST')
 
   if true == IsOutOfSight(MyID, MyEnemy) then -- ENEMY_OUTSIGHT_IN
     MyState = IDLE_ST
     MyEnemy = 0
     MyDestX, MyDestY = 0, 0
-    TraceAI 'CHASE_ST -> IDLE_ST : ENEMY_OUTSIGHT_IN'
+    TraceAI('CHASE_ST -> IDLE_ST : ENEMY_OUTSIGHT_IN')
     return
   end
   if true == IsInAttackSight(MyID, MyEnemy) then -- ENEMY_INATTACKSIGHT_IN
     MyState = ATTACK_ST
-    TraceAI 'CHASE_ST -> ATTACK_ST : ENEMY_INATTACKSIGHT_IN'
+    TraceAI('CHASE_ST -> ATTACK_ST : ENEMY_INATTACKSIGHT_IN')
     return
   end
 
@@ -265,23 +265,23 @@ function OnCHASE_ST()
   if MyDestX ~= x or MyDestY ~= y then -- DESTCHANGED_IN
     MyDestX, MyDestY = GetV(V_POSITION, MyEnemy)
     Move(MyID, MyDestX, MyDestY)
-    TraceAI 'CHASE_ST -> CHASE_ST : DESTCHANGED_IN'
+    TraceAI('CHASE_ST -> CHASE_ST : DESTCHANGED_IN')
     return
   end
 end
 
 function OnATTACK_ST()
-  TraceAI 'OnATTACK_ST'
+  TraceAI('OnATTACK_ST')
 
   if true == IsOutOfSight(MyID, MyEnemy) then -- ENEMY_OUTSIGHT_IN
     MyState = IDLE_ST
-    TraceAI 'ATTACK_ST -> IDLE_ST'
+    TraceAI('ATTACK_ST -> IDLE_ST')
     return
   end
 
   if MOTION_DEAD == GetV(V_MOTION, MyEnemy) then -- ENEMY_DEAD_IN
     MyState = IDLE_ST
-    TraceAI 'ATTACK_ST -> IDLE_ST'
+    TraceAI('ATTACK_ST -> IDLE_ST')
     return
   end
 
@@ -291,7 +291,7 @@ function OnATTACK_ST()
     MyState = CHASE_ST
     MyDestX, MyDestY = GetV(V_POSITION, MyEnemy)
     Move(MyID, MyDestX, MyDestY)
-    TraceAI 'ATTACK_ST -> CHASE_ST  : ENEMY_OUTATTACKSIGHT_IN'
+    TraceAI('ATTACK_ST -> CHASE_ST  : ENEMY_OUTATTACKSIGHT_IN')
     return
   end
 
@@ -311,12 +311,12 @@ function OnATTACK_ST()
     end
     MySkill = 0
   end
-  TraceAI 'ATTACK_ST -> ATTACK_ST  : ENERGY_RECHARGED_IN'
+  TraceAI('ATTACK_ST -> ATTACK_ST  : ENERGY_RECHARGED_IN')
   return
 end
 
 function OnMOVE_CMD_ST()
-  TraceAI 'OnMOVE_CMD_ST'
+  TraceAI('OnMOVE_CMD_ST')
 
   local x, y = GetV(V_POSITION, MyID)
   if x == MyDestX and y == MyDestY then -- DESTINATION_ARRIVED_IN
@@ -329,7 +329,7 @@ function OnSTOP_CMD_ST() end
 function OnATTACK_OBJECT_CMD_ST() end
 
 function OnATTACK_AREA_CMD_ST()
-  TraceAI 'OnATTACK_AREA_CMD_ST'
+  TraceAI('OnATTACK_AREA_CMD_ST')
 
   local object = GetOwnerEnemy(MyID)
   if object == 0 then
@@ -349,7 +349,7 @@ function OnATTACK_AREA_CMD_ST()
 end
 
 function OnPATROL_CMD_ST()
-  TraceAI 'OnPATROL_CMD_ST'
+  TraceAI('OnPATROL_CMD_ST')
 
   local object = GetOwnerEnemy(MyID)
   if object == 0 then
@@ -359,7 +359,7 @@ function OnPATROL_CMD_ST()
   if object ~= 0 then -- MYOWNER_ATTACKED_IN or ATTACKED_IN
     MyState = CHASE_ST
     MyEnemy = object
-    TraceAI 'PATROL_CMD_ST -> CHASE_ST : ATTACKED_IN'
+    TraceAI('PATROL_CMD_ST -> CHASE_ST : ATTACKED_IN')
     return
   end
 
@@ -374,7 +374,7 @@ function OnPATROL_CMD_ST()
 end
 
 function OnHOLD_CMD_ST()
-  TraceAI 'OnHOLD_CMD_ST'
+  TraceAI('OnHOLD_CMD_ST')
 
   if MyEnemy ~= 0 then
     local d = GetDistance(MyEnemy, MyID)
@@ -400,7 +400,7 @@ end
 function OnSKILL_OBJECT_CMD_ST() end
 
 function OnSKILL_AREA_CMD_ST()
-  TraceAI 'OnSKILL_AREA_CMD_ST'
+  TraceAI('OnSKILL_AREA_CMD_ST')
 
   local x, y = GetV(V_POSITION, MyID)
   if GetDistance(x, y, MyDestX, MyDestY) <= GetV(V_SKILLATTACKRANGE, MyID, MySkill) then -- DESTARRIVED_IN
@@ -411,7 +411,7 @@ function OnSKILL_AREA_CMD_ST()
 end
 
 function OnFOLLOW_CMD_ST()
-  TraceAI 'OnFOLLOW_CMD_ST'
+  TraceAI('OnFOLLOW_CMD_ST')
 
   local ownerX, ownerY, myX, myY
   ownerX, ownerY = GetV(V_POSITION, GetV(V_OWNER, MyID)) -- ÁÖÀÎ
@@ -481,12 +481,12 @@ end
 function GetMyEnemy(myid)
   local result = 0
 
-  local type = GetV(V_MERTYPE, myid)
-  if type < LANCER10 then
-    result = GetMyEnemyA(myid)
-  else
-    result = GetMyEnemyB(myid)
-  end
+  -- local type = GetV(V_MERTYPE, myid)
+  -- if type < LANCER10 then
+  -- result = GetMyEnemyA(myid)
+  -- else
+  result = GetMyEnemyB(myid)
+  -- end
 
   return result
 end

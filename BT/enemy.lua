@@ -14,7 +14,7 @@ end
 
 ---@return Status
 function M.searchForEnemies()
-  if #M.enemies == 0 then
+  if #M.enemies < 15 then
     SearchForEnemies(MyID, function(actor)
       if not isEnemyInvalid(actor) then
         table.insert(M.enemies, actor)
@@ -22,7 +22,7 @@ function M.searchForEnemies()
     end)
   end
   if #M.enemies == 0 then
-    return STATUS.FAILURE
+    return STATUS.RUNNING
   end
   return STATUS.SUCCESS
 end
@@ -93,6 +93,20 @@ function M.hasEnemyGroup()
   MySkillX = 0
   MySkillY = 0
   return false
+end
+
+---@return Status
+function M.protectOwner()
+  if GetV(V_TARGET, MyEnemy) == MyOwner then
+    return STATUS.SUCCESS
+  end
+  for pos, enemy in ipairs(M.enemies) do
+    if GetV(V_TARGET, enemy) == MyOwner then
+      MyEnemy = table.remove(M.enemies, pos)
+      return STATUS.SUCCESS
+    end
+  end
+  return STATUS.SUCCESS
 end
 
 return M

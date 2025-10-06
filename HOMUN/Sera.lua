@@ -75,7 +75,7 @@ function poison.isSkillCastable()
 end
 
 function poison.castAOESkill()
-  return sera.castAOESkill(MH_POISON_MIST)
+  return sera.castAOESkill(MH_POISON_MIST, { targetType = 'ground', keepRunning = false })
 end
 
 function poison.castSkill()

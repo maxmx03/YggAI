@@ -13,6 +13,8 @@ local MyCooldown = {
   [MH_XENO_SLASHER] = 0,
   [MH_LIGHT_OF_REGENE] = 0,
   [MH_SILENT_BREEZE] = 0,
+  -- [MH_TWISTER_CUTTER] = 0,
+  -- [MH_ABSOLUTE_ZEPHYR] = 0,
 }
 
 ---@class Skills
@@ -57,6 +59,20 @@ local MySkills = {
     level = 5,
     required_level = 137,
   },
+  -- [MH_TWISTER_CUTTER] = {
+  --   id = MH_TWISTER_CUTTER,
+  --   sp = 160,
+  --   cooldown = 200,
+  --   level = 10,
+  --   required_level = 215,
+  -- },
+  -- [MH_ABSOLUTE_ZEPHYR] = {
+  --   id = MH_ABSOLUTE_ZEPHYR,
+  --   sp = 185,
+  --   cooldown = 300,
+  --   level = 10,
+  --   required_level = 230,
+  -- },
 }
 
 ---@type Homun
@@ -82,7 +98,7 @@ function xeno.isSkillCastable()
   return eira.isSkillCastable(MH_XENO_SLASHER)
 end
 function xeno.castSkill()
-  return eira.castAOESkill(MH_XENO_SLASHER)
+  return eira.castAOESkill(MH_XENO_SLASHER, { keepRunning = true, targetType = 'ground' })
 end
 
 local light = {}
@@ -92,6 +108,23 @@ end
 function light.castSkill()
   return eira.castSkill(MH_LIGHT_OF_REGENE, MyOwner, { targetType = 'target', keepRunning = false })
 end
+
+-- local twister = {}
+-- function twister.isSkillCastable()
+--   return eira.isSkillCastable(MH_TWISTER_CUTTER)
+-- end
+-- function twister.castSkill()
+--   return eira.castSkill(MH_TWISTER_CUTTER, MyEnemy, { keepRunning = true, targetType = 'target' })
+-- end
+
+-- local zephyr = {}
+-- function zephyr.isSkillCastable()
+--   return eira.isSkillCastable(MH_XENO_SLASHER)
+-- end
+-- function zephyr.castSkill()
+--   return eira.castSkill(MH_ABSOLUTE_ZEPHYR, MyEnemy, { keepRunning = true, targetType = 'target' })
+-- end
+
 local cutterAttack = Condition(
   Parallel({
     cutter.castSkill,
@@ -103,6 +136,14 @@ local xenoAttack = Parallel({
   xeno.castSkill,
   node.chaseEnemy,
 })
+-- local zephyrAttack = Parallel({
+--   zephyr.castSkill,
+--   node.chaseEnemy,
+-- })
+-- local twisterAttack = Parallel({
+--   twister.castSkill,
+--   node.chaseEnemy,
+-- })
 local tryReviveOwner = Parallel({
   Conditions(light.castSkill, light.isSkillCastable),
   node.runToSaveOwner,
@@ -115,13 +156,31 @@ local xenoAttackIfAvailable = Condition(
   }),
   xeno.isSkillCastable
 )
+-- local twisterAttackIfAvailable = Condition(
+--   Selector({
+--     Condition(twisterAttack, condition.isWaterMonster),
+--     Condition(twisterAttack, condition.isPoisonMonster),
+--     Condition(twisterAttack, Inversion(condition.isWindMonster)),
+--   }),
+--   twister.isSkillCastable
+-- )
+-- local zephyrAttackIfAvailable = Condition(
+--   Selector({
+--     Condition(zephyrAttack, condition.isWaterMonster),
+--     Condition(zephyrAttack, condition.isPoisonMonster),
+--     Condition(zephyrAttack, Inversion(condition.isWindMonster)),
+--   }),
+--   twister.isSkillCastable
+-- )
 
 local combat = Condition(
   Selector({
     Condition(tryReviveOwner, condition.ownerIsDead),
     Conditions(overed.castSkill, overed.isSkillCastable, condition.isMVP),
     Conditions(overed.castSkill, overed.isSkillCastable, condition.ownerIsDying),
+    -- Condition(zephyrAttackIfAvailable, enemy.hasEnemyGroup),
     Condition(xenoAttackIfAvailable, enemy.hasEnemyGroup),
+    -- Condition(twisterAttackIfAvailable, Inversion(enemy.hasEnemyGroup)),
     Condition(cutterAttack, Inversion(enemy.hasEnemyGroup)),
     Condition(cutterAttack, condition.isWindMonster),
     Condition(node.attackAndChase, Inversion(cutter.isSkillCastable)),

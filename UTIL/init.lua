@@ -345,25 +345,22 @@ function SearchForEnemies(myid, callback)
   local priority = {}
   local others = {}
   local actors = GetActors()
+  local maxTotal = 15
   for _, actorId in ipairs(actors) do
-    if actorId ~= owner and actorId ~= myid then
-      local target = GetV(V_TARGET, actorId)
-      local owner_target = GetV(V_TARGET, owner)
-      if not IsOutOfSight(myid, actorId) then
-        if IsMonster(actorId) == 1 then
-          if owner_target == actorId then
-            table.insert(priority, actorId)
-          elseif IsMVP(actorId) or IsBoss(actorId) then
-            table.insert(priority, actorId)
-          elseif (target == myid or target == owner) and IsEnemyAllowed(actorId) then
-            table.insert(priority, actorId)
-          else
-            if IsEnemyAllowed(actorId) then
-              table.insert(others, actorId)
-            end
-          end
-        elseif target == myid or target == owner or owner_target == actorId then
+    if #priority + #others >= maxTotal then
+      break
+    end
+    if actorId ~= owner and actorId ~= myid and not IsOutOfSight(myid, actorId) then
+      local actorTarget = GetV(V_TARGET, actorId)
+      if IsMonster(actorId) == 1 then
+        if IsMVP(actorId) or IsBoss(actorId) then
           table.insert(priority, actorId)
+        elseif actorTarget == MyOwner or actorTarget == myid then
+          table.insert(priority, actorId)
+        else
+          if IsEnemyAllowed(actorId) then
+            table.insert(others, actorId)
+          end
         end
       end
     end
