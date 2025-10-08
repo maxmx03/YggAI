@@ -1,0 +1,102 @@
+---@class HomunNode
+---@field chaseEnemy Node
+---@field runToSaveOwner Node
+---@field basicAttack Node
+---@field patrol Node
+---@field attackAndChase Node
+---@field follow Node
+---@field checkHomunStuck Node
+---@field lastTimePatrol number
+
+---@type HomunNode
+local M = {
+  lastTimePatrol = 0,
+}
+
+function M.chaseEnemy(bb)
+  if not IsInAttackSight(bb.myId, bb.myEnemy, bb) then
+    local enemyX, enemyY = GetV(V_POSITION, bb.myEnemy)
+    Move(bb.myId, enemyX, enemyY)
+    return STATUS.RUNNING
+  end
+  return STATUS.SUCCESS
+end
+
+function M.runToSaveOwner(bb)
+  if not IsInAttackSight(bb.myId, bb.myOwner, bb) then
+    local ownerX, ownerY = GetV(V_POSITION, bb.myOwner)
+    Move(bb.myId, ownerX, ownerY)
+    return STATUS.RUNNING
+  end
+  return STATUS.SUCCESS
+end
+
+function M.basicAttack(bb)
+  if bb.myEnemy == 0 then
+    return STATUS.FAILURE
+  elseif bb.myEnemy ~= 0 then
+    Attack(bb.myId, bb.myEnemy)
+    if GetV(V_HOMUNTYPE, bb.myId) == ELEANOR then
+      local limitSpheres = 5
+      if bb.mySpheres < limitSpheres then
+        if ChanceDoOrGainSomething(50) then
+          bb.mySpheres = math.min(limitSpheres, bb.mySpheres + 1)
+        end
+      end
+    end
+    return STATUS.RUNNING
+  end
+  return STATUS.SUCCESS
+end
+
+M.attackAndChase = Parallel({
+  M.basicAttack,
+  M.chaseEnemy,
+})
+
+function M.patrol(bb)
+  local currentTick = GetTick()
+  math.randomseed(currentTick)
+  local cooldown = math.random(10) * 1000
+  if (currentTick - M.lastTimePatrol) > cooldown then
+    local destX, destY = GetV(V_POSITION, bb.myOwner)
+    local randomX = math.random(-7, 7)
+    local randomY = math.random(-7, 7)
+    destX = destX + randomX
+    destY = destY + randomY
+    M.lastTimePatrol = currentTick
+    if GetDistanceFromOwner(bb.myOwner) > 10 then
+      MoveToOwner(bb.myId)
+      return STATUS.SUCCESS
+    end
+    Move(bb.myId, destX, destY)
+    return STATUS.SUCCESS
+  end
+  return STATUS.RUNNING
+end
+
+function M.follow(bb)
+  if GetDistanceFromOwner(bb.myId) > 3 then
+    MoveToOwner(bb.myId)
+    return STATUS.RUNNING
+  end
+  return STATUS.SUCCESS
+end
+
+function M.checkHomunStuck(bb)
+  local myEnemyMotion = GetV(V_MOTION, bb.myEnemy)
+  local myMotion = GetV(V_MOTION, bb.myId)
+  if IsInAttackSight(bb.myId, bb.myEnemy, bb) or myEnemyMotion == MOTION_DAMAGE or myMotion == MOTION_MOVE then
+    return STATUS.SUCCESS
+  end
+  while #bb.myEnemies > 0 do
+    local enemy = table.remove(bb.myEnemies, 1)
+    if IsEnemyAlive(bb.myId, bb.myEnemy) then
+      bb.myEnemy = enemy
+      return STATUS.FAILURE
+    end
+  end
+  return STATUS.FAILURE
+end
+
+return M

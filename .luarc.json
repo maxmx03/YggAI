@@ -11,5 +11,6 @@
     "Attack",
     "SkillGround",
     "SkillObject"
-  ]
+  ],
+  "diagnostics.disable": ["missing-fields"]
 }

@@ -92,4 +92,7 @@ end
 
 ---@class SkillOpts
 ---@field keepRunning boolean
----@field targetType "ground" | "target"
+
+---@alias Node fun(bb: Blackboard):Status
+---@alias Condition fun(bb: Blackboard): boolean
+---@alias Nodes table<integer, fun(bb: Blackboard):Status>
