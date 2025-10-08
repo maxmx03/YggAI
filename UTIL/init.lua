@@ -1,4 +1,4 @@
-require('AI.USER_AI.UTIL.Const')
+require 'AI.USER_AI.UTIL.Const'
 
 --------------------------------------------
 -- List utility
@@ -56,61 +56,6 @@ function List.size(list)
   return size
 end
 
--------------------------------------------------
----@return boolean
-function IsAmistr()
-  local humntype = GetV(V_HOMUNTYPE, MyID)
-  return humntype == AMISTR or humntype == AMISTR_H or humntype == AMISTR2 or humntype == AMISTR_H2
-end
-
----@return boolean
-function IsFilir()
-  local humntype = GetV(V_HOMUNTYPE, MyID)
-  return humntype == FILIR or humntype == FILIR_H or humntype == FILIR2 or humntype == FILIR_H2
-end
-
----@return boolean
-function IsVanilmirth()
-  local humntype = GetV(V_HOMUNTYPE, MyID)
-  return humntype == VANILMIRTH or humntype == VANILMIRTH_H or humntype == VANILMIRTH2 or humntype == VANILMIRTH_H2
-end
-
----@return boolean
-function IsLif()
-  local h = GetV(V_HOMUNTYPE, MyID)
-  return h == LIF or h == LIF2 or h == LIF_H or h == LIF_H2
-end
-
----@return boolean
-function IsEira()
-  local humntype = GetV(V_HOMUNTYPE, MyID)
-  return humntype == EIRA
-end
-
----@return boolean
-function IsBayeri()
-  local humntype = GetV(V_HOMUNTYPE, MyID)
-  return humntype == BAYERI
-end
-
----@return boolean
-function IsSera()
-  local humntype = GetV(V_HOMUNTYPE, MyID)
-  return humntype == SERA
-end
-
----@return boolean
-function IsDieter()
-  local humntype = GetV(V_HOMUNTYPE, MyID)
-  return humntype == DIETER
-end
-
----@return boolean
-function IsEleanor()
-  local humntype = GetV(V_HOMUNTYPE, MyID)
-  return humntype == ELEANOR
-end
-
 function GetDistance(x1, y1, x2, y2)
   return math.floor(math.sqrt((x1 - x2) ^ 2 + (y1 - y2) ^ 2))
 end
@@ -151,7 +96,11 @@ function IsOutOfSight(id1, id2)
   end
 end
 
-function IsInAttackSight(id1, id2)
+---@param id1 number
+---@param id2 number
+---@param bb Blackboard
+---@return boolean
+function IsInAttackSight(id1, id2, bb)
   local x1, y1 = GetV(V_POSITION, id1)
   local x2, y2 = GetV(V_POSITION, id2)
   if x1 == -1 or x2 == -1 then
@@ -159,10 +108,11 @@ function IsInAttackSight(id1, id2)
   end
   local d = GetDistance(x1, y1, x2, y2)
   local a = 0
-  if MySkill == 0 then
+  if bb.mySkill.id == 0 then
     a = GetV(V_ATTACKRANGE, id1)
   else
-    a = GetV(V_SKILLATTACKRANGE_LEVEL, id1, MySkill, MySkillLevel)
+    ---@diagnostic disable-next-line: redundant-parameter
+    a = GetV(V_SKILLATTACKRANGE_LEVEL, id1, bb.mySkill.id, bb.mySkill.level)
   end
 
   if a >= d then
@@ -173,195 +123,49 @@ function IsInAttackSight(id1, id2)
 end
 
 ---@param myEnemy number
+---@param monsterType string
 ---@return boolean
-function IsWaterMonster(myEnemy)
-  local waterMonsters = require('AI.USER_AI.MONSTER_DATA.water')
+function IsMonsterType(myEnemy, monsterType)
+  local monsters = require('AI.USER_AI.MONSTER_DATA.' .. monsterType)
   local id = GetV(V_HOMUNTYPE, myEnemy)
-  return waterMonsters[id]
-end
-
----@param myEnemy number
----@return boolean
-function IsWindMonster(myEnemy)
-  local windMonsters = require('AI.USER_AI.MONSTER_DATA.wind')
-  local id = GetV(V_HOMUNTYPE, myEnemy)
-  return windMonsters[id]
-end
-
----@param myEnemy number
----@return boolean
-function IsFireMonster(myEnemy)
-  local fireMonsters = require('AI.USER_AI.MONSTER_DATA.fire')
-  local id = GetV(V_HOMUNTYPE, myEnemy)
-  return fireMonsters[id]
-end
-
----@param myEnemy number
----@return boolean
-function IsPlantMonster(myEnemy)
-  local plantMonsters = require('AI.USER_AI.MONSTER_DATA.plant')
-  local id = GetV(V_HOMUNTYPE, myEnemy)
-  return plantMonsters[id]
-end
-
----@param myEnemy number
----@return boolean
-function IsMVP(myEnemy)
-  local mvpMonsters = require('AI.USER_AI.MONSTER_DATA.mvp')
-  local id = GetV(V_HOMUNTYPE, myEnemy)
-  return mvpMonsters[id]
-end
-
----@param myEnemy number
----@return boolean
-function IsBoss(myEnemy)
-  local bosses = require('AI.USER_AI.MONSTER_DATA.boss')
-  local id = GetV(V_HOMUNTYPE, myEnemy)
-  return bosses[id]
-end
-
----@param myEnemy number
----@return boolean
-function IsPoisonMonster(myEnemy)
-  local poisonMonsters = require('AI.USER_AI.MONSTER_DATA.poison')
-  local id = GetV(V_HOMUNTYPE, myEnemy)
-  return poisonMonsters[id]
-end
-
----@param myEnemy number
----@return boolean
-function IsIllusionalMonster(myEnemy)
-  local illusionalMonsters = require('AI.USER_AI.MONSTER_DATA.illusion')
-  local id = GetV(V_HOMUNTYPE, myEnemy)
-  return illusionalMonsters[id]
-end
-
----@param myEnemy number
----@return boolean
-function IsInstanceMonster(myEnemy)
-  local instanceMonsters = require('AI.USER_AI.MONSTER_DATA.instance')
-  local id = GetV(V_HOMUNTYPE, myEnemy)
-  return instanceMonsters[id]
-end
-
----@param myEnemy number
----@return boolean
-function IsBioLabMonsters(myEnemy)
-  local biolabMonsters = require('AI.USER_AI.MONSTER_DATA.bio')
-  local id = GetV(V_HOMUNTYPE, myEnemy)
-  return biolabMonsters[id]
-end
-
----@param myEnemy number
----@return boolean
-function IsHolyMonster(myEnemy)
-  local holyMonsters = require('AI.USER_AI.MONSTER_DATA.holy')
-  local id = GetV(V_HOMUNTYPE, myEnemy)
-  return holyMonsters[id]
-end
-
----@param myEnemy number
----@return boolean
-function IsDarkMonster(myEnemy)
-  local darkMonsters = require('AI.USER_AI.MONSTER_DATA.dark')
-  local id = GetV(V_HOMUNTYPE, myEnemy)
-  return darkMonsters[id]
-end
-
----@param myEnemy number
----@return boolean
-function IsUndeadMonster(myEnemy)
-  local undeadMonsters = require('AI.USER_AI.MONSTER_DATA.undead')
-  local id = GetV(V_HOMUNTYPE, myEnemy)
-  return undeadMonsters[id]
-end
-
----@param myEnemy number
----@return boolean
-function IsEarthMonster(myEnemy)
-  local earthMonsters = require('AI.USER_AI.MONSTER_DATA.earth')
-  local id = GetV(V_HOMUNTYPE, myEnemy)
-  return earthMonsters[id]
+  return monsters[id]
 end
 
 ---@param myEnemy number
 ---@return boolean
 function MustAvoidMonster(myEnemy)
-  local monstersToAvoid = require('AI.USER_AI.MONSTER_DATA.avoid')
+  local monstersToAvoid = require 'AI.USER_AI.MONSTER_DATA.avoid'
   local id = GetV(V_HOMUNTYPE, myEnemy)
   return monstersToAvoid[id]
 end
 
----@return boolean
-function OwnerInDanger()
-  local ownerHp = GetHp(MyOwner)
-  local ownerMaxHp = GetMaxHp(MyOwner)
-  local ownerDying = ownerHp <= ownerMaxHp * 0.3
-  if ownerDying then
-    return true
-  end
-  return false
-end
-
----@param myEnemy number
----@return boolean
-function IsEnemyAllowed(myEnemy)
-  if MustAvoidMonster(myEnemy) then
-    return false
-  end
-  if not ShouldPreventHomunculusDuplication then
-    return true
-  end
-  return IsIllusionalMonster(myEnemy) or IsBioLabMonsters(myEnemy) or IsInstanceMonster(myEnemy) or OwnerInDanger()
-end
-
-function GetHp(id)
-  return GetV(V_HP, id)
-end
-
-function GetMaxHp(id)
-  return GetV(V_MAXHP, id)
-end
-
-function GetSp(id)
-  return GetV(V_SP, id)
-end
-
-function GetMaxSp(id)
-  return GetV(V_MAXSP, id)
-end
-
----@param sp number
----@return boolean
-function HasEnoughSp(sp)
-  local enoughSp = GetSp(MyID) >= sp
-  return enoughSp
-end
-
 ---@param myid number
+---@param maxEnemies number
 ---@param callback function
-function SearchForEnemies(myid, callback)
+function SearchForEnemies(myid, maxEnemies, callback)
   local owner = GetV(V_OWNER, myid)
   local priority = {}
   local others = {}
   local actors = GetActors()
-  local maxTotal = 15
   for _, actorId in ipairs(actors) do
-    if #priority + #others >= maxTotal then
+    if #priority + #others >= maxEnemies then
       break
     end
     if actorId ~= owner and actorId ~= myid and not IsOutOfSight(myid, actorId) then
       local actorTarget = GetV(V_TARGET, actorId)
+      local ownerTarget = GetV(V_TARGET, owner)
       if IsMonster(actorId) == 1 then
-        if IsMVP(actorId) or IsBoss(actorId) then
+        if IsMonsterType(actorId, 'mvp') then
           table.insert(priority, actorId)
-        elseif actorTarget == MyOwner or actorTarget == myid then
+        elseif actorTarget == owner or actorTarget == myid or ownerTarget == actorId then
           table.insert(priority, actorId)
         else
-          if IsEnemyAllowed(actorId) then
+          if not MustAvoidMonster(actorId) then
             table.insert(others, actorId)
           end
         end
+      elseif ownerTarget == actorId or actorTarget == owner or actorTarget == myid then
+        table.insert(priority, actorId)
       end
     end
   end
@@ -381,4 +185,25 @@ end
 function Trace(message, ...)
   message = ' ' .. message
   TraceAI(string.format(message, ...))
+end
+
+---@param myid number
+---@param enemyId number
+---@return boolean
+function IsEnemyAlive(myid, enemyId)
+  if enemyId == 0 or enemyId == nil then
+    return false
+  end
+  local motion = GetV(V_MOTION, enemyId)
+  return motion ~= MOTION_DEAD and not IsOutOfSight(myid, enemyId)
+end
+
+---@param percentage number
+---@return boolean
+function ChanceDoOrGainSomething(percentage)
+  math.randomseed(GetTick())
+  if math.random(100) <= percentage then
+    return true
+  end
+  return false
 end

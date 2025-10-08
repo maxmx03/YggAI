@@ -1,3 +1,2 @@
 MyLevel = 999 -- level do homunculus
-LifCanHeal = false -- LIF pode usar curar? true ou false (requer poção compacta)
-ShouldPreventHomunculusDuplication = false -- ou false
+LifCanHeal = true -- LIF pode usar curar? true ou false (requer poção compacta)
