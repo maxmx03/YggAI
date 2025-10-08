@@ -64,19 +64,16 @@ CommandData = {
 function M.processUserCommands(bb)
   local msg = GetMsg(bb.myId)
 
-  if msg[1] == CommandType.NONE and not CommandData.isStopped then
+  if msg[1] == CommandType.NONE then
     return STATUS.SUCCESS
   end
-  CommandData.isStopped = false
 
   if msg[1] == CommandType.MOVE then
     CommandData.state = CommandState.MOVE
     CommandData.destX = msg[2]
     CommandData.destY = msg[3]
-    Move(bb.myId, msg[2], msg[3])
   elseif msg[1] == CommandType.STOP then
     CommandData.state = CommandState.STOP
-    CommandData.isStopped = true
   elseif msg[1] == CommandType.ATTACK_OBJECT then
     CommandData.state = CommandState.ATTACK_OBJECT
     CommandData.targetId = msg[2]
@@ -166,11 +163,16 @@ end
 
 function M.executeMove(bb)
   local x, y = GetV(V_POSITION, bb.myId)
+
   if x == CommandData.destX and y == CommandData.destY then
     CommandData.state = CommandState.IDLE
     return STATUS.SUCCESS
   end
-  Move(bb.myId, CommandData.destX, CommandData.destY)
+
+  if GetV(V_MOTION, bb.myId) ~= MOTION_MOVE then
+    Move(bb.myId, CommandData.destX, CommandData.destY)
+  end
+
   return STATUS.RUNNING
 end
 
@@ -207,19 +209,12 @@ function M.executeFollow(bb)
 end
 
 function M.executeStop(bb)
-  if CommandData.isStopped then
-    if GetV(V_MOTION, bb.myId) ~= MOTION_STAND then
-      Move(bb.myId, GetV(V_POSITION, bb.myId))
-    end
-    return STATUS.RUNNING
-  else
-    CommandData.state = CommandState.IDLE
-    bb.myEnemy = 0
-    bb.myEnemies = {}
-    CommandData.destX = 0
-    CommandData.destY = 0
-    return STATUS.SUCCESS
-  end
+  CommandData.state = CommandState.IDLE
+  bb.myEnemy = 0
+  bb.myEnemies = {}
+  CommandData.destX = 0
+  CommandData.destY = 0
+  return STATUS.SUCCESS
 end
 
 function M.executeAttackObject(bb)
