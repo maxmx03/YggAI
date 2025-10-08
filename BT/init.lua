@@ -607,14 +607,16 @@ function Random(nodes)
   end
 end
 
+local tree = nil
+
 ---@param myid number
 ---@param nodes Nodes
 function YggAI(nodes, myid)
-  TraceAI(string.format('[YggAI] Usando blackboard: %s, inimigos: %d', tostring(blackboard), #blackboard.myEnemies))
-
   blackboard.myId = myid
   blackboard.myOwner = GetV(V_OWNER, myid)
   blackboard.mySp = GetV(V_SP, myid)
-  local tree = Selector(nodes)
+  if tree == nil then
+    tree = Selector(nodes)
+  end
   tree()
 end

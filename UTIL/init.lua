@@ -159,7 +159,9 @@ function SearchForEnemies(myid, maxEnemies, callback)
         elseif actorTarget == owner or actorTarget == myid then
           table.insert(priority, actorId)
         else
-          table.insert(others, actorId)
+          if not MustAvoidMonster(actorId) then
+            table.insert(others, actorId)
+          end
         end
       end
     end
