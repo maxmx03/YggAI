@@ -1,36 +1,59 @@
 local function root(combat)
+  ---@type EnemyCondition
   local enemyConditions = require('AI.USER_AI.BT.conditions.enemy')
+  ---@type OwnerCondition
   local ownerConditions = require('AI.USER_AI.BT.conditions.owner')
+  ---@type HomunNode
   local homunNodes = require('AI.USER_AI.BT.nodes.homun')
+  ---@type EnemyNode
   local enemyNodes = require('AI.USER_AI.BT.nodes.enemy')
+  ---@type CommandNode
   local commandNodes = require('AI.USER_AI.BT.nodes.commands')
 
   local normalCombat = Condition(
     Parallel({
       combat,
-      Delay(homunNodes.checkHomunStuck, 1000),
+      Delay(homunNodes.checkHomunStuck, 2000),
       Delay(enemyNodes.checkIsAttackingOwner, 300),
       Delay(enemyNodes.searchForEnemies, 300),
     }),
     enemyConditions.hasEnemy
   )
 
+  local patrolWhenOwnerIsSitting = Condition(
+    Parallel({
+      homunNodes.patrol,
+      Delay(enemyNodes.searchForEnemies, 300),
+    }),
+    ownerConditions.isSitting
+  )
+
+  local goBackToUser = Condition(
+    Parallel({
+      homunNodes.follow,
+      Delay(enemyNodes.searchForEnemies, 300),
+    }),
+    ownerConditions.isNotMoving
+  )
+
   local combatUnlessOwnerIsMovingAway = Unless(normalCombat, ownerConditions.isMovingAway)
 
-  return Sequence({
-    commandNodes.processUserCommands(),
+  local userCommands = Selector({
+    Condition(commandNodes.executeHold, commandNodes.isHoldMode),
+    Condition(commandNodes.executeFollow, commandNodes.isFollowMode),
+    Condition(commandNodes.executeMove, commandNodes.isMoveMode),
+    Condition(commandNodes.executeStop, commandNodes.isStopMode),
+    Condition(commandNodes.executePatrol, commandNodes.isPatrolMode),
+    Condition(commandNodes.executeAttackObject, commandNodes.isAttackObject),
+    Condition(commandNodes.executeAttackArea, commandNodes.isAttackArea),
+    Condition(commandNodes.executeSkillObject, commandNodes.isSkillObject),
+    Condition(commandNodes.executeSkillGround, commandNodes.isSkillGround),
+  })
 
+  return Sequence({
+    commandNodes.processUserCommands,
     Selector({
-      Condition(commandNodes.executeHold(), commandNodes.isHoldMode),
-      Condition(commandNodes.executeFollow(), commandNodes.isFollowMode),
-      Condition(commandNodes.executeMove(), commandNodes.isMoveMode),
-      Condition(
-        Parallel({
-          commandNodes.executePatrol(),
-          Delay(enemyNodes.searchForEnemies, 300),
-        }),
-        commandNodes.isPatrolMode
-      ),
+      Unless(userCommands, commandNodes.isIdleMode),
       combatUnlessOwnerIsMovingAway,
       Condition(
         Parallel({
@@ -41,8 +64,8 @@ local function root(combat)
       ),
       Unless(
         Selector({
-          Condition(homunNodes.patrol, ownerConditions.isSitting),
-          homunNodes.follow,
+          patrolWhenOwnerIsSitting,
+          goBackToUser,
         }),
         enemyConditions.hasEnemy
       ),

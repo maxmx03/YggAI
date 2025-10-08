@@ -17,15 +17,18 @@ local M = {}
 
 function M.hasEnemy(bb)
   if IsEnemyAlive(bb.myId, bb.myEnemy) then
+    Trace('[hasEnemy] -> %d -> true', bb.myEnemy)
     return true
   end
   while #bb.myEnemies > 0 do
     local enemy = table.remove(bb.myEnemies, 1)
     if IsEnemyAlive(bb.myId, enemy) then
+      Trace('[hasEnemy] -> %d -> true', enemy)
       bb.myEnemy = enemy
       return true
     end
   end
+  TraceAI('[hasEnemy] -> false')
   bb.myEnemy = 0
   return false
 end

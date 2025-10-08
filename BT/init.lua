@@ -607,16 +607,12 @@ function Random(nodes)
   end
 end
 
-local tree = nil
-
 ---@param myid number
 ---@param nodes Nodes
 function YggAI(nodes, myid)
   blackboard.myId = myid
   blackboard.myOwner = GetV(V_OWNER, myid)
   blackboard.mySp = GetV(V_SP, myid)
-  if tree == nil then
-    tree = Selector(nodes)
-  end
+  local tree = Selector(nodes)
   tree()
 end

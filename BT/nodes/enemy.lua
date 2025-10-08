@@ -5,11 +5,11 @@
 
 ---@type EnemyNode
 local M = {
-  maxEnemies = 15,
+  maxEnemies = 30,
 }
 
 function M.searchForEnemies(bb)
-  if #bb.myEnemies <= M.maxEnemies then
+  if #bb.myEnemies < M.maxEnemies then
     SearchForEnemies(bb.myId, M.maxEnemies, function(enemyId)
       if IsEnemyAlive(bb.myId, enemyId) then
         table.insert(bb.myEnemies, enemyId)
@@ -23,13 +23,15 @@ function M.searchForEnemies(bb)
 end
 
 function M.checkIsAttackingOwner(bb)
-  if GetV(V_TARGET, bb.myEnemy) == bb.myOwner then
+  if GetV(V_TARGET, bb.myEnemy) == bb.myOwner or IsMonsterType(bb.myEnemy, 'mvp') then
     return STATUS.SUCCESS
   end
   for pos, enemy in ipairs(bb.myEnemies) do
-    if GetV(V_TARGET, enemy) == bb.myOwner then
-      bb.myEnemy = table.remove(bb.myEnemies, pos)
-      return STATUS.SUCCESS
+    if IsEnemyAlive(bb.myId, bb.myEnemy) then
+      if GetV(V_TARGET, enemy) == bb.myOwner then
+        bb.myEnemy = table.remove(bb.myEnemies, pos)
+        return STATUS.SUCCESS
+      end
     end
   end
   return STATUS.SUCCESS

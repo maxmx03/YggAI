@@ -86,14 +86,22 @@ end
 function M.checkHomunStuck(bb)
   local myEnemyMotion = GetV(V_MOTION, bb.myEnemy)
   local myMotion = GetV(V_MOTION, bb.myId)
-  if IsInAttackSight(bb.myId, bb.myEnemy, bb) or myEnemyMotion == MOTION_DAMAGE or myMotion == MOTION_MOVE then
+  if
+    IsInAttackSight(bb.myId, bb.myEnemy, bb)
+    or myEnemyMotion == MOTION_DAMAGE
+    or myMotion == MOTION_MOVE
+    or myMotion == MOTION_CASTING
+    or myMotion == MOTION_SKILL
+    or myMotion == MOTION_ATTACK
+    or myMotion == MOTION_ATTACK2
+  then
     return STATUS.SUCCESS
   end
   while #bb.myEnemies > 0 do
     local enemy = table.remove(bb.myEnemies, 1)
     if IsEnemyAlive(bb.myId, enemy) then
       bb.myEnemy = enemy
-      return STATUS.FAILURE
+      return STATUS.SUCCESS
     end
   end
   return STATUS.FAILURE
