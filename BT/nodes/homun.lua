@@ -91,7 +91,7 @@ function M.checkHomunStuck(bb)
   end
   while #bb.myEnemies > 0 do
     local enemy = table.remove(bb.myEnemies, 1)
-    if IsEnemyAlive(bb.myId, bb.myEnemy) then
+    if IsEnemyAlive(bb.myId, enemy) then
       bb.myEnemy = enemy
       return STATUS.FAILURE
     end
