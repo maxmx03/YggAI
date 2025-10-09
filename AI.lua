@@ -16,7 +16,7 @@ function AI(myid)
   local NONE = 0
   if msg[1] == NONE then
     if rmsg[1] ~= NONE then
-      List.pushleft(ResCmdList, rmsg)
+      List.pushright(ResCmdList, rmsg)
     end
   else
     List.pushleft(ResCmdList, msg)

@@ -1,20 +1,3 @@
---[[
-C BUILTIN FUNCTIONS
-
-function	TraceAI (string) end
-function	MoveToOwner (id) end
-function 	Move (id,x,y) end
-function	Attack (id,id) end
-function 	GetV (V_,id) end
-function	GetActors () end
-function	GetTick () end
-function	GetMsg (id) end
-function	GetResMsg (id) end
-function	SkillObject (id,level,skill,target) end
-function	SkillGround (id,level,skill,x,y) end
-function	IsMonster (id) end --yes -> 1 no -> 0
---]]
-
 -------------------------------------------------
 -- constants
 -------------------------------------------------
@@ -87,9 +70,6 @@ MOTION_XXXXXX = 39 -- ??(????????/????)
 MOTION_FULLBLAST = 42 -- Full Blast
 --------------------------
 
---------------------------
---- HOMUNCULUS SKILLS
---------------------------
 -- LIF
 HLIF_HEAL = 8001
 HLIF_AVOID = 8002
@@ -162,6 +142,9 @@ MH_BLAZING_LAVA = 8059
 MH_BLAST_FORGE = 8044
 MH_TEMPERING = 8045
 
+-- CRIAR UM NODE E CONDITION PARA ESSE BATTLE, PARA SER UTILIZADO NA
+-- ELEANOR.
+-- TAMBÉM MELHORAR A FORMA DE COMO É DETECTADO SE UM HABILIDADE FALHOU OU NÃO.
 ---@enum BattleMode
 BATTLE_MODE = {
   BATTLE = 1,
