@@ -2,10 +2,10 @@
 local blackboard = {
   myEnemy = 0,
   myEnemies = {},
-  myPosition = {
-    x = 0,
-    y = 0,
-  },
+  destX = 0,
+  destY = 0,
+  patrolX = 0,
+  patrolY = 0,
   myId = 0,
   myOwner = 0,
   mySp = 0,
@@ -613,6 +613,11 @@ function YggAI(nodes, myid)
   blackboard.myId = myid
   blackboard.myOwner = GetV(V_OWNER, myid)
   blackboard.mySp = GetV(V_SP, myid)
+  local myX, myY = GetV(V_POSITION, blackboard.myId)
+  local ownerX, ownerY = GetV(V_POSITION, blackboard.myOwner)
+  if myX == ownerX and myY == ownerY then
+    return
+  end
   local tree = Selector(nodes)
   tree()
 end

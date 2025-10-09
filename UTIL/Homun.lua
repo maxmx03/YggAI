@@ -50,25 +50,29 @@ local function root(combat)
     Condition(commandNodes.executeSkillGround, commandNodes.isSkillGround),
   })
 
+  local auto = Selector({
+    combatUnlessOwnerIsMovingAway,
+    Condition(
+      Parallel({
+        homunNodes.follow,
+        Delay(enemyNodes.searchForEnemies, 300),
+      }),
+      ownerConditions.isMoving
+    ),
+    Unless(
+      Selector({
+        patrolWhenOwnerIsSitting,
+        goBackToUser,
+      }),
+      enemyConditions.hasEnemy
+    ),
+  })
+
   return Sequence({
     commandNodes.processUserCommands,
     Selector({
-      Unless(userCommands, commandNodes.isIdleMode),
-      combatUnlessOwnerIsMovingAway,
-      Condition(
-        Parallel({
-          homunNodes.follow,
-          Delay(enemyNodes.searchForEnemies, 300),
-        }),
-        ownerConditions.isMoving
-      ),
-      Unless(
-        Selector({
-          patrolWhenOwnerIsSitting,
-          goBackToUser,
-        }),
-        enemyConditions.hasEnemy
-      ),
+      Unless(userCommands, commandNodes.hasCommands),
+      Condition(auto, commandNodes.isIdleMode),
     }),
   })
 end

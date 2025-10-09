@@ -39,17 +39,17 @@ function GetTick()
 end
 
 ---@param id number
----@return string
+---@return table<number>
 function GetMsg(id)
   print(id)
-  return ''
+  return {}
 end
 
 ---@param id number
----@return string
+---@return table<number>
 function GetResMsg(id)
   print(id)
-  return ''
+  return {}
 end
 
 ---@param id number

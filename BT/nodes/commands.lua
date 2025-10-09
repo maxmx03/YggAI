@@ -20,6 +20,7 @@
 ---@field isPatrolMode Condition
 ---@field isSkillObject Condition
 ---@field isSkillGround Condition
+---@field hasCommands Condition
 
 ---@type CommandNode
 local M = {}
@@ -49,7 +50,7 @@ local CommandType = {
   FOLLOW = 9,
 }
 
-CommandData = {
+local CommandData = {
   state = CommandState.IDLE,
   destX = 0,
   destY = 0,
@@ -58,22 +59,25 @@ CommandData = {
   targetId = 0,
   skillId = 0,
   skillLevel = 0,
-  isStopped = false,
 }
 
-function M.processUserCommands(bb)
-  local msg = GetMsg(bb.myId)
+---@alias Commands table<number>
 
-  if msg[1] == CommandType.NONE then
+---@param bb Blackboard
+function M.processUserCommands(bb)
+  local msg = List.popleft(ResCmdList)
+  if msg == nil then
+    TraceAI('[processUserCommands] -> STATUS.SUCCESS')
     return STATUS.SUCCESS
   end
-
   if msg[1] == CommandType.MOVE then
     CommandData.state = CommandState.MOVE
     CommandData.destX = msg[2]
     CommandData.destY = msg[3]
+    TraceAI('MOVE')
   elseif msg[1] == CommandType.STOP then
     CommandData.state = CommandState.STOP
+    TraceAI('STOP')
   elseif msg[1] == CommandType.ATTACK_OBJECT then
     CommandData.state = CommandState.ATTACK_OBJECT
     CommandData.targetId = msg[2]
@@ -87,7 +91,6 @@ function M.processUserCommands(bb)
     CommandData.patrolY = msg[3]
   elseif msg[1] == CommandType.HOLD then
     CommandData.state = CommandState.HOLD
-    bb.myEnemy = 0
   elseif msg[1] == CommandType.SKILL_OBJECT then
     CommandData.state = CommandState.SKILL_OBJECT
     CommandData.skillLevel = msg[2]
@@ -100,17 +103,14 @@ function M.processUserCommands(bb)
     CommandData.skillId = msg[3]
     CommandData.destX = msg[4]
     CommandData.destY = msg[5]
-    Move(bb.myId, msg[4], msg[5])
   elseif msg[1] == CommandType.FOLLOW then
-    if CommandData.state == CommandState.FOLLOW then
-      CommandData.state = CommandState.IDLE
-    else
-      CommandData.state = CommandState.FOLLOW
-      MoveToOwner(bb.myId)
-    end
+    CommandData.state = CommandState.FOLLOW
   end
-
   return STATUS.SUCCESS
+end
+
+function M.hasCommands()
+  return List.size(ResCmdList) > 0
 end
 
 function M.isHoldMode()
@@ -155,80 +155,140 @@ end
 
 ---@return Node
 function M.executeHold(bb)
+  TraceAI('HOLD')
+  if bb.myEnemy ~= 0 then
+    CommandData.state = CommandState.IDLE
+    TraceAI('HOLD -> STATUS.SUCCESS')
+    return STATUS.SUCCESS
+  end
+  SearchForEnemies(bb.myId, 8, function(enemy)
+    if IsEnemyAlive(bb.myId, enemy) then
+      table.insert(bb.myEnemies, enemy)
+    end
+  end)
+  if #bb.myEnemies > 0 then
+    CommandData.state = CommandState.IDLE
+    TraceAI('HOLD -> STATUS.SUCCESS')
+    return STATUS.SUCCESS
+  end
+  bb.destX = 0
+  bb.destY = 0
   bb.myEnemy = 0
   bb.myEnemies = {}
-  bb.mySkill = bb.resetMySkill()
-  return STATUS.SUCCESS
+  TraceAI('HOLD -> STATUS.FAILURE')
+  return STATUS.FAILURE
 end
 
 function M.executeMove(bb)
-  local x, y = GetV(V_POSITION, bb.myId)
-
-  if x == CommandData.destX and y == CommandData.destY then
+  local x = CommandData.destX
+  local y = CommandData.destY
+  if x == bb.destX and y == bb.destY then
+    TraceAI('MOVE -> STATUS.SUCCESS -> IDLE')
     CommandData.state = CommandState.IDLE
     return STATUS.SUCCESS
   end
-
-  if GetV(V_MOTION, bb.myId) ~= MOTION_MOVE then
-    Move(bb.myId, CommandData.destX, CommandData.destY)
+  local curX, curY = GetV(V_POSITION, bb.myId)
+  if math.abs(x - curX) + math.abs(y - curY) > 15 then
+    List.pushleft(ResCmdList, { CommandType.MOVE, x, y })
+    x = math.floor((x + curX) / 2)
+    y = math.floor((y + curY) / 2)
   end
-
+  Move(bb.myId, x, y)
+  CommandData.state = CommandState.MOVE
+  bb.destX, bb.destY = GetV(V_POSITION, bb.myId)
+  TraceAI('MOVE -> STATUS.RUNNING')
   return STATUS.RUNNING
 end
 
 function M.executePatrol(bb)
-  if #bb.myEnemies < 30 then
-    SearchForEnemies(bb.myId, 30, function(enemy)
-      table.insert(bb.myEnemies, enemy)
-    end)
+  bb.patrolX, bb.patrolY = GetV(V_POSITION, bb.myId)
+  bb.destX = CommandData.destX
+  bb.destY = CommandData.destY
+  if bb.destX ~= bb.patrolX and bb.patrolY ~= bb.destY then
+    Move(bb.myId, bb.destX, bb.destY)
+    return STATUS.RUNNING
   end
+  SearchForEnemies(bb.myId, 8, function(enemy)
+    if IsEnemyAlive(bb.myId, enemy) then
+      table.insert(bb.myEnemies, enemy)
+    end
+  end)
 
   if #bb.myEnemies > 0 then
+    CommandData.state = CommandState.IDLE
     return STATUS.SUCCESS
   end
 
   local x, y = GetV(V_POSITION, bb.myId)
-  if x == CommandData.patrolX and y == CommandData.patrolY and GetV(V_MOTION, bb.myId) ~= MOTION_MOVE then
-    CommandData.destX = CommandData.patrolX
-    CommandData.destY = CommandData.patrolY
-    CommandData.patrolX = x
-    CommandData.patrolY = y
-    Move(bb.myId, CommandData.destX, CommandData.destY)
+  if x == bb.destX and y == bb.destY then
+    bb.destX = bb.patrolX
+    bb.destY = bb.patrolY
+    bb.patrolX = x
+    bb.patrolY = y
+    Move(bb.myId, bb.destX, bb.destY)
   end
+
   return STATUS.RUNNING
 end
 
 function M.executeFollow(bb)
+  TraceAI('FOLLOW')
   if GetDistanceFromOwner(bb.myId) > 3 then
-    if GetV(V_MOTION, bb.myId) ~= MOTION_MOVE then
-      MoveToOwner(bb.myId)
-    end
+    MoveToOwner(bb.myId)
+    TraceAI('FOLLOW -> STATUS.RUNNING')
     return STATUS.RUNNING
   end
+  CommandData.state = CommandState.FOLLOW
+  TraceAI('FOLLOW -> STATUS.SUCCESS')
   return STATUS.SUCCESS
 end
 
 function M.executeStop(bb)
+  if GetV(V_MOTION, bb.myId) ~= MOTION_STAND then
+    Move(bb.myId, GetV(V_POSITION, bb.myId))
+    TraceAI('STOP -> STATUS.RUNNING')
+    return STATUS.RUNNING
+  end
   CommandData.state = CommandState.IDLE
+  bb.destX = 0
+  bb.destY = 0
   bb.myEnemy = 0
   bb.myEnemies = {}
-  CommandData.destX = 0
-  CommandData.destY = 0
+  TraceAI('STOP -> STATUS.SUCCESS')
   return STATUS.SUCCESS
 end
 
 function M.executeAttackObject(bb)
+  bb.mySkill = bb.resetMySkill()
   bb.myEnemy = CommandData.targetId
   CommandData.state = CommandState.IDLE
+  TraceAI('ATTACK_OBJECT -> STATUS.SUCCESS')
   return STATUS.SUCCESS
 end
 
 function M.executeAttackArea(bb)
-  local x, y = GetV(V_POSITION, bb.myId)
-  if x ~= CommandData.destX or y ~= CommandData.destY then
-    Move(bb.myId, CommandData.destX, CommandData.destY)
+  local x = CommandData.destX
+  local y = CommandData.destY
+  if x ~= bb.destX or y ~= bb.destY or MOTION_MOVE ~= GetV(V_MOTION, bb.myId) then
+    Move(bb.myId, x, y)
+    bb.destX = x
+    bb.destY = y
+    return STATUS.RUNNING
   end
-  CommandData.state = CommandState.IDLE
+  SearchForEnemies(bb.myId, 8, function(enemy)
+    if IsEnemyAlive(bb.myId, enemy) then
+      table.insert(bb.myEnemies, enemy)
+    end
+  end)
+  if #bb.myEnemies > 0 then
+    CommandData.state = CommandState.IDLE
+    return STATUS.SUCCESS
+  end
+  local myX, myY = GetV(V_POSITION, bb.myId)
+  if myX == bb.destX and myY == bb.destY then
+    CommandData.state = CommandState.IDLE
+    return STATUS.SUCCESS
+  end
   return STATUS.SUCCESS
 end
 
@@ -237,16 +297,24 @@ function M.executeSkillObject(bb)
     if 0 == SkillObject(bb.myId, CommandData.skillLevel, CommandData.skillId, CommandData.targetId) then
       return STATUS.FAILURE
     end
+  else
+    local x, y = GetV(V_POSITION, bb.myEnemy)
+    Move(bb.myId, x, y)
+    return STATUS.RUNNING
   end
   CommandData.state = CommandState.IDLE
   return STATUS.SUCCESS
 end
 
 function M.executeSkillGround(bb)
-  if IsInAttackSight(bb.myId, bb.myEnemy, bb) then
+  local x, y = GetV(V_POSITION, bb.myId)
+  if x ~= CommandData.destX and y ~= CommandData.destY then
     if 0 == SkillGround(bb.myId, CommandData.skillLevel, CommandData.skillId, CommandData.destX, CommandData.destY) then
       return STATUS.FAILURE
     end
+  else
+    Move(bb.myId, CommandData.destX, CommandData.destY)
+    return STATUS.RUNNING
   end
   CommandData.state = CommandState.IDLE
   return STATUS.SUCCESS
