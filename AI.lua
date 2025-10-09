@@ -16,9 +16,7 @@ function AI(myid)
   local NONE = 0
   if msg[1] == NONE then
     if rmsg[1] ~= NONE then
-      if List.size(ResCmdList) < 10 then
-        List.pushright(ResCmdList, rmsg)
-      end
+      List.pushleft(ResCmdList, rmsg)
     end
   else
     List.pushleft(ResCmdList, msg)

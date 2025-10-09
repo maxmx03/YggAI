@@ -68,12 +68,15 @@ local function root(combat)
     ),
   })
 
-  return Sequence({
-    commandNodes.processUserCommands,
-    Selector({
-      Unless(userCommands, commandNodes.hasCommands),
-      Condition(auto, commandNodes.isIdleMode),
-    }),
+  return Selector({
+    Condition(
+      Sequence({
+        commandNodes.processUserCommands,
+        userCommands,
+      }),
+      commandNodes.hasCommands
+    ),
+    Unless(auto, commandNodes.hasCommands),
   })
 end
 
