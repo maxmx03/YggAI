@@ -10,17 +10,19 @@ function M.isSkillCastable(skillId)
     ---@type Skill
     local skill = bb.mySkills[skillId]
     local cooldown = bb.myCooldowns[skillId]
+    local canCast = false
     if MyLevel >= skill.required_level then
       local mySp = GetV(V_SP, bb.myId)
       if mySp >= skill.sp then
         local currentTime = GetTick()
         if currentTime < cooldown then
-          return false
+          canCast = false
+        else
+          canCast = true
         end
-        return true
       end
     end
-    return false
+    return canCast
   end
 end
 

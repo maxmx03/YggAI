@@ -92,6 +92,7 @@ end
 
 ---@class SkillOpts
 ---@field keepRunning boolean
+---@field skillType "area" | "object"
 
 ---@alias Node fun(bb: Blackboard):Status
 ---@alias Condition fun(bb: Blackboard): boolean

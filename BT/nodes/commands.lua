@@ -214,7 +214,6 @@ function M.executePatrol(bb)
   bb.destY = CommandData.destY
   if bb.destX ~= bb.patrolX and bb.patrolY ~= bb.destY then
     Move(bb.myId, bb.destX, bb.destY)
-    TraceAI('PATROL -> STATUS.RUNNING')
     List.pushleft(ResCmdList, CommandData.lastCommand)
     return STATUS.RUNNING
   end
@@ -264,7 +263,6 @@ function M.executeStop(bb)
   bb.destY = 0
   bb.myEnemy = 0
   bb.myEnemies = {}
-  TraceAI('STOP -> STATUS.SUCCESS')
   return STATUS.SUCCESS
 end
 

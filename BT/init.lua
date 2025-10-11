@@ -1,3 +1,6 @@
+---@type HomunCondition
+local homunConditions = require('AI.USER_AI.BT.conditions.homun')
+
 ---@class Blackboard
 local blackboard = {
   myEnemy = 0,
@@ -28,6 +31,8 @@ local blackboard = {
       },
     }
   end,
+  skillQueue = {},
+  castUntilTick = 0,
   myCooldowns = {
     -- AMISTR
     [HAMI_CASTLE] = 0,
@@ -45,6 +50,7 @@ local blackboard = {
     [MH_GRANITIC_ARMOR] = 0,
     [MH_MAGMA_FLOW] = 0,
     [MH_PYROCLASTIC] = 0,
+    [MH_BLAST_FORGE] = 0,
     -- EIRA
     [MH_ERASER_CUTTER] = 0,
     [MH_OVERED_BOOST] = 0,
@@ -187,6 +193,14 @@ local blackboard = {
       cooldown = 600000,
       level = 10,
       required_level = 131,
+    },
+    ---@type Skill
+    [MH_BLAST_FORGE] = {
+      id = MH_BLAST_FORGE,
+      sp = 115,
+      cooldown = 5000,
+      level = 10,
+      required_level = 215,
     },
     -- EIRA
     ---@type Skill
@@ -579,6 +593,18 @@ function Unless(node, condition)
   end
 end
 
+---@param node Node
+---@param percentage number
+---@return Node
+function FailRandomly(node, percentage)
+  return function()
+    if ChanceDoOrGainSomething(percentage) then
+      return STATUS.FAILURE
+    end
+    return node(blackboard)
+  end
+end
+
 ---@param nodes Nodes
 ---@return fun(): Status
 function Random(nodes)
@@ -606,18 +632,25 @@ function Random(nodes)
     end
   end
 end
+local dieter = require('AI.USER_AI.HOMUN.Dieter')
+local eira = require('AI.USER_AI.HOMUN.Eira')
+local tree = Selector({
+  Condition(dieter, homunConditions.isDieter),
+  Condition(eira, homunConditions.isEira),
+})
 
 ---@param myid number
----@param nodes Nodes
-function YggAI(nodes, myid)
+function YggAI(myid)
   blackboard.myId = myid
   blackboard.myOwner = GetV(V_OWNER, myid)
   blackboard.mySp = GetV(V_SP, myid)
+  if #blackboard.myEnemies == 0 then
+    blackboard.skillQueue = {}
+  end
   local myX, myY = GetV(V_POSITION, blackboard.myId)
   local ownerX, ownerY = GetV(V_POSITION, blackboard.myOwner)
   if myX == ownerX and myY == ownerY then
     return
   end
-  local tree = Selector(nodes)
   tree()
 end

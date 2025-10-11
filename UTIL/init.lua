@@ -108,7 +108,7 @@ function IsInAttackSight(id1, id2, bb)
   end
   local d = GetDistance(x1, y1, x2, y2)
   local a = 0
-  if bb.mySkill == 0 then
+  if bb.mySkill.id == 0 then
     a = GetV(V_ATTACKRANGE, id1)
   else
     ---@diagnostic disable-next-line: redundant-parameter

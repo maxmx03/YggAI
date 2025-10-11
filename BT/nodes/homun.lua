@@ -44,9 +44,9 @@ function M.basicAttack(bb)
         end
       end
     end
-    return STATUS.RUNNING
+    return STATUS.SUCCESS
   end
-  return STATUS.SUCCESS
+  return STATUS.FAILURE
 end
 
 M.attackAndChase = Parallel({
