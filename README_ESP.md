@@ -37,11 +37,10 @@ Puedes usar cualquier editor de texto disponible en tu sistema:
 - [Notepad++](https://notepad-plus-plus.org)
 - [Vscode](https://code.visualstudio.com)
 
-| Variable                             | Descripción                                     |
-| ------------------------------------ | ----------------------------------------------- |
-| `MyLevel`                            | Nivel de tu homúnculo, actualízalo              |
-| `LifCanHeal`                         | ¿LIF puede curar?                               |
-| `ShouldPreventHomunculusDuplication` | ¿Debería prevenir la duplicación del homúnculo? |
+| Variable     | Descripción                        |
+| ------------ | ---------------------------------- |
+| `MyLevel`    | Nivel de tu homúnculo, actualízalo |
+| `LifCanHeal` | ¿LIF puede curar?                  |
 
 #### Ejemplo
 
