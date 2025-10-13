@@ -1,39 +1,3 @@
---[[
-C BUILTIN FUNCTIONS
-
-function	TraceAI (string) end
-function	MoveToOwner (id) end
-function 	Move (id,x,y) end
-function	Attack (id,id) end
-function 	GetV (V_,id) end
-function	GetActors () end
-function	GetTick () end
-function	GetMsg (id) end
-function	GetResMsg (id) end
-function	SkillObject (id,level,skill,target) end
-function	SkillGround (id,level,skill,x,y) end
-function	IsMonster (id) end --yes -> 1 no -> 0
---]]
-
------------------------------
--- STATE
------------------------------
-IDLE_ST = 0
-FOLLOW_ST = 1
-CHASE_ST = 2
-ATTACK_ST = 3
-MOVE_CMD_ST = 4
-STOP_CMD_ST = 5
-ATTACK_OBJECT_CMD_ST = 6
-ATTACK_AREA_CMD_ST = 7
-PATROL_CMD_ST = 8
-HOLD_CMD_ST = 9
-SKILL_OBJECT_CMD_ST = 10
-SKILL_AREA_CMD_ST = 11
-FOLLOW_CMD_ST = 12
-PATROL_ST = 13
-----------------------------
-
 -------------------------------------------------
 -- constants
 -------------------------------------------------
@@ -59,7 +23,6 @@ V_SKILLATTACKRANGE_LEVEL = 14
 --------------------------------------------
 -- HUMUNCULUS TYPE
 --------------------------------------------
-
 LIF = 1
 AMISTR = 2
 FILIR = 3
@@ -81,41 +44,6 @@ BAYERI = 49
 SERA = 50
 DIETER = 51
 ELEANOR = 52
---------------------------------------------
-
---------------------------------------------
--- Mercenary type
---------------------------------------------
-ARCHER01 = 1
-ARCHER02 = 2
-ARCHER03 = 3
-ARCHER04 = 4
-ARCHER05 = 5
-ARCHER06 = 6
-ARCHER07 = 7
-ARCHER08 = 8
-ARCHER09 = 9
-ARCHER10 = 10
-LANCER01 = 11
-LANCER02 = 12
-LANCER03 = 13
-LANCER04 = 14
-LANCER05 = 15
-LANCER06 = 16
-LANCER07 = 17
-LANCER08 = 18
-LANCER09 = 19
-LANCER10 = 20
-SWORDMAN01 = 21
-SWORDMAN02 = 22
-SWORDMAN03 = 23
-SWORDMAN04 = 24
-SWORDMAN05 = 25
-SWORDMAN06 = 26
-SWORDMAN07 = 27
-SWORDMAN08 = 28
-SWORDMAN09 = 29
-SWORDMAN10 = 30
 --------------------------------------------
 
 --------------------------
@@ -142,24 +70,6 @@ MOTION_XXXXXX = 39 -- ??(????????/????)
 MOTION_FULLBLAST = 42 -- Full Blast
 --------------------------
 
---------------------------
--- command
---------------------------
-NONE_CMD = 0 -- No command
-MOVE_CMD = 1 -- Move
-STOP_CMD = 2 -- Stop, {x, y} positions
-ATTACK_OBJECT_CMD = 3 -- Attack
-ATTACK_AREA_CMD = 4 -- Area Attack  {x, y} positions
-PATROL_CMD = 5 -- Patrol {x, y} position
-HOLD_CMD = 6 -- Mark
-SKILL_OBJECT_CMD = 7 -- Attack with Skill {level, type, target}
-SKILL_AREA_CMD = 8 -- Skill in Area, {level, type, x coordinate, y coordinate}
-FOLLOW_CMD = 9 -- Follow Owner
---------------------------
-
---------------------------
---- HOMUNCULUS SKILLS
---------------------------
 -- LIF
 HLIF_HEAL = 8001
 HLIF_AVOID = 8002
@@ -231,35 +141,3 @@ MH_VOLCANIC_ASH = 8043
 MH_BLAZING_LAVA = 8059
 MH_BLAST_FORGE = 8044
 MH_TEMPERING = 8045
-
-------------------------------------------
--- HOMUNCULUS | BLACKBOARD
-------------------------------------------
-MyState = IDLE_ST
-MyEnemy = 0 -- Enemy’s ID
-MyDestX = 0 -- x coordinate of a destination
-MyDestY = 0 -- y coordinate of a destination
-MyPatrolX = 0 -- x coordinate of a scouting location
-MyPatrolY = 0 -- y coordinate of a scouting location
-MyID = 0 -- Homunculus ID
-MySkill = 0 -- Homunculus skills
-MySkillX = 0
-MySkillY = 0
-MySkillLevel = 0 -- Homunculus skill level
-MyOwner = 0 -- Homunculus owner
-MySpheres = 5 -- Eleanor only
-MySP = 0
-MyHomun = {}
-
----@enum BattleMode
-BATTLE_MODE = {
-  BATTLE = 1,
-  CLAW = 2,
-  CURRENT = 1,
-  isBattleMode = function()
-    return BATTLE_MODE.CURRENT == BATTLE_MODE.BATTLE
-  end,
-  isClawMode = function()
-    return BATTLE_MODE.CURRENT == BATTLE_MODE.CLAW
-  end,
-}

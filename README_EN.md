@@ -37,11 +37,10 @@ You can use any text editor available on your system:
 - [Notepad++](https://notepad-plus-plus.org)
 - [Vscode](https://code.visualstudio.com)
 
-| Variable                           | Description                            |
-| ---------------------------------- | -------------------------------------- |
-| MyLevel                            | Your homunculus level, update it       |
-| LifCanHeal                         | Can LIF heal?                          |
-| ShouldPreventHomunculusDuplication | Should prevent homunculus duplication? |
+| Variable   | Description                      |
+| ---------- | -------------------------------- |
+| MyLevel    | Your homunculus level, update it |
+| LifCanHeal | Can LIF heal?                    |
 
 #### Example
 

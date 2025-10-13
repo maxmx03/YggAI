@@ -34,5 +34,7 @@ local M = {
   [3028] = true, -- Sonia
   [3061] = true, -- E_ANGRY_MIMIC
   [3026] = true, -- FIREPIT
+  [3159] = true, -- ILLEGAL_PROMOTION
+  [3795] = true, -- ILL_ICEICLE
 }
 return M

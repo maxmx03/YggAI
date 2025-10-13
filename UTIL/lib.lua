@@ -39,17 +39,17 @@ function GetTick()
 end
 
 ---@param id number
----@return string
+---@return table<number>
 function GetMsg(id)
   print(id)
-  return ''
+  return {}
 end
 
 ---@param id number
----@return string
+---@return table<number>
 function GetResMsg(id)
   print(id)
-  return ''
+  return {}
 end
 
 ---@param id number
@@ -92,4 +92,8 @@ end
 
 ---@class SkillOpts
 ---@field keepRunning boolean
----@field targetType "ground" | "target"
+---@field skillType "area" | "object"
+
+---@alias Node fun(bb: Blackboard):Status
+---@alias Condition fun(bb: Blackboard): boolean
+---@alias Nodes table<integer, fun(bb: Blackboard):Status>

@@ -1,146 +1,59 @@
----@class Node
-local node = require('AI.USER_AI.BT.nodes')
----@type Condition
-local condition = require('AI.USER_AI.BT.conditions')
-local Homun = require('AI.USER_AI.UTIL.Homun')
----@type Enemy
-local enemy = require('AI.USER_AI.BT.enemy')
+local root = require 'AI.USER_AI.UTIL.Homun'
+---@type HomunNode
+local homunNodes = require 'AI.USER_AI.BT.nodes.homun'
+---@type SkillNode
+local skillNodes = require 'AI.USER_AI.BT.nodes.skill'
+---@type EnemyNode
+local enemyNodes = require 'AI.USER_AI.BT.nodes.enemy'
 
----@class Cooldown
-local MyCooldown = {
-  [MH_NEEDLE_OF_PARALYZE] = 0,
-  [MH_POISON_MIST] = 0,
-  [MH_PAIN_KILLER] = 0,
-  [MH_SUMMON_LEGION] = 0,
-}
-
----@class Skills
-local MySkills = {
-  ---@type Skill
-  [MH_NEEDLE_OF_PARALYZE] = {
-    id = MH_NEEDLE_OF_PARALYZE,
-    sp = 96,
-    cooldown = 200,
-    level = 10,
-    required_level = 105,
-  },
-  ---@type Skill
-  [MH_POISON_MIST] = {
-    id = MH_POISON_MIST,
-    sp = 105,
-    cooldown = 15000,
-    level = 5,
-    required_level = 116,
-  },
-  ---@type Skill
-  [MH_PAIN_KILLER] = {
-    id = MH_PAIN_KILLER,
-    sp = 64,
-    cooldown = 600000,
-    level = 10,
-    required_level = 123,
-  },
-  ---@type Skill
-  [MH_SUMMON_LEGION] = {
-    id = MH_SUMMON_LEGION,
-    sp = 140,
-    cooldown = 30000,
-    level = 5,
-    required_level = 132,
-  },
-}
-
----@type Homun
-local sera = Homun(MySkills, MyCooldown)
-
-local paralyze = {}
-function paralyze.isSkillCastable()
-  if math.random(1, 100) <= 40 then
-    return sera.isSkillCastable(MH_NEEDLE_OF_PARALYZE)
-  end
-  return false
-end
-function paralyze.isSkillCastableMoreOften()
-  if math.random(1, 100) <= 65 then
-    return sera.isSkillCastable(MH_NEEDLE_OF_PARALYZE)
-  end
-  return false
-end
-function paralyze.castSkill()
-  return sera.castSkill(MH_NEEDLE_OF_PARALYZE, MyEnemy, { targetType = 'target', keepRunning = false })
-end
-local poison = {}
-function poison.isSkillCastable()
-  return sera.isSkillCastable(MH_POISON_MIST)
-end
-
-function poison.castAOESkill()
-  return sera.castAOESkill(MH_POISON_MIST, { targetType = 'ground', keepRunning = false })
-end
-
-function poison.castSkill()
-  return sera.castSkill(MH_POISON_MIST, MyEnemy, { targetType = 'ground', keepRunning = false })
-end
-
-local pain = {}
-function pain.isSkillCastable()
-  return sera.isSkillCastable(MH_PAIN_KILLER)
-end
-function pain.castSkill()
-  return sera.castSkill(MH_PAIN_KILLER, MyID, { targetType = 'target', keepRunning = false })
-end
-local legion = {}
-function legion.isSkillCastable()
-  return sera.isSkillCastable(MH_SUMMON_LEGION)
-end
-function legion.castSkill()
-  return sera.castSkill(MH_SUMMON_LEGION, MyEnemy, { targetType = 'target', keepRunning = false })
-end
-
-local castPoisonMist = Condition(
-  Parallel({
-    poison.castSkill,
-    node.chaseEnemy,
-  }),
-  poison.isSkillCastable
+local castPainKiller = Condition(
+  skillNodes.enqueueSkill(MH_PAIN_KILLER, 'myId', { skillType = 'object' }),
+  skillNodes.isSkillCastable(MH_PAIN_KILLER)
 )
-
-local castPoisonMistAgainstMultiEnemies = Condition(
-  Parallel({
-    poison.castAOESkill,
-    node.chaseEnemy,
-  }),
-  poison.isSkillCastable
-)
-
-local castParalyze = Parallel({
-  paralyze.castSkill,
-  node.chaseEnemy,
-})
-local tryParalizeEnemy = Condition(castParalyze, paralyze.isSkillCastable)
-local tryParalizeEnemyMoreOften = Condition(castParalyze, paralyze.isSkillCastableMoreOften)
 local invokeLegion = Condition(
-  Parallel({
-    legion.castSkill,
-    node.chaseEnemy,
-  }),
-  legion.isSkillCastable
+  skillNodes.enqueueSkill(MH_SUMMON_LEGION, 'myEnemy', { skillType = 'object' }),
+  skillNodes.isSkillCastable(MH_SUMMON_LEGION)
+)
+local castPoisonMist = Condition(
+  Parallel {
+    skillNodes.enqueueSkill(MH_POISON_MIST, 'myEnemy', { skillType = 'area' }),
+    homunNodes.chaseEnemy,
+  },
+  skillNodes.isSkillCastable(MH_POISON_MIST)
 )
 
-local isMVP = Condition(
-  Selector({
-    invokeLegion,
-    tryParalizeEnemyMoreOften,
-    castPoisonMist,
-  }),
-  condition.isMVP
+local castToxinOfMandara = Condition(
+  Parallel {
+    skillNodes.enqueueSkill(MH_TOXIN_OF_MANDARA, 'myEnemy', { skillType = 'object' }),
+    homunNodes.chaseEnemy,
+  },
+  skillNodes.isSkillCastable(MH_TOXIN_OF_MANDARA)
 )
 
-local combat = Selector({
-  Condition(pain.castSkill, pain.isSkillCastable),
-  Condition(castPoisonMistAgainstMultiEnemies, enemy.hasEnemyGroup),
-  Condition(node.attackAndChase, Inversion(paralyze.isSkillCastable)),
-  isMVP,
-  tryParalizeEnemy,
-})
-return Condition(sera.root(combat), IsSera)
+local paralyzeEnqueuer = skillNodes.enqueueSkill(MH_NEEDLE_OF_PARALYZE, 'myEnemy', { skillType = 'object' })
+local needleStingerEnqueuer = Condition(
+  skillNodes.enqueueSkill(MH_NEEDLE_STINGER, 'myEnemy', { skillType = 'object' }),
+  skillNodes.isSkillCastable(MH_NEEDLE_STINGER)
+)
+local isParalyzeCastable = skillNodes.isSkillCastable(MH_NEEDLE_OF_PARALYZE)
+local tryParalyzeEnemy = Condition(paralyzeEnqueuer, isParalyzeCastable)
+
+local combat = Selector {
+  Parallel {
+    homunNodes.chaseEnemy,
+    Condition(skillNodes.executeQueuedSkill, skillNodes.hasSkillsToCast),
+  },
+  castPainKiller,
+  Condition(invokeLegion, enemyNodes.isMVP),
+  Condition(Unless(castToxinOfMandara, enemyNodes.isPoisonType), enemyNodes.isMVP),
+  Condition(Unless(castPoisonMist, enemyNodes.isPoisonType), enemyNodes.isMVP),
+  Condition(Unless(castPoisonMist, enemyNodes.isPoisonType), enemyNodes.hasEnemyGroup),
+  Condition(Unless(castToxinOfMandara, enemyNodes.isPoisonType), enemyNodes.hasEnemyGroup),
+  Condition(invokeLegion, enemyNodes.isPoisonType),
+  Condition(FailRandomly(tryParalyzeEnemy, 30), enemyNodes.isMVP),
+  FailRandomly(tryParalyzeEnemy, 70),
+  Unless(needleStingerEnqueuer, enemyNodes.isPoisonType),
+  Unless(homunNodes.attackAndChase, skillNodes.hasSkillsToCast),
+}
+
+return root(combat)

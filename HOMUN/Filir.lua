@@ -1,77 +1,29 @@
----@type Node
-local node = require('AI.USER_AI.BT.nodes')
-local Homun = require('AI.USER_AI.UTIL.Homun')
+local root = require 'AI.USER_AI.UTIL.Homun'
+---@type HomunNode
+local homunNodes = require 'AI.USER_AI.BT.nodes.homun'
+---@type SkillNode
+local skillNodes = require 'AI.USER_AI.BT.nodes.skill'
 
----@class Cooldown
-local MyCooldown = {
-  [HFLI_MOON] = 0,
-  [HFLI_FLEET] = 0,
-  [HFLI_SPEED] = 0,
-}
+local executeSpeed = skillNodes.executeSkill('myId', { keepRunning = false, skillType = 'object' })
+local isSpeedCastable = skillNodes.isSkillCastable(HFLI_SPEED)
+local executeFleet = skillNodes.executeSkill('myId', { keepRunning = false, skillType = 'object' })
+local isFleetCastable = skillNodes.isSkillCastable(HFLI_FLEET)
+local executeMoon = skillNodes.executeSkill('myEnemy', { keepRunning = false, skillType = 'object' })
+local isMoonCastable = skillNodes.isSkillCastable(HFLI_MOON)
 
----@class Skills
-local MySkills = {
-  ---@type Skill
-  [HFLI_MOON] = {
-    id = HFLI_MOON,
-    sp = 20,
-    cooldown = 2000,
-    level = 5,
-    required_level = 15,
-  },
-  ---@type Skill
-  [HFLI_FLEET] = {
-    id = HFLI_FLEET,
-    sp = 70,
-    cooldown = 120000,
-    level = 5,
-    required_level = 25,
-  },
-  ---@type Skill
-  [HFLI_SPEED] = {
-    id = HFLI_SPEED,
-    sp = 70,
-    cooldown = 120000,
-    level = 5,
-    required_level = 40,
-  },
-}
-
----@type Homun
-local filir = Homun(MySkills, MyCooldown)
-
-local moon = {}
-function moon.isSkillCastable()
-  return filir.isSkillCastable(HFLI_MOON)
-end
-function moon.castSkill()
-  return filir.castSkill(HFLI_MOON, MyEnemy, { targetType = 'target', keepRunning = false })
-end
-local fleet = {}
-function fleet.isSkillCastable()
-  return filir.isSkillCastable(HFLI_FLEET)
-end
-function fleet.castSkill()
-  return filir.castSkill(HFLI_FLEET, MyID, { targetType = 'target', keepRunning = false })
-end
-local speed = {}
-function speed.isSkillCastable()
-  return filir.isSkillCastable(HFLI_SPEED)
-end
-function speed.castSkill()
-  return filir.castSkill(HFLI_SPEED, MyID, { targetType = 'target', keepRunning = false })
-end
 local moonLightAttack = Condition(
-  Parallel({
-    moon.castSkill,
-    node.chaseEnemy,
-  }),
-  moon.isSkillCastable
+  Parallel {
+    executeMoon,
+    homunNodes.chaseEnemy,
+  },
+  isMoonCastable
 )
-local combat = Selector({
-  Condition(speed.castSkill, speed.isSkillCastable),
-  Condition(fleet.castSkill, fleet.isSkillCastable),
+
+local combat = Selector {
+  Condition(executeSpeed, isSpeedCastable),
+  Condition(executeFleet, isFleetCastable),
   moonLightAttack,
-  Condition(node.attackAndChase, Inversion(moon.isSkillCastable)),
-})
-return Condition(filir.root(combat), IsFilir)
+  homunNodes.attackAndChase,
+}
+
+return root(combat)
