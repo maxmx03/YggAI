@@ -62,7 +62,7 @@ local function root(combat)
         patrolWhenOwnerIsSitting,
         goBackToUser,
       },
-      enemyNodes.hasEnemies
+      enemyNodes.hasEnemy
     ),
   }
 

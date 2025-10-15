@@ -66,10 +66,6 @@ function M.hasEnemy(bb)
   return false
 end
 
-function M.hasEnemies(bb)
-  return #bb.myEnemies > 0
-end
-
 function M.hasEnemyGroup(bb)
   local minEnemies = 2
   local maxDistance = 7
