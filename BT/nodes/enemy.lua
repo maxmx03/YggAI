@@ -16,22 +16,58 @@
 ---@field isHolyType Condition
 ---@field isEarthType Condition
 ---@field isGhostType Condition
+---@field clearDeadEnemies Node
+---@field sortEnemiesByDistance Node
 
 ---@type EnemyNode
 local M = {
-  maxEnemies = 12,
+  maxEnemies = MaxEnemies or 8,
 }
 
 function M.searchForEnemies(bb)
-  if #bb.myEnemies < M.maxEnemies then
-    SearchForEnemies(bb.myId, M.maxEnemies, function(enemyId)
-      if IsEnemyAlive(bb.myId, enemyId) then
-        table.insert(bb.myEnemies, enemyId)
-      end
-    end)
+  if #bb.myEnemies >= M.maxEnemies then
+    return STATUS.SUCCESS
   end
-  if #bb.myEnemies == 0 then
-    return STATUS.RUNNING
+
+  local currentTick = GetTick()
+  for enemyId, expireTime in pairs(bb.ignoredEnemies) do
+    if currentTick > expireTime then
+      bb.ignoredEnemies[enemyId] = nil
+    end
+  end
+
+  SearchForEnemies(bb.myId, M.maxEnemies - #bb.myEnemies, function(enemyId)
+    if
+      not Set.contains(bb.myEnemySet, enemyId)
+      and IsEnemyAlive(bb.myId, enemyId)
+      and not bb.ignoredEnemies[enemyId]
+    then
+      table.insert(bb.myEnemies, enemyId)
+      Set.add(bb.myEnemySet, enemyId)
+    end
+  end)
+  if #bb.myEnemies > 0 then
+    return STATUS.SUCCESS
+  end
+  return STATUS.FAILURE
+end
+
+function M.clearDeadEnemies(bb)
+  for i = #bb.myEnemies, 1, -1 do
+    local enemyId = bb.myEnemies[i]
+    if not IsEnemyAlive(bb.myId, enemyId) then
+      table.remove(bb.myEnemies, i)
+      Set.remove(bb.myEnemySet, enemyId)
+    end
+  end
+  return STATUS.SUCCESS
+end
+
+function M.sortEnemiesByDistance(bb)
+  if #bb.myEnemies > 1 then
+    table.sort(bb.myEnemies, function(a, b)
+      return GetDistance2(bb.myId, a) < GetDistance2(bb.myId, b)
+    end)
   end
   return STATUS.SUCCESS
 end
@@ -44,6 +80,7 @@ function M.checkIsAttackingOwner(bb)
     if IsEnemyAlive(bb.myId, bb.myEnemy) then
       if GetV(V_TARGET, enemy) == bb.myOwner then
         bb.myEnemy = table.remove(bb.myEnemies, pos)
+        Set.remove(bb.myEnemySet, bb.myEnemy)
         return STATUS.SUCCESS
       end
     end
@@ -57,6 +94,7 @@ function M.hasEnemy(bb)
   end
   while #bb.myEnemies > 0 do
     local enemy = table.remove(bb.myEnemies, 1)
+    Set.remove(bb.myEnemySet, enemy)
     if IsEnemyAlive(bb.myId, enemy) then
       bb.myEnemy = enemy
       return true

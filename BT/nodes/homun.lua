@@ -20,7 +20,7 @@
 ---@type HomunNode
 local M = {
   lastTimePatrol = 0,
-  lastTimeNudge = 0,
+  stuckCounter = 0,
 }
 
 function M.chaseEnemy(bb)
@@ -86,27 +86,34 @@ function M.follow(bb)
 end
 
 function M.checkHomunStuck(bb)
-  local myEnemyMotion = GetV(V_MOTION, bb.myEnemy)
+  local enemyTarget = GetV(V_TARGET, bb.myEnemy)
+  local enemyMotion = GetV(V_MOTION, bb.myEnemy)
   local myMotion = GetV(V_MOTION, bb.myId)
   if
     IsInAttackSight(bb.myId, bb.myEnemy, bb)
-    or myEnemyMotion == MOTION_DAMAGE
-    or myMotion == MOTION_MOVE
-    or myMotion == MOTION_CASTING
-    or myMotion == MOTION_SKILL
-    or myMotion == MOTION_ATTACK
-    or myMotion == MOTION_ATTACK2
+    or enemyTarget == bb.myOwner
+    or enemyTarget == bb.myId
+    or (enemyMotion ~= MOTION_STAND and enemyMotion ~= MOTION_MOVE)
+    or (myMotion ~= MOTION_STAND and myMotion ~= MOTION_DAMAGE)
   then
+    M.stuckCounter = 0
     return STATUS.SUCCESS
   end
-  while #bb.myEnemies > 0 do
-    local enemy = table.remove(bb.myEnemies, 1)
-    if IsEnemyAlive(bb.myId, enemy) then
-      bb.myEnemy = enemy
-      return STATUS.SUCCESS
+  if M.stuckCounter >= 3 then
+    bb.ignoredEnemies[bb.myEnemy] = GetTick() + 1000
+    M.stuckCounter = 0
+    while #bb.myEnemies > 0 do
+      local enemy = table.remove(bb.myEnemies, 1)
+      Set.remove(bb.myEnemySet, enemy)
+      if IsEnemyAlive(bb.myId, enemy) then
+        bb.myEnemy = enemy
+        return STATUS.SUCCESS
+      end
     end
+    return STATUS.FAILURE
   end
-  return STATUS.FAILURE
+  M.stuckCounter = M.stuckCounter + 1
+  return STATUS.RUNNING
 end
 
 function M.isAmistr(bb)

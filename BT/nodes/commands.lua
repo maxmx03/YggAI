@@ -78,7 +78,6 @@ function M.processUserCommands(bb)
     return STATUS.SUCCESS
   end
   CommandData.state = msg[1]
-  Trace('NOVO COMANDO -> %d', CommandData.state)
   if CommandData.state == nil then
     return STATUS.FAILURE
   end
