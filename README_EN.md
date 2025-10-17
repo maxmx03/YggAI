@@ -37,10 +37,11 @@ You can use any text editor available on your system:
 - [Notepad++](https://notepad-plus-plus.org)
 - [Vscode](https://code.visualstudio.com)
 
-| Variable   | Description                      |
-| ---------- | -------------------------------- |
-| MyLevel    | Your homunculus level, update it |
-| LifCanHeal | Can LIF heal?                    |
+| Variable     | Description                         |
+| ------------ | ----------------------------------- |
+| `MyLevel`    | Your homunculus level, update it    |
+| `LifCanHeal` | Can LIF heal?                       |
+| `MaxEnemies` | Maximum number of enemies to manage |
 
 #### Example
 

@@ -37,10 +37,11 @@ Puedes usar cualquier editor de texto disponible en tu sistema:
 - [Notepad++](https://notepad-plus-plus.org)
 - [Vscode](https://code.visualstudio.com)
 
-| Variable     | Descripción                        |
-| ------------ | ---------------------------------- |
-| `MyLevel`    | Nivel de tu homúnculo, actualízalo |
-| `LifCanHeal` | ¿LIF puede curar?                  |
+| Variable     | Descripción                           |
+| ------------ | ------------------------------------- |
+| `MyLevel`    | Nivel de tu homúnculo, actualízalo    |
+| `LifCanHeal` | ¿LIF puede curar?                     |
+| `MaxEnemies` | Número máximo de enemigos a gestionar |
 
 #### Ejemplo
 
