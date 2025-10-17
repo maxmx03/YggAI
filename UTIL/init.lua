@@ -56,6 +56,57 @@ function List.size(list)
   return size
 end
 
+--------------------------------------------
+-- Set utility
+--------------------------------------------
+Set = {}
+
+function Set.new()
+  return {}
+end
+
+function Set.add(set, value)
+  set[value] = true
+end
+
+function Set.remove(set, value)
+  set[value] = nil
+end
+
+function Set.contains(set, value)
+  return set[value] == true
+end
+
+function Set.clear(set)
+  for k in pairs(set) do
+    set[k] = nil
+  end
+end
+
+function Set.size(set)
+  local count = 0
+  for _ in pairs(set) do
+    count = count + 1
+  end
+  return count
+end
+
+function Set.toList(set)
+  local list = {}
+  for k in pairs(set) do
+    table.insert(list, k)
+  end
+  return list
+end
+
+function Set.fromList(list)
+  local set = Set.new()
+  for _, v in ipairs(list) do
+    Set.add(set, v)
+  end
+  return set
+end
+
 function GetDistance(x1, y1, x2, y2)
   return math.floor(math.sqrt((x1 - x2) ^ 2 + (y1 - y2) ^ 2))
 end
@@ -89,7 +140,7 @@ function IsOutOfSight(id1, id2)
     return true
   end
   local d = GetDistance(x1, y1, x2, y2)
-  if d > 20 then
+  if d > 15 then -- default is 20
     return true
   else
     return false
@@ -157,15 +208,17 @@ function SearchForEnemies(myid, maxEnemies, callback)
       if IsMonster(actorId) == 1 then
         if IsMonsterType(actorId, 'mvp') then
           table.insert(priority, actorId)
-        elseif actorTarget == owner or actorTarget == myid or ownerTarget == actorId then
+        elseif ownerTarget == actorId then
           table.insert(priority, actorId)
+        elseif actorTarget == owner or actorTarget == myid then
+          if not MustAvoidMonster(actorId) then
+            table.insert(priority, actorId)
+          end
         else
           if not MustAvoidMonster(actorId) then
             table.insert(others, actorId)
           end
         end
-      elseif ownerTarget == actorId or actorTarget == owner or actorTarget == myid then
-        table.insert(priority, actorId)
       end
     end
   end
@@ -191,7 +244,7 @@ end
 ---@param enemyId number
 ---@return boolean
 function IsEnemyAlive(myid, enemyId)
-  if enemyId == 0 or enemyId == nil then
+  if enemyId == 0 or enemyId == nil or enemyId == -1 then
     return false
   end
   local motion = GetV(V_MOTION, enemyId)

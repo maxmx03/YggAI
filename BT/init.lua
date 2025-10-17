@@ -1,7 +1,9 @@
 ---@class Blackboard
 local blackboard = {
   myEnemy = 0,
+  myEnemySet = Set.new(),
   myEnemies = {},
+  ignoredEnemies = {},
   destX = 0,
   destY = 0,
   patrolX = 0,
@@ -701,17 +703,17 @@ local function checkCurrentBattleMode(bb)
   bb.eleanorSpBeforeCast = 0
 end
 
----@type number | nil
+---@type number
 local waitBeforeRun = 0
 
 ---@param myid number
 function YggAI(myid)
-  if waitBeforeRun ~= nil then
-    waitBeforeRun = 1000 + GetTick()
-    if GetTick() < waitBeforeRun then
-      waitBeforeRun = nil
-      return
-    end
+  if waitBeforeRun == 0 then
+    waitBeforeRun = GetTick() + 500
+    return
+  end
+  if GetTick() < waitBeforeRun then
+    return
   end
   blackboard.myId = myid
   blackboard.myOwner = GetV(V_OWNER, myid)

@@ -193,7 +193,6 @@ local M = {
   [1035] = true, -- Hunter Fly
   [1018] = true, -- Creamy
   [1009] = true, -- Condor
-
   [1002] = true, -- Poring
   [1012] = true, -- Roda Frog
   [1014] = true, -- Spore

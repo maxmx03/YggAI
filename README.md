@@ -42,10 +42,11 @@ pode utilizar qualquer editor de texto disponível no seu sistema operacional.
 - [Notepad++](https://notepad-plus-plus.org)
 - [Vscode](https://code.visualstudio.com)
 
-| Variável     | Descrição                                |
-| ------------ | ---------------------------------------- |
-| `MyLevel`    | Level do seu homunculus, sempre atualize |
-| `LifCanHeal` | LIF pode usar curar?                     |
+| Variável     | Descrição                                   |
+| ------------ | ------------------------------------------- |
+| `MyLevel`    | Level do seu homunculus, sempre atualize    |
+| `LifCanHeal` | LIF pode usar curar?                        |
+| `MaxEnemies` | Número de máximo de inimigos para gerenciar |
 
 ### Exemplo
 

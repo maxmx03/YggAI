@@ -10,10 +10,12 @@ local function root(combat)
 
   local normalCombat = Condition(
     Parallel {
+      Delay(enemyNodes.sortEnemiesByDistance, 500),
       Condition(combat, enemyNodes.isAlive),
-      Delay(homunNodes.checkHomunStuck, 2000),
       Delay(enemyNodes.checkIsAttackingOwner, 300),
+      Delay(homunNodes.checkHomunStuck, 3000),
       Delay(enemyNodes.searchForEnemies, 300),
+      Delay(enemyNodes.clearDeadEnemies, 500),
     },
     enemyNodes.hasEnemy
   )
