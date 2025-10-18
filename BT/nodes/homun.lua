@@ -90,8 +90,7 @@ function M.checkHomunStuck(bb)
   local enemyMotion = GetV(V_MOTION, bb.myEnemy)
   local myMotion = GetV(V_MOTION, bb.myId)
   if
-    IsInAttackSight(bb.myId, bb.myEnemy, bb)
-    or enemyTarget == bb.myOwner
+    enemyTarget == bb.myOwner
     or enemyTarget == bb.myId
     or (enemyMotion ~= MOTION_STAND and enemyMotion ~= MOTION_MOVE)
     or (myMotion ~= MOTION_STAND and myMotion ~= MOTION_DAMAGE)
@@ -100,9 +99,9 @@ function M.checkHomunStuck(bb)
     return STATUS.SUCCESS
   end
   if M.stuckCounter >= 3 then
-    bb.ignoredEnemies[bb.myEnemy] = GetTick() + 1000
+    bb.ignoredEnemies[bb.myEnemy] = GetTick() + 3000
     M.stuckCounter = 0
-    while #bb.myEnemies > 0 do
+    while #bb.myEnemies > 1 do
       local enemy = table.remove(bb.myEnemies, 1)
       Set.remove(bb.myEnemySet, enemy)
       if IsEnemyAlive(bb.myId, enemy) then
@@ -110,6 +109,9 @@ function M.checkHomunStuck(bb)
         return STATUS.SUCCESS
       end
     end
+    Set.clear(bb.myEnemySet)
+    bb.myEnemies = {}
+    bb.myEnemy = 0
     return STATUS.FAILURE
   end
   M.stuckCounter = M.stuckCounter + 1

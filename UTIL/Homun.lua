@@ -13,7 +13,7 @@ local function root(combat)
       Delay(enemyNodes.sortEnemiesByDistance, 500),
       Condition(combat, enemyNodes.isAlive),
       Delay(enemyNodes.checkIsAttackingOwner, 300),
-      Delay(homunNodes.checkHomunStuck, 3000),
+      Delay(homunNodes.checkHomunStuck, 1500),
       Delay(enemyNodes.searchForEnemies, 300),
       Delay(enemyNodes.clearDeadEnemies, 500),
     },
