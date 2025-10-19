@@ -177,7 +177,7 @@ function M.executeHold(bb)
     List.pushleft(ResCmdList, NoCommand)
     return STATUS.SUCCESS
   end
-  SearchForEnemies(bb.myId, 8, function(enemy)
+  SearchForEnemies(bb, function(enemy)
     if IsEnemyAlive(bb.myId, enemy) then
       table.insert(bb.myEnemies, enemy)
     end
@@ -217,7 +217,7 @@ function M.executePatrol(bb)
     List.pushleft(ResCmdList, CommandData.lastCommand)
     return STATUS.RUNNING
   end
-  SearchForEnemies(bb.myId, 8, function(enemy)
+  SearchForEnemies(bb, function(enemy)
     if IsEnemyAlive(bb.myId, enemy) then
       table.insert(bb.myEnemies, enemy)
     end
@@ -283,7 +283,7 @@ function M.executeAttackArea(bb)
     List.pushleft(ResCmdList, CommandData.lastCommand)
     return STATUS.RUNNING
   end
-  SearchForEnemies(bb.myId, 8, function(enemy)
+  SearchForEnemies(bb, function(enemy)
     if IsEnemyAlive(bb.myId, enemy) then
       table.insert(bb.myEnemies, enemy)
     end

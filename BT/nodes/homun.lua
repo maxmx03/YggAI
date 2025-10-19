@@ -62,12 +62,13 @@ function M.patrol(bb)
   local cooldown = math.random(10) * 1000
   if (currentTick - M.lastTimePatrol) > cooldown then
     local destX, destY = GetV(V_POSITION, bb.myOwner)
-    local randomX = math.random(-7, 7)
-    local randomY = math.random(-7, 7)
+    local patrolDistance = bb.userConfig.patrolDistance
+    local randomX = math.random(-patrolDistance, patrolDistance)
+    local randomY = math.random(-patrolDistance, patrolDistance)
     destX = destX + randomX
     destY = destY + randomY
     M.lastTimePatrol = currentTick
-    if GetDistanceFromOwner(bb.myOwner) > 10 then
+    if GetDistanceFromOwner(bb.myOwner) > 7 then
       MoveToOwner(bb.myId)
       return STATUS.SUCCESS
     end
@@ -78,7 +79,7 @@ function M.patrol(bb)
 end
 
 function M.follow(bb)
-  if GetDistanceFromOwner(bb.myId) > 3 then
+  if GetDistanceFromOwner(bb.myId) > bb.userConfig.followDistance then
     MoveToOwner(bb.myId)
     return STATUS.RUNNING
   end

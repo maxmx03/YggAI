@@ -27,7 +27,7 @@ function M.isNotMoving(bb)
 end
 
 function M.isMovingAway(bb)
-  return GetDistanceFromOwner(bb.myId) > 7 and GetV(V_MOTION, bb.myOwner) == MOTION_MOVE
+  return GetDistanceFromOwner(bb.myId) > bb.userConfig.maxDistanceToOwner and GetV(V_MOTION, bb.myOwner) == MOTION_MOVE
 end
 
 function M.isTakingDamage(bb)

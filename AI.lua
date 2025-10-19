@@ -1,4 +1,3 @@
-require 'AI.USER_AI.config'
 require 'AI.USER_AI.UTIL.Const'
 require 'AI.USER_AI.UTIL'
 require 'AI.USER_AI.BT'

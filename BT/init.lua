@@ -42,6 +42,8 @@ local blackboard = {
   },
   eleanorSpBeforeCast = 0,
   eleanorTriedCastSkill = false,
+  ---@type UserConfig
+  userConfig = require 'AI.USER_AI.config',
   myCooldowns = {
     -- AMISTR
     [HAMI_CASTLE] = 0,
