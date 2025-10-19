@@ -68,7 +68,7 @@ function M.patrol(bb)
     destX = destX + randomX
     destY = destY + randomY
     M.lastTimePatrol = currentTick
-    if GetDistanceFromOwner(bb.myOwner) > 7 then
+    if GetDistanceFromOwner(bb.myOwner) > patrolDistance then
       MoveToOwner(bb.myId)
       return STATUS.SUCCESS
     end
