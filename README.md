@@ -42,17 +42,22 @@ pode utilizar qualquer editor de texto disponível no seu sistema operacional.
 - [Notepad++](https://notepad-plus-plus.org)
 - [Vscode](https://code.visualstudio.com)
 
-| Variável     | Descrição                                   |
-| ------------ | ------------------------------------------- |
-| `MyLevel`    | Level do seu homunculus, sempre atualize    |
-| `LifCanHeal` | LIF pode usar curar?                        |
-| `MaxEnemies` | Número de máximo de inimigos para gerenciar |
-
-### Exemplo
-
 ```lua
-LifCanHeal = true -- LIF pode usar curar? true ou false (requer poção compacta)
-shouldPreventHomunculusDuplication = false -- ou true (agressivo apenas contra monstros de instâncias, ilusionais, mvps e bosses
+---@class UserConfig
+local myConfig = {
+  homunLevel = 175, -- level do seu homunculus, sempre atualize
+  lifUseHeal = false, -- habilita o curar da LIF
+  maxEnemiesToSearch = 15, -- número de máximo de inimigos que o seu homunculus irá procurar
+  followDistance = 3, -- distância máxima que o homunculus irá seguir o dono
+  patrolDistance = 7, -- distancia máxima que o homunculus irá percorrer
+  maxDistanceToOwner = 7, -- distância máxima entre o homunculus e o dono
+  myEnemies = { -- Lista de monstros que o homunculus irá procurar (deixe em branco para procurar todos monstros)
+    [1782] = true, -- Roween
+  },
+  avoid = { -- lista de monstros que o homunculus não irá atacar
+    [1080] = true, -- Planta Verde
+  },
+}
 ```
 
 ## Comportamento dos Homúnculus no YggAI

@@ -51,7 +51,7 @@ function M.isSkillCastable(skillId)
     bb.mySkill = bb.resetMySkill()
     bb.stopCasting = false
 
-    if MyLevel >= skill.required_level then
+    if bb.userConfig.homunLevel >= skill.required_level then
       local mySp = GetV(V_SP, bb.myId)
       if mySp >= skill.sp and bb.mySpheres >= skill.sphere_cost then
         local currentTime = GetTick()

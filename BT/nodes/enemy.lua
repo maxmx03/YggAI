@@ -20,12 +20,10 @@
 ---@field sortEnemiesByDistance Node
 
 ---@type EnemyNode
-local M = {
-  maxEnemies = MaxEnemies or 8,
-}
+local M = {}
 
 function M.searchForEnemies(bb)
-  if #bb.myEnemies >= M.maxEnemies then
+  if #bb.myEnemies >= bb.userConfig.maxEnemiesToSearch then
     return STATUS.SUCCESS
   end
 
@@ -36,7 +34,7 @@ function M.searchForEnemies(bb)
     end
   end
 
-  SearchForEnemies(bb.myId, M.maxEnemies - #bb.myEnemies, function(enemyId)
+  SearchForEnemies(bb, function(enemyId)
     if
       not Set.contains(bb.myEnemySet, enemyId)
       and IsEnemyAlive(bb.myId, enemyId)

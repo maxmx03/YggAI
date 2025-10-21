@@ -6,14 +6,14 @@ Este es un proyecto de IA para el juego Ragnarok Online, desarrollado en Lua.
 
 ### Arquitectura
 
-La IA de este proyecto está construida usando [Árboles de Comportamiento](https://dev.epicgames.com/documentation/en-us/unreal-engine/behavior-tree-in-unreal-engine---overview).  
+La IA de este proyecto está construida usando [Árboles de Comportamiento](https://dev.epicgames.com/documentation/en-us/unreal-engine/behavior-tree-in-unreal-engine---overview).
 Este enfoque organiza la lógica de decisión en una estructura jerárquica, permitiendo un comportamiento adaptable y fácil de gestionar para los personajes controlados por IA.
 
 ### Cómo usar
 
 #### Archivo zip
 
-Haz clic en **Code > Download ZIP**, extrae el archivo y copia el contenido de la carpeta YggAI en `C:\Gravity\Ragnarok\AI\USER_AI`.  
+Haz clic en **Code > Download ZIP**, extrae el archivo y copia el contenido de la carpeta YggAI en `C:\Gravity\Ragnarok\AI\USER_AI`.
 Luego, entra al juego y escribe `/hoai` para activar YggAI. Para volver al script original, escribe el mismo comando otra vez.
 
 #### Control de versiones
@@ -37,16 +37,22 @@ Puedes usar cualquier editor de texto disponible en tu sistema:
 - [Notepad++](https://notepad-plus-plus.org)
 - [Vscode](https://code.visualstudio.com)
 
-| Variable     | Descripción                           |
-| ------------ | ------------------------------------- |
-| `MyLevel`    | Nivel de tu homúnculo, actualízalo    |
-| `LifCanHeal` | ¿LIF puede curar?                     |
-| `MaxEnemies` | Número máximo de enemigos a gestionar |
-
-#### Ejemplo
-
 ```lua
-LifCanHeal = true -- ¿LIF puede curar? true o false (requiere poción condensada)
+---@class UserConfig
+local myConfig = {
+  homunLevel = 175, -- nivel de tu homunculo, siempre actualiza
+  lifUseHeal = false, -- habilita el curar de LIF
+  maxEnemiesToSearch = 15, -- número máximo de enemigos que tu homunculo buscará
+  followDistance = 3, -- distancia máxima que tu homunculo seguirá al dueño
+  patrolDistance = 7, -- distancia máxima que tu homunculo percibirá
+  maxDistanceToOwner = 7, -- distancia máxima entre tu homunculo y el dueño
+  myEnemies = { -- Lista de monstruos que tu homunculo buscará (deja en blanco para buscar todos los monstruos)
+    [1782] = true, -- Roween
+  },
+  avoid = { -- lista de monstruos que tu homunculo no atacará
+    [1080] = true, -- Planta Verde
+  },
+}
 ```
 
 ## Comportamiento de los Homúnculos en YggAI
@@ -126,7 +132,11 @@ Bayeri es un homúnculo de combate directo, enfocado en infligir daño masivo y 
 
 ### Contribuir
 
-Puedes contribuir reportando errores, sugiriendo nuevas funciones o corrigiendo problemas.  
+Puedes contribuir reportando errores, sugiriendo nuevas funciones o corrigiendo problemas.
 Para reportar un error, crea un nuevo tema en [Issues](https://github.com/maxmx03/USER_AI/issues).
 
 Si quieres contribuir de otra forma, envía un Rodex en el juego a `Freya/Pelunia (BIO)` o `Freya/Millianor (AB)`, enviando zenys o Semilla de la Vida.
+
+```
+
+```

@@ -107,6 +107,10 @@ function Set.fromList(list)
   return set
 end
 
+function Set.isEmpty(set)
+  return next(set) == nil
+end
+
 function GetDistance(x1, y1, x2, y2)
   return math.floor(math.sqrt((x1 - x2) ^ 2 + (y1 - y2) ^ 2))
 end
@@ -140,7 +144,7 @@ function IsOutOfSight(id1, id2)
     return true
   end
   local d = GetDistance(x1, y1, x2, y2)
-  if d > 15 then -- default is 20
+  if d > 16 then -- default is 20
     return true
   else
     return false
@@ -183,40 +187,61 @@ function IsMonsterType(myEnemy, monsterType)
 end
 
 ---@param myEnemy number
+---@param bb Blackboard
 ---@return boolean
-function MustAvoidMonster(myEnemy)
-  local monstersToAvoid = require 'AI.USER_AI.MONSTER_DATA.avoid'
+function MustAvoidMonster(myEnemy, bb)
+  ---@type UserConfig
   local id = GetV(V_HOMUNTYPE, myEnemy)
-  return monstersToAvoid[id]
+  return bb.userConfig.avoid[id]
 end
 
----@param myid number
----@param maxEnemies number
+---@param bb Blackboard
 ---@param callback function
-function SearchForEnemies(myid, maxEnemies, callback)
-  local owner = GetV(V_OWNER, myid)
+function SearchForEnemies(bb, callback)
+  local maxEnemiesToFind = math.max(0, bb.userConfig.maxEnemiesToSearch - #bb.myEnemies)
+  if maxEnemiesToFind <= 0 then
+    callback(0)
+    return
+  end
+  local owner = bb.myOwner
+  local myid = bb.myId
   local priority = {}
   local others = {}
   local actors = GetActors()
+
   for _, actorId in ipairs(actors) do
-    if #priority + #others >= maxEnemies then
+    if #priority + #others >= maxEnemiesToFind then
       break
     end
     if actorId ~= owner and actorId ~= myid and not IsOutOfSight(myid, actorId) then
       local actorTarget = GetV(V_TARGET, actorId)
       local ownerTarget = GetV(V_TARGET, owner)
-      if IsMonster(actorId) == 1 then
-        if IsMonsterType(actorId, 'mvp') then
-          table.insert(priority, actorId)
-        elseif ownerTarget == actorId then
+      if not Set.isEmpty(bb.userConfig.myEnemies) then
+        local id = GetV(V_HOMUNTYPE, actorId)
+        local isUserEnemy = bb.userConfig.myEnemies[id]
+        if isUserEnemy then
+          table.insert(others, actorId)
+        elseif IsMonsterType(actorId, 'mvp') then
           table.insert(priority, actorId)
         elseif actorTarget == owner or actorTarget == myid then
-          if not MustAvoidMonster(actorId) then
+          if not MustAvoidMonster(actorId, bb) then
             table.insert(priority, actorId)
           end
-        else
-          if not MustAvoidMonster(actorId) then
-            table.insert(others, actorId)
+        end
+      else
+        if IsMonster(actorId) == 1 then
+          if IsMonsterType(actorId, 'mvp') then
+            table.insert(priority, actorId)
+          elseif ownerTarget == actorId then
+            table.insert(priority, actorId)
+          elseif actorTarget == owner or actorTarget == myid then
+            if not MustAvoidMonster(actorId, bb) then
+              table.insert(priority, actorId)
+            end
+          else
+            if not MustAvoidMonster(actorId, bb) then
+              table.insert(others, actorId)
+            end
           end
         end
       end

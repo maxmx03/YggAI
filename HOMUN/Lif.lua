@@ -9,7 +9,7 @@ local ownerCondition = require 'AI.USER_AI.BT.nodes.owner'
 local executeHeal = skillNodes.executeSkill('myOwner', { skillType = 'object' })
 ---@type Condition
 local isHealCastable = function(bb)
-  return skillNodes.isSkillCastable(HLIF_HEAL)(bb) and LifCanHeal
+  return skillNodes.isSkillCastable(HLIF_HEAL)(bb) and bb.userConfig.lifUseHeal
 end
 
 local healOwner = Condition(
