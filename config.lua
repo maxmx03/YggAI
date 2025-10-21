@@ -1,6 +1,6 @@
 ---@class UserConfig
 local myConfig = {
-  homunLevel = 999,
+  homunLevel = 175,
   lifUseHeal = false,
   maxEnemiesToSearch = 15,
   followDistance = 3,

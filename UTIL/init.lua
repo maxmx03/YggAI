@@ -144,7 +144,7 @@ function IsOutOfSight(id1, id2)
     return true
   end
   local d = GetDistance(x1, y1, x2, y2)
-  if d > 15 then -- default is 20
+  if d > 16 then -- default is 20
     return true
   else
     return false
