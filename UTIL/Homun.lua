@@ -8,35 +8,17 @@ local function root(combat)
   ---@type OwnerNode
   local ownerNodes = require 'AI.USER_AI.BT.nodes.owner'
 
-  local normalCombat = Condition(
+  local fightEnemy = Condition(
     Parallel {
-      Delay(enemyNodes.sortEnemiesByDistance, 500),
       Condition(combat, enemyNodes.isAlive),
-      Delay(enemyNodes.checkIsAttackingOwner, 300),
       Delay(homunNodes.checkHomunStuck, 500),
-      Delay(enemyNodes.searchForEnemies, 300),
-      Delay(enemyNodes.clearDeadEnemies, 500),
     },
     enemyNodes.hasEnemy
   )
 
-  local patrolWhenOwnerIsSitting = Condition(
-    Parallel {
-      homunNodes.patrol,
-      Delay(enemyNodes.searchForEnemies, 300),
-    },
-    ownerNodes.isSitting
-  )
+  local patrolWhenOwnerIsSitting = Condition(homunNodes.patrol, ownerNodes.isSitting)
 
-  local goBackToUser = Condition(
-    Parallel {
-      homunNodes.follow,
-      Delay(enemyNodes.searchForEnemies, 300),
-    },
-    ownerNodes.isNotMoving
-  )
-
-  local combatUnlessOwnerIsMovingAway = Unless(normalCombat, ownerNodes.isMovingAway)
+  local stayBesideOwner = Condition(homunNodes.follow, ownerNodes.isNotMoving)
 
   local userCommands = Selector {
     Condition(commandNodes.executeHold, commandNodes.isHoldMode),
@@ -51,18 +33,12 @@ local function root(combat)
   }
 
   local auto = Selector {
-    combatUnlessOwnerIsMovingAway,
-    Condition(
-      Parallel {
-        homunNodes.follow,
-        Delay(enemyNodes.searchForEnemies, 300),
-      },
-      ownerNodes.isMoving
-    ),
+    Unless(fightEnemy, ownerNodes.isMovingAway),
+    Condition(homunNodes.follow, ownerNodes.isMoving),
     Unless(
       Selector {
         patrolWhenOwnerIsSitting,
-        goBackToUser,
+        stayBesideOwner,
       },
       enemyNodes.hasEnemy
     ),
