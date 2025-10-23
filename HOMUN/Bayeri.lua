@@ -43,7 +43,7 @@ local enqueueAngriffsModus = Condition(
 
 local combat = Selector {
   executeSkills,
-  Condition(Unless(enqueueHeiligeStange, enemyNodes.isHolyType), enemyNodes.hasEnemyGroup),
+  Condition(Unless(enqueueHeiligeStange, enemyNodes.isHolyType), enemyNodes.hasEnemyGroup(2, 5)),
   Condition(enqueueSteinWand, ownerNodes.isDying),
   Condition(enqueueAngriffsModus, ownerNodes.isDying),
   Condition(enqueueSteinWand, ownerNodes.isTakingDamage),

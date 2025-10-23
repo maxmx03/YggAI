@@ -1,6 +1,6 @@
 ---@class EnemyNode
 ---@field hasEnemy Condition
----@field hasEnemyGroup Condition
+---@field hasEnemyGroup fun(minEnemies: number, maxDistance: number): Condition
 ---@field isAlive Condition
 ---@field isNotInAttackSight Condition
 ---@field isMVP Condition
@@ -32,37 +32,40 @@ function M.hasEnemy(bb)
   return false
 end
 
-function M.hasEnemyGroup(bb)
-  local minEnemies = 2
-  local maxDistance = 7
-  local resetedCoordinates = { x = 0, y = 0 }
-  if #bb.myEnemies < minEnemies then
-    bb.mySkill.coordinates = resetedCoordinates
-    return false
-  end
-  local groupEnemies = { bb.myEnemy }
-  local myEnemyX, myEnemyY = GetV(V_POSITION, bb.myEnemy)
-  local sumX, sumY = myEnemyX, myEnemyY
-  for _, enemy in ipairs(bb.myEnemies) do
-    if enemy ~= bb.myEnemy and IsEnemyAlive(bb.myId, bb.myEnemy) then
-      local enemyX, enemyY = GetV(V_POSITION, enemy)
-      if enemyX ~= -1 then
-        local distance = GetDistance(myEnemyX, myEnemyY, enemyX, enemyY)
-        if distance <= maxDistance then
-          table.insert(groupEnemies, enemy)
-          sumX = sumX + enemyX
-          sumY = sumY + enemyY
+---@return Condition
+function M.hasEnemyGroup(minEnemies, maxDistance)
+  return function(bb)
+    minEnemies = minEnemies or 2
+    maxDistance = maxDistance or 5
+    local resetedCoordinates = { x = 0, y = 0 }
+    if #bb.myEnemies < minEnemies then
+      bb.mySkill.coordinates = resetedCoordinates
+      return false
+    end
+    local groupEnemies = { bb.myEnemy }
+    local myEnemyX, myEnemyY = GetV(V_POSITION, bb.myEnemy)
+    local sumX, sumY = myEnemyX, myEnemyY
+    for _, enemy in ipairs(bb.myEnemies) do
+      if enemy ~= bb.myEnemy and IsEnemyAlive(bb.myId, bb.myEnemy) then
+        local enemyX, enemyY = GetV(V_POSITION, enemy)
+        if enemyX ~= -1 then
+          local distance = GetDistance(myEnemyX, myEnemyY, enemyX, enemyY)
+          if distance <= maxDistance then
+            table.insert(groupEnemies, enemy)
+            sumX = sumX + enemyX
+            sumY = sumY + enemyY
+          end
         end
       end
     end
+    if #groupEnemies >= minEnemies then
+      bb.mySkill.coordinates.x = math.floor(sumX / #groupEnemies)
+      bb.mySkill.coordinates.y = math.floor(sumY / #groupEnemies)
+      return true
+    end
+    bb.mySkill.coordinates = resetedCoordinates
+    return false
   end
-  if #groupEnemies >= minEnemies then
-    bb.mySkill.coordinates.x = math.floor(sumX / #groupEnemies)
-    bb.mySkill.coordinates.y = math.floor(sumY / #groupEnemies)
-    return true
-  end
-  bb.mySkill.coordinates = resetedCoordinates
-  return false
 end
 
 function M.isAlive(bb)

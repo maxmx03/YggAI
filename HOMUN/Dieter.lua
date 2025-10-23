@@ -42,16 +42,21 @@ local executeSkills = Condition(
   skillNodes.hasSkillsToCast
 )
 
+local hasWaterOrPlantTypeMonsters = Selector {
+  Condition(volcanicAsh, enemyNodes.isPlantType),
+  Condition(volcanicAsh, enemyNodes.isWaterType),
+}
+
 local combat = Selector {
   executeSkills,
   pyroclastic,
   Unless(lavaSlide, enemyNodes.isFireType),
   Unless(magmaFlow, enemyNodes.isFireType),
-  Condition(blastForge, enemyNodes.hasEnemyGroup),
+  Condition(blastForge, enemyNodes.hasEnemyGroup(2, 5)),
   Condition(blastForge, enemyNodes.isMVP),
+  Condition(hasWaterOrPlantTypeMonsters, enemyNodes.hasEnemyGroup(5, 3)),
   Condition(volcanicAsh, enemyNodes.isMVP),
-  Condition(volcanicAsh, enemyNodes.isPlantType),
-  Condition(volcanicAsh, enemyNodes.isWaterType),
+
   Unless(homunNodes.attackAndChase, skillNodes.hasSkillsToCast),
 }
 return root(combat)

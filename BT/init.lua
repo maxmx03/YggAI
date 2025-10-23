@@ -169,7 +169,7 @@ local blackboard = {
     [MH_VOLCANIC_ASH] = {
       id = MH_VOLCANIC_ASH,
       sp = 80,
-      cooldown = 6000,
+      cooldown = 13000,
       level = 5,
       required_level = 102,
     },

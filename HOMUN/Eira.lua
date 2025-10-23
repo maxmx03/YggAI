@@ -47,7 +47,7 @@ local combat = Selector {
   Condition(castOverBoost, ownerNodes.isDying),
   Condition(cutterAttack, enemyNodes.isWindType),
   Condition(xenoAttack, enemyNodes.isGhostType),
-  Condition(xenoAttack, enemyNodes.hasEnemyGroup),
+  Condition(xenoAttack, enemyNodes.hasEnemyGroup(2, 7)),
   Unless(cutterAttack, enemyNodes.isGhostType),
   Unless(homunNodes.attackAndChase, skillNodes.hasSkillsToCast),
   Condition(tryReviveOwner, ownerNodes.isDead),
