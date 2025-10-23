@@ -762,11 +762,26 @@ local function checkCurrentBattleMode(bb)
   bb.eleanorSpBeforeCast = 0
 end
 
+---@alias Position { x: number, y: number }
+
+---@param myPosition Position
+---@param ownerPosition Position
+---@return boolean
+local function ownerUseTeleport(myPosition, ownerPosition)
+  return myPosition.x == ownerPosition.x and myPosition.y == ownerPosition.y
+end
+
 ---@param myid number
 function YggAI(myid)
   blackboard.myId = myid
   blackboard.myOwner = GetV(V_OWNER, myid)
   blackboard.mySp = GetV(V_SP, myid)
+  local myX, myY = GetV(V_POSITION, blackboard.myId)
+  local ownerX, ownerY = GetV(V_POSITION, blackboard.myOwner)
+  if ownerUseTeleport({ x = myX, y = myY }, { x = ownerX, y = ownerY }) then
+    MoveToOwner(blackboard.myId)
+    return
+  end
   if homun.isEleanor(blackboard) then
     checkCurrentBattleMode(blackboard)
   end
