@@ -30,7 +30,11 @@ function M.executeSkill(target, opts)
       SkillObject(bb.myId, bb.mySkill.level, bb.mySkill.id, myTarget)
     end
     bb.eleanorTriedCastSkill = true
-    bb.mySpheres = math.max(0, bb.mySpheres - bb.mySkills[bb.mySkill.id].sphere_cost)
+    if bb.mySkill.id == MH_THE_ONE_FIGHTER_RISES then
+      bb.mySpheres = 5
+    else
+      bb.mySpheres = math.max(0, bb.mySpheres - bb.mySkills[bb.mySkill.id].sphere_cost)
+    end
     if opts.keepRunning then
       return STATUS.RUNNING
     end

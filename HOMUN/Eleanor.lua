@@ -60,7 +60,19 @@ local ClawComboMode = Sequence {
   ClawComboSequence,
 }
 
+local BlazingAndFurious = Condition(
+  eleanorNodes.executeSkill('myEnemy', { skillType = 'object' }),
+  eleanorNodes.isSkillCastable(MH_BLAZING_AND_FURIOUS)
+)
+
+local TheOneFighterRises = Condition(
+  eleanorNodes.executeSkill('myEnemy', { skillType = 'object' }),
+  eleanorNodes.isSkillCastable(MH_THE_ONE_FIGHTER_RISES)
+)
+
 local combat = Selector {
+  Condition(BlazingAndFurious, enemyNodes.hasEnemyGroup(2, 7)),
+  Condition(TheOneFighterRises, enemyNodes.hasEnemyGroup(2, 7)),
   Condition(BattleComboMode, eleanorNodes.isBattleMode),
   Condition(ClawComboMode, eleanorNodes.isClawMode),
   Unless(eleanorNodes.attackAndChase, eleanorNodes.hasAllSpheres),

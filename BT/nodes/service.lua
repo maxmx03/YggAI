@@ -54,12 +54,15 @@ function M.sortEnemiesByDistance(bb)
 end
 
 function M.checkIsAttackingOwner(bb)
+  bb.ownerBeingTarget = false
   if GetV(V_TARGET, bb.myEnemy) == bb.myOwner or IsMonsterType(bb.myEnemy, 'mvp') then
+    bb.ownerBeingTarget = true
     return STATUS.SUCCESS
   end
   for pos, enemy in ipairs(bb.myEnemies) do
     if IsEnemyAlive(bb.myId, bb.myEnemy) then
       if GetV(V_TARGET, enemy) == bb.myOwner then
+        bb.ownerBeingTarget = true
         bb.myEnemy = table.remove(bb.myEnemies, pos)
         Set.remove(bb.myEnemySet, bb.myEnemy)
         return STATUS.SUCCESS
