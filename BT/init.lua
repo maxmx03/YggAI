@@ -656,7 +656,7 @@ local services = require 'AI.USER_AI.BT.nodes.service'
 ---@type HomunNode
 local homun = require 'AI.USER_AI.BT.nodes.homun'
 local tree = Parallel {
-  Delay(services.searchForEnemies, 500),
+  Delay(services.searchForEnemies, 300),
   Delay(services.clearDeadEnemies, 1000),
   Delay(services.sortEnemiesByDistance, 1000),
   Delay(services.checkIsAttackingOwner, 500),
