@@ -10,6 +10,7 @@ local blackboard = {
   patrolY = 0,
   myId = 0,
   myOwner = 0,
+  ownerBeingTarget = false,
   mySp = 0,
   mySpList = {},
   mySpheres = 0,
@@ -55,6 +56,9 @@ local blackboard = {
     [MH_STEINWAND] = 0,
     [MH_ANGRIFFS_MODUS] = 0,
     [MH_HEILIGE_STANGE] = 0,
+    [MH_GLANZEN_SPIES] = 0,
+    [MH_HEILIGE_PFERD] = 0,
+    [MH_GOLDENE_TONE] = 0,
     -- DIETER
     [MH_VOLCANIC_ASH] = 0,
     [MH_LAVA_SLIDE] = 0,
@@ -62,6 +66,7 @@ local blackboard = {
     [MH_MAGMA_FLOW] = 0,
     [MH_PYROCLASTIC] = 0,
     [MH_BLAST_FORGE] = 0,
+    [MH_TEMPERING] = 0,
     -- EIRA
     [MH_ERASER_CUTTER] = 0,
     [MH_OVERED_BOOST] = 0,
@@ -78,6 +83,8 @@ local blackboard = {
     [MH_TINDER_BREAKER] = 0,
     [MH_CBC] = 0,
     [MH_EQC] = 0,
+    [MH_BLAZING_AND_FURIOUS] = 0,
+    [MH_THE_ONE_FIGHTER_RISES] = 0,
     -- FILIR
     [HFLI_MOON] = 0,
     [HFLI_FLEET] = 0,
@@ -164,6 +171,27 @@ local blackboard = {
       level = 10,
       required_level = 138,
     },
+    [MH_GLANZEN_SPIES] = {
+      id = MH_GLANZEN_SPIES,
+      sp = 105,
+      cooldown = 250,
+      level = 10,
+      required_level = 215,
+    },
+    [MH_HEILIGE_PFERD] = {
+      id = MH_HEILIGE_PFERD,
+      sp = 185,
+      cooldown = 500,
+      level = 10,
+      required_level = 230,
+    },
+    [MH_GOLDENE_TONE] = {
+      id = MH_GOLDENE_TONE,
+      sp = 205,
+      cooldown = 120000,
+      level = 10,
+      required_level = 230,
+    },
     -- DIETER
     ---@type Skill
     [MH_VOLCANIC_ASH] = {
@@ -212,6 +240,13 @@ local blackboard = {
       cooldown = 5000,
       level = 10,
       required_level = 215,
+    },
+    [MH_TEMPERING] = {
+      id = MH_TEMPERING,
+      sp = 155,
+      cooldown = 120000,
+      level = 10,
+      required_level = 230,
     },
     -- EIRA
     ---@type Skill
@@ -331,6 +366,22 @@ local blackboard = {
       level = 5,
       sphere_cost = 2,
       required_level = 133,
+    },
+    [MH_BLAZING_AND_FURIOUS] = {
+      id = MH_BLAZING_AND_FURIOUS,
+      sp = 148,
+      cooldown = 1000,
+      level = 10,
+      sphere_cost = 5,
+      required_level = 215,
+    },
+    [MH_THE_ONE_FIGHTER_RISES] = {
+      id = MH_THE_ONE_FIGHTER_RISES,
+      sp = 154,
+      cooldown = 2000,
+      level = 10,
+      sphere_cost = 0,
+      required_level = 230,
     },
     -- FILIR
     ---@type Skill

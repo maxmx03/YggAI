@@ -31,7 +31,7 @@ function M.isMovingAway(bb)
 end
 
 function M.isTakingDamage(bb)
-  if GetV(V_MOTION, bb.myOwner) == MOTION_DAMAGE then
+  if GetV(V_MOTION, bb.myOwner) == MOTION_DAMAGE or bb.ownerBeingTarget then
     return true
   end
   return false

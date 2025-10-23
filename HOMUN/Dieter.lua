@@ -34,6 +34,11 @@ local pyroclastic = Condition(
   skillNodes.isSkillCastable(MH_PYROCLASTIC)
 )
 
+local tempering = Condition(
+  skillNodes.enqueueSkill(MH_TEMPERING, 'myId', { skillType = 'object' }),
+  skillNodes.isSkillCastable(MH_TEMPERING)
+)
+
 local executeSkills = Condition(
   Parallel {
     homunNodes.chaseEnemy,
@@ -49,14 +54,14 @@ local hasWaterOrPlantTypeMonsters = Selector {
 
 local combat = Selector {
   executeSkills,
-  pyroclastic,
+  tempering,
+  Unless(pyroclastic, enemyNodes.isFireType),
   Unless(lavaSlide, enemyNodes.isFireType),
   Unless(magmaFlow, enemyNodes.isFireType),
   Condition(blastForge, enemyNodes.hasEnemyGroup(2, 5)),
   Condition(blastForge, enemyNodes.isMVP),
   Condition(hasWaterOrPlantTypeMonsters, enemyNodes.hasEnemyGroup(5, 3)),
   Condition(volcanicAsh, enemyNodes.isMVP),
-
   Unless(homunNodes.attackAndChase, skillNodes.hasSkillsToCast),
 }
 return root(combat)

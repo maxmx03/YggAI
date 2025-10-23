@@ -41,12 +41,32 @@ local enqueueAngriffsModus = Condition(
   skillNodes.isSkillCastable(MH_ANGRIFFS_MODUS)
 )
 
+local enqueueGlanzenSpies = Condition(
+  skillNodes.enqueueSkill(MH_GLANZEN_SPIES, 'myEnemy', { skillType = 'object' }),
+  skillNodes.isSkillCastable(MH_GLANZEN_SPIES)
+)
+
+local enqueueHeiligePferd = Condition(
+  skillNodes.enqueueSkill(MH_HEILIGE_PFERD, 'myId', { skillType = 'object' }),
+  skillNodes.isSkillCastable(MH_HEILIGE_PFERD)
+)
+
+local enqueueGoldeneTone = Condition(
+  skillNodes.enqueueSkill(MH_GOLDENE_TONE, 'myId', { skillType = 'object' }),
+  skillNodes.isSkillCastable(MH_GOLDENE_TONE)
+)
+
 local combat = Selector {
   executeSkills,
+  enqueueGoldeneTone,
+  Condition(Unless(enqueueHeiligePferd, enemyNodes.isHolyType), enemyNodes.hasEnemyGroup(5, 3)),
   Condition(Unless(enqueueHeiligeStange, enemyNodes.isHolyType), enemyNodes.hasEnemyGroup(2, 5)),
+  Condition(enqueueHeiligePferd, enemyNodes.isMVP),
+  Condition(enqueueSteinWand, enemyNodes.isMVP),
   Condition(enqueueSteinWand, ownerNodes.isDying),
   Condition(enqueueAngriffsModus, ownerNodes.isDying),
   Condition(enqueueSteinWand, ownerNodes.isTakingDamage),
+  Unless(enqueueGlanzenSpies, enemyNodes.isHolyType),
   Unless(enqueueGoldeneFerse, enemyNodes.isHolyType),
   Unless(enqueueStahlHorn, enemyNodes.isGhostType),
   Unless(homunNodes.attackAndChase, skillNodes.hasSkillsToCast),

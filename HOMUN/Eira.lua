@@ -36,11 +36,36 @@ local xenoAttack = Unless(
   enemyNodes.isWindType
 )
 
+local twisterAttack = Unless(
+  Condition(
+    Parallel {
+      homunNodes.chaseEnemy,
+      skillNodes.executeSkill('myEnemy', { skillType = 'object', keepRunning = true }),
+    },
+    skillNodes.isSkillCastable(MH_TWISTER_CUTTER)
+  ),
+  enemyNodes.isWindType
+)
+
+local absoluteZephyr = Unless(
+  Condition(
+    Parallel {
+      homunNodes.chaseEnemy,
+      skillNodes.executeSkill('myEnemy', { skillType = 'object', keepRunning = true }),
+    },
+    skillNodes.isSkillCastable(MH_ABSOLUTE_ZEPHYR)
+  ),
+  enemyNodes.isGhostType
+)
+
 local combat = Selector {
   Condition(castOverBoost, enemyNodes.isMVP),
   Condition(castOverBoost, ownerNodes.isDying),
+  Condition(twisterAttack, enemyNodes.isMVP),
   Condition(cutterAttack, enemyNodes.isWindType),
+  Condition(twisterAttack, enemyNodes.isGhostType),
   Condition(xenoAttack, enemyNodes.isGhostType),
+  Condition(absoluteZephyr, enemyNodes.hasEnemyGroup(3, 5)),
   Condition(xenoAttack, enemyNodes.hasEnemyGroup(2, 7)),
   Unless(cutterAttack, enemyNodes.isGhostType),
   homunNodes.attackAndChase,
