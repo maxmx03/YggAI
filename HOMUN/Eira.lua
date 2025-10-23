@@ -27,29 +27,23 @@ local cutterAttack = Condition(
 )
 local xenoAttack = Unless(
   Condition(
-    skillNodes.enqueueSkill(MH_XENO_SLASHER, 'myEnemy', { skillType = 'area', keepRunning = true }),
+    Parallel {
+      homunNodes.chaseEnemy,
+      skillNodes.executeSkill('myEnemy', { skillType = 'area', keepRunning = true }),
+    },
     skillNodes.isSkillCastable(MH_XENO_SLASHER)
   ),
   enemyNodes.isWindType
 )
 
-local executeSkills = Condition(
-  Parallel {
-    homunNodes.chaseEnemy,
-    skillNodes.executeQueuedSkill,
-  },
-  skillNodes.hasSkillsToCast
-)
-
 local combat = Selector {
-  executeSkills,
   Condition(castOverBoost, enemyNodes.isMVP),
   Condition(castOverBoost, ownerNodes.isDying),
   Condition(cutterAttack, enemyNodes.isWindType),
   Condition(xenoAttack, enemyNodes.isGhostType),
   Condition(xenoAttack, enemyNodes.hasEnemyGroup(2, 7)),
   Unless(cutterAttack, enemyNodes.isGhostType),
-  Unless(homunNodes.attackAndChase, skillNodes.hasSkillsToCast),
+  homunNodes.attackAndChase,
   Condition(tryReviveOwner, ownerNodes.isDead),
 }
 
