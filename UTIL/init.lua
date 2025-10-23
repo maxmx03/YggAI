@@ -215,28 +215,32 @@ function SearchForEnemies(bb, callback)
     end
     if actorId ~= owner and actorId ~= myid and not IsOutOfSight(myid, actorId) then
       local actorTarget = GetV(V_TARGET, actorId)
+      local actorMotion = GetV(V_MOTION, actorId)
       local ownerTarget = GetV(V_TARGET, owner)
-      if not Set.isEmpty(bb.userConfig.myEnemies) then
-        local id = GetV(V_HOMUNTYPE, actorId)
-        local isUserEnemy = bb.userConfig.myEnemies[id]
-        if isUserEnemy then
-          table.insert(others, actorId)
-        elseif IsMonsterType(actorId, 'mvp') then
+      local ownerMotion = GetV(V_MOTION, owner)
+      local myMotion = GetV(V_MOTION, myid)
+      if IsPlayer(actorId) == 1 then
+        if actorTarget == myid and myMotion == MOTION_DAMAGE then
+          table.insert(priority, actorId)
+        elseif actorTarget == owner and ownerMotion == MOTION_DAMAGE then
+          table.insert(priority, actorId)
+        elseif ownerTarget == actorId and actorMotion == MOTION_DAMAGE then
+          table.insert(priority, actorId)
+        end
+      elseif IsMonster(actorId) == 1 then
+        if IsMonsterType(actorId, 'mvp') then
+          table.insert(priority, actorId)
+        elseif ownerTarget == actorId then
           table.insert(priority, actorId)
         elseif actorTarget == owner or actorTarget == myid then
           if not MustAvoidMonster(actorId, bb) then
             table.insert(priority, actorId)
           end
-        end
-      else
-        if IsMonster(actorId) == 1 then
-          if IsMonsterType(actorId, 'mvp') then
-            table.insert(priority, actorId)
-          elseif ownerTarget == actorId then
-            table.insert(priority, actorId)
-          elseif actorTarget == owner or actorTarget == myid then
-            if not MustAvoidMonster(actorId, bb) then
-              table.insert(priority, actorId)
+        else
+          if not Set.isEmpty(bb.userConfig.myEnemies) then
+            local id = GetV(V_HOMUNTYPE, actorId)
+            if bb.userConfig.myEnemies[id] then
+              table.insert(others, actorId)
             end
           else
             if not MustAvoidMonster(actorId, bb) then
@@ -284,4 +288,14 @@ function ChanceDoOrGainSomething(percentage)
     return true
   end
   return false
+end
+
+---@param id number
+---@return 0 | 1
+function IsPlayer(id)
+  local magicNumber = 100000
+  if id > magicNumber then
+    return 1
+  end
+  return 0
 end

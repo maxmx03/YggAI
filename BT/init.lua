@@ -652,20 +652,26 @@ local vanil = require 'AI.USER_AI.HOMUN.Vanil'
 local amistr = require 'AI.USER_AI.HOMUN.Amistr'
 local lif = require 'AI.USER_AI.HOMUN.Lif'
 local filir = require 'AI.USER_AI.HOMUN.Filir'
+local services = require 'AI.USER_AI.BT.nodes.service'
 ---@type HomunNode
 local homun = require 'AI.USER_AI.BT.nodes.homun'
-local tree = Selector {
-  Condition(dieter, homun.isDieter),
-  Condition(sera, homun.isSera),
-  Condition(eira, homun.isEira),
-  Condition(bayeri, homun.isBayeri),
-  Condition(eleanor, homun.isEleanor),
-  Condition(vanil, homun.isVanilmirth),
-  Condition(amistr, homun.isAmistr),
-  Condition(lif, homun.isLif),
-  Condition(filir, homun.isFilir),
+local tree = Parallel {
+  Delay(services.searchForEnemies, 300),
+  Delay(services.clearDeadEnemies, 1000),
+  Delay(services.sortEnemiesByDistance, 1000),
+  Delay(services.checkIsAttackingOwner, 500),
+  Selector {
+    Condition(dieter, homun.isDieter),
+    Condition(sera, homun.isSera),
+    Condition(eira, homun.isEira),
+    Condition(bayeri, homun.isBayeri),
+    Condition(eleanor, homun.isEleanor),
+    Condition(vanil, homun.isVanilmirth),
+    Condition(amistr, homun.isAmistr),
+    Condition(lif, homun.isLif),
+    Condition(filir, homun.isFilir),
+  },
 }
-
 local timeout = 0
 
 ---@param bb Blackboard
@@ -705,18 +711,8 @@ local function checkCurrentBattleMode(bb)
   bb.eleanorSpBeforeCast = 0
 end
 
----@type number
-local waitBeforeRun = 0
-
 ---@param myid number
 function YggAI(myid)
-  if waitBeforeRun == 0 then
-    waitBeforeRun = GetTick() + 500
-    return
-  end
-  if GetTick() < waitBeforeRun then
-    return
-  end
   blackboard.myId = myid
   blackboard.myOwner = GetV(V_OWNER, myid)
   blackboard.mySp = GetV(V_SP, myid)

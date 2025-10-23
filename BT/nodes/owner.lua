@@ -20,7 +20,7 @@ end
 
 function M.isNotMoving(bb)
   local ownerMotion = GetV(V_MOTION, bb.myOwner)
-  if ownerMotion == MOTION_STAND or ownerMotion == MOTION_DEAD then
+  if ownerMotion == MOTION_STAND then
     return true
   end
   return false
