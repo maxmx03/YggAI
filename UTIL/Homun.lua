@@ -15,12 +15,10 @@ local function root(combat)
     },
     enemyNodes.hasEnemy
   )
-
   local patrolWhenOwnerIsSitting = Condition(homunNodes.patrol, ownerNodes.isSitting)
-
   local stayBesideOwner = Condition(homunNodes.follow, ownerNodes.isNotMoving)
 
-  local userCommands = Selector {
+  return Selector {
     Condition(commandNodes.executeHold, commandNodes.isHoldMode),
     Condition(commandNodes.executeFollow, commandNodes.isFollowMode),
     Condition(commandNodes.executeMove, commandNodes.isMoveMode),
@@ -30,29 +28,20 @@ local function root(combat)
     Condition(commandNodes.executeAttackArea, commandNodes.isAttackArea),
     Condition(commandNodes.executeSkillObject, commandNodes.isSkillObject),
     Condition(commandNodes.executeSkillGround, commandNodes.isSkillGround),
-  }
-
-  local auto = Selector {
-    Unless(fightEnemy, ownerNodes.isMovingAway),
-    Condition(homunNodes.follow, ownerNodes.isMoving),
     Unless(
       Selector {
-        patrolWhenOwnerIsSitting,
-        stayBesideOwner,
-      },
-      enemyNodes.hasEnemy
-    ),
-  }
-
-  return Selector {
-    Condition(
-      Sequence {
-        commandNodes.processUserCommands,
-        userCommands,
+        Unless(fightEnemy, ownerNodes.isMovingAway),
+        Condition(homunNodes.follow, ownerNodes.isMoving),
+        Unless(
+          Selector {
+            patrolWhenOwnerIsSitting,
+            stayBesideOwner,
+          },
+          enemyNodes.hasEnemy
+        ),
       },
       commandNodes.hasCommands
     ),
-    Unless(auto, commandNodes.hasCommands),
   }
 end
 

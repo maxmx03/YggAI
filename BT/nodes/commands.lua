@@ -14,7 +14,7 @@
 ---@field isFollowMode Condition
 ---@field isStopMode Condition
 ---@field isMoveMode Condition
----@field isIdleMode Condition
+---@field isNone Condition
 ---@field isAttackObject Condition
 ---@field isAttackArea Condition
 ---@field isPatrolMode Condition
@@ -24,20 +24,6 @@
 
 ---@type CommandNode
 local M = {}
-
----@class CommandState
-local CommandState = {
-  IDLE = 0,
-  MOVE = 1,
-  ATTACK_OBJECT = 2,
-  ATTACK_AREA = 3,
-  PATROL = 4,
-  STOP = 5,
-  SKILL_OBJECT = 6,
-  SKILL_AREA = 7,
-  FOLLOW = 8,
-  HOLD = 9,
-}
 
 ---@class ComandType
 local CommandType = {
@@ -55,9 +41,9 @@ local CommandType = {
 
 ---@class CommandData
 local CommandData = {
-  state = CommandState.IDLE,
-  lastCommand = {},
+  state = CommandType.NONE,
   isStopped = false,
+  toggleFollow = false,
   destX = 0,
   destY = 0,
   patrolX = 0,
@@ -71,118 +57,85 @@ local NoCommand = { CommandType.NONE }
 
 ---@alias Commands table<number>
 
----@param bb Blackboard
-function M.processUserCommands(bb)
+---@param _ Blackboard
+function M.processUserCommands(_)
   local msg = List.popleft(ResCmdList)
   if msg == nil then
     return STATUS.SUCCESS
   end
   CommandData.state = msg[1]
-  if CommandData.state == nil then
-    return STATUS.FAILURE
-  end
-  if CommandData.state == CommandType.NONE then
-    List.clear(ResCmdList)
-    CommandData.lastCommand = {}
-    return STATUS.SUCCESS
-  end
-  CommandData.lastCommand = msg
   if CommandData.state == CommandType.MOVE then
-    CommandData.state = CommandState.MOVE
     CommandData.isStopped = false
     CommandData.destX = msg[2]
     CommandData.destY = msg[3]
   elseif CommandData.state == CommandType.STOP then
-    CommandData.isStopped = msg[2]
-    CommandData.state = CommandState.STOP
+    CommandData.isStopped = true
+  elseif CommandData.state == CommandType.FOLLOW then
+    CommandData.toggleFollow = not CommandData.toggleFollow
   elseif CommandData.state == CommandType.ATTACK_OBJECT then
-    CommandData.state = CommandState.ATTACK_OBJECT
     CommandData.targetId = msg[2]
   elseif CommandData.state == CommandType.ATTACK_AREA then
-    CommandData.state = CommandState.ATTACK_AREA
     CommandData.destX = msg[2]
     CommandData.destY = msg[3]
   elseif CommandData.state == CommandType.PATROL then
-    CommandData.state = CommandState.PATROL
     CommandData.patrolX = msg[2]
     CommandData.patrolY = msg[3]
-  elseif CommandData.state == CommandType.HOLD then
-    CommandData.state = CommandState.HOLD
   elseif CommandData.state == CommandType.SKILL_OBJECT then
-    CommandData.state = CommandState.SKILL_OBJECT
     CommandData.skillLevel = msg[2]
     CommandData.skillId = msg[3]
     CommandData.targetId = msg[4]
-    bb.myEnemy = msg[4]
   elseif CommandData.state == CommandType.SKILL_AREA then
-    CommandData.state = CommandState.SKILL_AREA
     CommandData.skillLevel = msg[2]
     CommandData.skillId = msg[3]
     CommandData.destX = msg[4]
     CommandData.destY = msg[5]
-  elseif CommandData.state == CommandType.FOLLOW then
-    CommandData.state = CommandState.FOLLOW
   end
-
   return STATUS.SUCCESS
 end
 
-function M.hasCommands()
-  return List.size(ResCmdList) > 0
-end
-
 function M.isHoldMode()
-  return CommandData.state == CommandState.HOLD
+  return CommandData.state == CommandType.HOLD
 end
 
 function M.isFollowMode()
-  return CommandData.state == CommandState.FOLLOW
+  return CommandData.state == CommandType.FOLLOW
 end
 
 function M.isMoveMode()
-  return CommandData.state == CommandState.MOVE
+  return CommandData.state == CommandType.MOVE
 end
 
 function M.isStopMode()
-  return CommandData.state == CommandState.STOP
+  return CommandData.state == CommandType.STOP
 end
 
 function M.isPatrolMode()
-  return CommandData.state == CommandState.PATROL
+  return CommandData.state == CommandType.PATROL
 end
 
-function M.isIdleMode()
-  return CommandData.state == CommandState.IDLE
+function M.isNone()
+  return CommandData.state == CommandType.NONE
 end
 
 function M.isAttackObject()
-  return CommandData.state == CommandState.ATTACK_OBJECT
+  return CommandData.state == CommandType.ATTACK_OBJECT
 end
 
 function M.isAttackArea()
-  return CommandData.state == CommandState.ATTACK_AREA
+  return CommandData.state == CommandType.ATTACK_AREA
 end
 
 function M.isSkillObject()
-  return CommandData.state == CommandState.SKILL_OBJECT
+  return CommandData.state == CommandType.SKILL_OBJECT
 end
 
 function M.isSkillGround()
-  return CommandData.state == CommandState.SKILL_AREA
+  return CommandData.state == CommandType.SKILL_AREA
 end
 
 ---@return Node
 function M.executeHold(bb)
   if bb.myEnemy ~= 0 then
-    List.pushleft(ResCmdList, NoCommand)
-    return STATUS.SUCCESS
-  end
-  SearchForEnemies(bb, function(enemy)
-    if IsEnemyAlive(bb.myId, enemy) then
-      table.insert(bb.myEnemies, enemy)
-    end
-  end)
-  if #bb.myEnemies > 0 then
     List.pushleft(ResCmdList, NoCommand)
     return STATUS.SUCCESS
   end
@@ -194,18 +147,9 @@ function M.executeHold(bb)
 end
 
 function M.executeMove(bb)
-  local x = CommandData.destX
-  local y = CommandData.destY
-  bb.destX, bb.destY = GetV(V_POSITION, bb.myId)
-  if x == bb.destX and y == bb.destY then
-    List.pushleft(ResCmdList, { CommandType.STOP, true })
-    bb.destX = 0
-    bb.destY = 0
-    return STATUS.SUCCESS
-  end
-  Move(bb.myId, x, y)
-  List.pushleft(ResCmdList, CommandData.lastCommand)
-  return STATUS.RUNNING
+  List.pushleft(ResCmdList, { CommandType.STOP })
+  Move(bb.myId, CommandData.destX, CommandData.destY)
+  return STATUS.SUCCESS
 end
 
 function M.executePatrol(bb)
@@ -214,55 +158,43 @@ function M.executePatrol(bb)
   bb.destY = CommandData.destY
   if bb.destX ~= bb.patrolX and bb.patrolY ~= bb.destY then
     Move(bb.myId, bb.destX, bb.destY)
-    List.pushleft(ResCmdList, CommandData.lastCommand)
     return STATUS.RUNNING
   end
-  SearchForEnemies(bb, function(enemy)
-    if IsEnemyAlive(bb.myId, enemy) then
-      table.insert(bb.myEnemies, enemy)
-    end
-  end)
-  if #bb.myEnemies > 0 then
-    List.pushleft(ResCmdList, NoCommand)
+  if bb.myEnemy ~= 0 then
     return STATUS.SUCCESS
   end
-  List.pushleft(ResCmdList, NoCommand)
   return STATUS.SUCCESS
 end
 
 function M.executeFollow(bb)
-  local ownerMotion = GetV(V_MOTION, bb.myOwner)
-  if
-    ownerMotion == MOTION_ATTACK
-    or ownerMotion == MOTION_ATTACK2
-    or ownerMotion == MOTION_SKILL
-    or ownerMotion == MOTION_CASTING
-  then
+  if not CommandData.toggleFollow then
     List.pushleft(ResCmdList, NoCommand)
     return STATUS.SUCCESS
   end
   if GetDistanceFromOwner(bb.myId) > 3 then
     MoveToOwner(bb.myId)
-    List.pushleft(ResCmdList, CommandData.lastCommand)
   end
   return STATUS.RUNNING
 end
 
 function M.executeStop(bb)
-  if GetV(V_MOTION, bb.myId) ~= MOTION_STAND then
-    Move(bb.myId, GetV(V_POSITION, bb.myId))
-    List.pushleft(ResCmdList, CommandData.lastCommand)
-    return STATUS.RUNNING
+  ---@type EnemyNode
+  local enemyNodes = require 'AI.USER_AI.BT.nodes.enemy'
+  if GetDistanceFromOwner(bb.myId) > bb.userConfig.maxDistanceToOwner and GetV(V_MOTION, bb.myOwner) == MOTION_MOVE then
+    CommandData.isStopped = false
+    List.pushleft(ResCmdList, NoCommand)
+    return STATUS.SUCCESS
+  end
+  if enemyNodes.hasEnemy(bb) then
+    List.pushleft(ResCmdList, NoCommand)
+    CommandData.isStopped = false
+    return STATUS.SUCCESS
   end
   if CommandData.isStopped then
-    List.pushleft(ResCmdList, { CommandState.STOP, true })
     return STATUS.SUCCESS
   end
   List.pushleft(ResCmdList, NoCommand)
-  bb.destX = 0
-  bb.destY = 0
-  bb.myEnemy = 0
-  bb.myEnemies = {}
+  CommandData.isStopped = false
   return STATUS.SUCCESS
 end
 
@@ -280,14 +212,8 @@ function M.executeAttackArea(bb)
     Move(bb.myId, x, y)
     bb.destX = x
     bb.destY = y
-    List.pushleft(ResCmdList, CommandData.lastCommand)
     return STATUS.RUNNING
   end
-  SearchForEnemies(bb, function(enemy)
-    if IsEnemyAlive(bb.myId, enemy) then
-      table.insert(bb.myEnemies, enemy)
-    end
-  end)
   if #bb.myEnemies > 0 then
     List.pushleft(ResCmdList, NoCommand)
     return STATUS.SUCCESS
@@ -301,15 +227,14 @@ function M.executeAttackArea(bb)
 end
 
 function M.executeSkillObject(bb)
-  if IsInAttackSight(bb.myId, bb.myEnemy, bb) then
+  if IsInAttackSight(bb.myId, CommandData.targetId, bb) then
     if 0 == SkillObject(bb.myId, CommandData.skillLevel, CommandData.skillId, CommandData.targetId) then
       List.pushleft(ResCmdList, NoCommand)
       return STATUS.FAILURE
     end
   else
-    local x, y = GetV(V_POSITION, bb.myEnemy)
+    local x, y = GetV(V_POSITION, CommandData.targetId)
     Move(bb.myId, x, y)
-    List.pushleft(ResCmdList, CommandData.lastCommand)
     return STATUS.RUNNING
   end
   List.pushleft(ResCmdList, NoCommand)
@@ -325,11 +250,14 @@ function M.executeSkillGround(bb)
     end
   else
     Move(bb.myId, CommandData.destX, CommandData.destY)
-    List.pushleft(ResCmdList, CommandData.lastCommand)
     return STATUS.RUNNING
   end
   List.pushleft(ResCmdList, NoCommand)
   return STATUS.SUCCESS
+end
+
+function M.hasCommands()
+  return List.size(ResCmdList) > 0
 end
 
 return M

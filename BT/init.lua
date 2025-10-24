@@ -704,6 +704,8 @@ local amistr = require 'AI.USER_AI.HOMUN.Amistr'
 local lif = require 'AI.USER_AI.HOMUN.Lif'
 local filir = require 'AI.USER_AI.HOMUN.Filir'
 local services = require 'AI.USER_AI.BT.nodes.service'
+---@type CommandNode
+local commandNodes = require 'AI.USER_AI.BT.nodes.commands'
 ---@type HomunNode
 local homun = require 'AI.USER_AI.BT.nodes.homun'
 local tree = Parallel {
@@ -711,6 +713,7 @@ local tree = Parallel {
   Delay(services.clearDeadEnemies, 1000),
   Delay(services.sortEnemiesByDistance, 1000),
   Delay(services.checkIsAttackingOwner, 500),
+  Delay(commandNodes.processUserCommands, 300),
   Selector {
     Condition(dieter, homun.isDieter),
     Condition(sera, homun.isSera),
