@@ -6,7 +6,7 @@
 ---@field isTakingDamage Condition
 ---@field isSitting Condition
 ---@field isDying Condition
----@field isDead Condition
+---@field isAlmostDead Condition
 
 ---@type OwnerNode
 local M = {}
@@ -54,9 +54,11 @@ function M.isDying(bb)
   return false
 end
 
-function M.isDead(bb)
-  local ownerDead = GetV(V_MOTION, bb.myOwner) == MOTION_DEAD
-  if ownerDead then
+function M.isAlmostDead(bb)
+  local ownerHp = GetV(V_HP, bb.myOwner)
+  local ownerMaxHp = GetV(V_MAXHP, bb.myOwner)
+  local ownerDying = ownerHp <= ownerMaxHp * 0.1
+  if ownerDying and bb.myEnemy ~= 0 then
     return true
   end
   return false

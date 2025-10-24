@@ -8,13 +8,9 @@ local enemyNodes = require 'AI.USER_AI.BT.nodes.enemy'
 ---@type OwnerNode
 local ownerNodes = require 'AI.USER_AI.BT.nodes.owner'
 
-local tryReviveOwner = Parallel {
-  Condition(
-    skillNodes.executeSkill('myOwner', { keepRunning = false }),
-    skillNodes.isSkillCastable(MH_LIGHT_OF_REGENE)
-  ),
-  homunNodes.runToSaveOwner,
-}
+local lightOfRegene =
+  Condition(skillNodes.executeSkill('myOwner', { keepRunning = false }), skillNodes.isSkillCastable(MH_LIGHT_OF_REGENE))
+
 local castOverBoost =
   Condition(skillNodes.executeSkill('myId', { skillType = 'object' }), skillNodes.isSkillCastable(MH_OVERED_BOOST))
 
@@ -59,17 +55,17 @@ local absoluteZephyr = Unless(
 )
 
 local combat = Selector {
+  Condition(lightOfRegene, ownerNodes.isAlmostDead),
   Condition(castOverBoost, enemyNodes.isMVP),
   Condition(castOverBoost, ownerNodes.isDying),
   Condition(twisterAttack, enemyNodes.isMVP),
   Condition(cutterAttack, enemyNodes.isWindType),
   Condition(twisterAttack, enemyNodes.isGhostType),
   Condition(xenoAttack, enemyNodes.isGhostType),
-  Condition(absoluteZephyr, enemyNodes.hasEnemyGroup(3, 5)),
+  Condition(absoluteZephyr, enemyNodes.hasEnemyGroup(2, 7)),
   Condition(xenoAttack, enemyNodes.hasEnemyGroup(2, 7)),
   Unless(cutterAttack, enemyNodes.isGhostType),
   homunNodes.attackAndChase,
-  Condition(tryReviveOwner, ownerNodes.isDead),
 }
 
 return root(combat)
