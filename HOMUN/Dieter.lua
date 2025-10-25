@@ -6,9 +6,12 @@ local skillNodes = require 'AI.USER_AI.BT.nodes.skill'
 ---@type EnemyNode
 local enemyNodes = require 'AI.USER_AI.BT.nodes.enemy'
 
-local lavaSlide = Condition(
-  skillNodes.enqueueSkill(MH_LAVA_SLIDE, 'myEnemy', { skillType = 'area' }),
-  skillNodes.isSkillCastable(MH_LAVA_SLIDE)
+local lavaSlide = Unless(
+  Condition(
+    skillNodes.enqueueSkill(MH_LAVA_SLIDE, 'myEnemy', { skillType = 'area' }),
+    skillNodes.isSkillCastable(MH_LAVA_SLIDE)
+  ),
+  enemyNodes.isFireType
 )
 
 local magmaFlow = Condition(
@@ -52,14 +55,22 @@ local hasWaterOrPlantTypeMonsters = Selector {
   Condition(volcanicAsh, enemyNodes.isWaterType),
 }
 
+local aoeAgainstMVP = Condition(
+  Selector {
+    blastForge,
+    lavaSlide,
+  },
+  enemyNodes.isMVP
+)
+
 local combat = Selector {
   executeSkills,
+  Condition(blastForge, enemyNodes.hasEnemyGroup(2, 5)),
+  lavaSlide,
+  aoeAgainstMVP,
   tempering,
   Unless(pyroclastic, enemyNodes.isFireType),
-  Unless(lavaSlide, enemyNodes.isFireType),
   Unless(magmaFlow, enemyNodes.isFireType),
-  Condition(blastForge, enemyNodes.hasEnemyGroup(2, 5)),
-  Condition(blastForge, enemyNodes.isMVP),
   Condition(hasWaterOrPlantTypeMonsters, enemyNodes.hasEnemyGroup(5, 3)),
   Condition(volcanicAsh, enemyNodes.isMVP),
   Unless(homunNodes.attackAndChase, skillNodes.hasSkillsToCast),

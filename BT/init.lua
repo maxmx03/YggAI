@@ -205,7 +205,7 @@ local blackboard = {
     [MH_LAVA_SLIDE] = {
       id = MH_LAVA_SLIDE,
       sp = 85,
-      cooldown = 15500,
+      cooldown = 6000,
       level = 10,
       required_level = 109,
     },
@@ -792,6 +792,9 @@ function YggAI(myid)
     blackboard.stopCasting = true
     if #blackboard.skillQueue > 0 then
       blackboard.skillQueue = {}
+    end
+    if homun.isDieter(blackboard) then
+      blackboard.myCooldowns[MH_LAVA_SLIDE] = 500
     end
   end
   tree()
